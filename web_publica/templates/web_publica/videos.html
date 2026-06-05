@@ -1,0 +1,21 @@
+{% extends "web_publica/base.html" %}
+{% block titulo %}Videos{% endblock %}
+{% block contenido %}
+  <p class="breadcrumb">Videos</p>
+  <h2>Videos</h2>
+  {% if videos %}
+    <div class="video-grid">
+      {% for v in videos %}
+        <div>
+          {% if v.embed_url %}
+            <iframe src="{{ v.embed_url }}" allowfullscreen title="{{ v.titulo }}"></iframe>
+          {% endif %}
+          <h3>{{ v.titulo }}</h3>
+          {% if v.descripcion %}<p>{{ v.descripcion }}</p>{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="vacio">Aún no hay videos.</p>
+  {% endif %}
+{% endblock %}

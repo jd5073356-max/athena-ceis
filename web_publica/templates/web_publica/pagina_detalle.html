@@ -1,0 +1,15 @@
+{% extends "web_publica/base.html" %}
+{% block titulo %}{{ pagina.titulo }}{% endblock %}
+{% block contenido %}
+  {% if pagina.categoria == 'proyecto' %}
+    <p class="breadcrumb"><a href="{% url 'web_publica:proyectos' %}">Nuestros Proyectos</a> › {{ pagina.titulo }}</p>
+  {% else %}
+    <p class="breadcrumb"><a href="{% url 'web_publica:colegio' %}">El Colegio</a> › {{ pagina.titulo }}</p>
+  {% endif %}
+  <h2>{{ pagina.titulo }}</h2>
+  {% if pagina.contenido %}
+    <div class="contenido-pagina">{{ pagina.contenido|linebreaks }}</div>
+  {% else %}
+    <p class="vacio">Esta sección aún no tiene contenido publicado.</p>
+  {% endif %}
+{% endblock %}

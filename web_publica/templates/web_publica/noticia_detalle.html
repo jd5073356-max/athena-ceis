@@ -1,0 +1,8 @@
+{% extends "web_publica/base.html" %}
+{% block titulo %}{{ noticia.titulo }}{% endblock %}
+{% block contenido %}
+  <p class="breadcrumb"><a href="{% url 'web_publica:noticias' %}">Noticias</a> › {{ noticia.titulo }}</p>
+  <h2>{{ noticia.titulo }}</h2>
+  <small>{{ noticia.fecha_publicacion|date:"d/m/Y H:i" }}</small>
+  <p>{{ noticia.cuerpo|linebreaks }}</p>
+{% endblock %}

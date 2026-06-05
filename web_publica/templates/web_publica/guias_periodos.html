@@ -1,0 +1,21 @@
+{% extends "web_publica/base.html" %}
+{% block titulo %}Períodos {{ anio }}{% endblock %}
+{% block contenido %}
+  <p class="breadcrumb">
+    <a href="{% url 'web_publica:guias_anios' %}">Guías</a> ›
+    {{ anio.anio }}
+  </p>
+  <h2>{{ anio.anio }} · Elige un período</h2>
+  {% if periodos %}
+    <div class="tarjetas">
+      {% for p in periodos %}
+        <a class="tarjeta" href="{% url 'web_publica:guias_cursos' p.id %}">
+          <h3>{{ p.nombre|default:"Período" }} {{ p.numero }}</h3>
+          <small>Ver cursos ➜</small>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="vacio">Este año aún no tiene períodos.</p>
+  {% endif %}
+{% endblock %}

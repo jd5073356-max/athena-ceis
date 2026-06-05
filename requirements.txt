@@ -1,0 +1,13 @@
+# Athena — dependencias Python
+
+# --- Requerido (siempre) ---
+Django>=5.0,<5.3
+
+# --- Producción: Oracle Autonomous Database ---
+# Driver Python ↔ Oracle. Necesario solo cuando DB_ENGINE=oracle.
+oracledb>=2.0
+
+# --- Producción: Oracle Cloud Object Storage ---
+# SDK de OCI. Necesario solo cuando STORAGE_BACKEND=oci.
+# Es un paquete grande; en desarrollo (almacenamiento local) no hace falta.
+oci>=2.0

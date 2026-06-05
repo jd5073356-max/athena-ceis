@@ -1,0 +1,95 @@
+{% extends "web_publica/base.html" %}
+{% load static %}
+
+{% block hero %}
+<section style="background: linear-gradient(135deg, #0a1931 0%, #15305b 100%); padding: 64px 0; text-align: center;">
+  <div class="contenedor">
+    <img src="{% static 'logos/ceis.png' %}" alt="CEIS" style="height: 96px; width: auto; margin-bottom: 16px;">
+    <h1 style="font-family: 'Lora', serif; font-size: 2.5rem; color: #fff; margin: 0 0 8px;">{{ secciones.nombre_sitio.titulo|default:"I.E.D. CEIS Sopó" }}</h1>
+    <p style="font-size: 1.15rem; color: var(--dorado-claro); max-width: 600px; margin: 0 auto 24px;">{{ secciones.lema.contenido|default:"Sistema Educativo Relacional Cundinamarca" }}</p>
+    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <a href="{% url 'web_publica:guias_anios' %}" class="pdf" style="background: var(--dorado); color: #0a1931 !important;">📚 Guías de Estudio</a>
+      <a href="{% url 'web_publica:noticias' %}" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border: 1px solid var(--dorado); color: var(--dorado-claro); border-radius: 8px; text-decoration: none; font-weight: 500;">📰 Noticias</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block contenido %}
+<!-- Misión -->
+{% if secciones.mision.contenido %}
+<section style="margin-bottom: 48px;">
+  <h2>{{ secciones.mision.titulo|default:"Misión" }}</h2>
+  <p>{{ secciones.mision.contenido }}</p>
+</section>
+{% endif %}
+
+<!-- Visión -->
+{% if secciones.vision.contenido %}
+<section style="margin-bottom: 48px;">
+  <h2>{{ secciones.vision.titulo|default:"Visión" }}</h2>
+  <p>{{ secciones.vision.contenido }}</p>
+</section>
+{% endif %}
+
+<!-- Noticias recientes -->
+{% if noticias %}
+<section style="margin-bottom: 48px;">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2 style="margin: 0;">Últimas Noticias</h2>
+    <a href="{% url 'web_publica:noticias' %}" style="font-size: 0.9rem; color: var(--azul-claro); font-weight: 600;">Ver todas →</a>
+  </div>
+  <div class="tarjetas">
+    {% for n in noticias %}
+    <div class="tarjeta">
+      <small>{{ n.fecha_publicacion|date:"d M, Y" }}</small>
+      <h3><a href="{% url 'web_publica:noticia_detalle' n.id %}">{{ n.titulo }}</a></h3>
+      <p>{{ n.cuerpo|truncatewords:25 }}</p>
+      <small><a href="{% url 'web_publica:noticia_detalle' n.id %}" style="color: var(--azul-claro); text-decoration: none;">Leer más →</a></small>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- Videos -->
+{% if videos %}
+<section style="margin-bottom: 48px;">
+  <h2>Videos Institucionales</h2>
+  <div class="video-grid">
+    {% for v in videos %}
+    <div>
+      {% if v.embed_url %}<iframe src="{{ v.embed_url }}" allowfullscreen></iframe>{% endif %}
+      <h3>{{ v.titulo }}</h3>
+      {% if v.descripcion %}<p>{{ v.descripcion }}</p>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- Galería -->
+{% if imagenes %}
+<section style="margin-bottom: 48px;">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2 style="margin: 0;">Galería</h2>
+    <a href="{% url 'web_publica:galeria' %}" style="font-size: 0.9rem; color: var(--azul-claro); font-weight: 600;">Ver todas →</a>
+  </div>
+  <div class="galeria-grid">
+    {% for img in imagenes %}
+    <a href="{{ img.archivo.url }}" target="_blank">
+      <img src="{{ img.archivo.url }}" alt="{{ img.titulo }}">
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- Contacto -->
+{% if secciones.contacto.contenido %}
+<section style="margin-bottom: 48px;">
+  <h2>{{ secciones.contacto.titulo|default:"Contacto" }}</h2>
+  <p>{{ secciones.contacto.contenido|linebreaks }}</p>
+</section>
+{% endif %}
+{% endblock %}

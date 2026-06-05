@@ -1,0 +1,23 @@
+{% extends "web_publica/base.html" %}
+{% block titulo %}Materias · {{ curso.nombre }}{% endblock %}
+{% block contenido %}
+  <p class="breadcrumb">
+    <a href="{% url 'web_publica:guias_anios' %}">Guías</a> ›
+    <a href="{% url 'web_publica:guias_periodos' curso.periodo.anio.id %}">{{ curso.periodo.anio.anio }}</a> ›
+    <a href="{% url 'web_publica:guias_cursos' curso.periodo.id %}">{{ curso.periodo.nombre|default:"Período" }} {{ curso.periodo.numero }}</a> ›
+    {{ curso.nombre }}
+  </p>
+  <h2>{{ curso.nombre }} · Elige una materia</h2>
+  {% if materias %}
+    <div class="tarjetas">
+      {% for m in materias %}
+        <a class="tarjeta" href="{% url 'web_publica:guias_lista' m.id %}">
+          <h3>{{ m.nombre }}</h3>
+          <small>Ver guías ➜</small>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="vacio">Este curso aún no tiene materias.</p>
+  {% endif %}
+{% endblock %}

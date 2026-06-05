@@ -1,0 +1,19 @@
+{% extends "web_publica/base.html" %}
+{% block titulo %}Noticias{% endblock %}
+{% block contenido %}
+  <p class="breadcrumb">Noticias</p>
+  <h2>Noticias y anuncios</h2>
+  {% if noticias %}
+    <div class="tarjetas">
+      {% for n in noticias %}
+        <div class="tarjeta">
+          <h3><a href="{% url 'web_publica:noticia_detalle' n.id %}">{{ n.titulo }}</a></h3>
+          <small>{{ n.fecha_publicacion|date:"d/m/Y" }}</small>
+          <p>{{ n.cuerpo|truncatewords:30 }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="vacio">Aún no hay noticias publicadas.</p>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,608 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+
+<style>
+  /* ===========================================================================
+     ATHENA · PANEL DEL RECTOR — MODERN DARK EDITORIAL & SAAS UI
+     =========================================================================== */
+  :root {
+    --primary: #0ea5e9;            /* Sky 500 */
+    --primary-fg: #ffffff;
+    --secondary: #0d1527;          /* Dark Slate */
+    --accent: #f59e0b;             /* Amber 500 */
+    --body-bg: #040814;            /* Darkest space blue */
+    --body-fg: #cbd5e1;            /* Slate 300 */
+    --header-bg: #0d1322;          /* Dark Slate header (was teal) */
+    --header-fg: #ffffff;
+    --header-link-color: #38bdf8;  /* Sky 400 */
+    --breadcrumbs-bg: #0d1322;     /* Sidebar dark background */
+    --breadcrumbs-fg: #94a3b8;     /* Slate 400 */
+    --breadcrumbs-link-color: #38bdf8;
+    --module-bg: #111a2e;          /* Cards & Table background */
+    --module-fg: #cbd5e1;
+    --border-color: #1e293b;       /* Slate 800 borders */
+    --link-color: #38bdf8;
+    --link-hover-color: #0ea5e9;
+    --link-selected-color: #0ea5e9;
+    --slate-900: #0f172a;
+    --slate-800: #1e293b;
+    --slate-700: #334155;
+    --slate-600: #475569;
+    --slate-400: #94a3b8;
+    --slate-300: #cbd5e1;
+    --sky-500: #0ea5e9;
+    --sky-400: #38bdf8;
+    --teal-500: #14b8a6;
+    --emerald-500: #10b981;
+    --rose-500: #f43f5e;
+    --amber-500: #f59e0b;
+  }
+
+  /* Reset and typography */
+  body {
+    background: radial-gradient(circle at 20% 20%, rgba(14, 165, 233, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(17, 94, 89, 0.15) 0%, transparent 40%),
+                #020617 !important;
+    background-attachment: fixed !important;
+    font-family: 'Outfit', system-ui, sans-serif !important;
+    color: #cbd5e1 !important;
+  }
+
+  /* Main Container Panel (Central SaaS Panel with rounded corners) */
+  #container {
+    max-width: 1400px !important;
+    margin: 32px auto !important;
+    background: #090d16 !important;
+    border-radius: 16px !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6) !important;
+    overflow: hidden !important;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Top Browser-style Address Bar (Simulation of browser header) */
+  #container::before {
+    content: "Escoja Imagen de galería a modificar";
+    display: block;
+    background: #090d16 !important;
+    border-bottom: 1px solid #1e293b;
+    padding: 10px 24px;
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+    font-family: monospace;
+    letter-spacing: 0.05em;
+  }
+
+  /* Header (Dark Slate Header) */
+  #header {
+    background: #0d1322 !important; /* Dark slate */
+    border-bottom: 1px solid #1e293b !important;
+    padding: 14px 28px !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 70px !important;
+  }
+
+  #branding h1 {
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 1.35rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.08em !important;
+    color: #ffffff !important;
+    margin: 0 !important;
+    text-transform: uppercase;
+  }
+
+  #user-tools {
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  #user-tools a {
+    color: #ffffff !important;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.4);
+    transition: color 0.2s;
+  }
+
+  #user-tools a:hover {
+    color: #2dd4bf !important;
+    text-decoration: none;
+  }
+
+  /* Breadcrumb Navigation */
+  .breadcrumbs {
+    background: #0d1322 !important;
+    border-bottom: 1px solid #1e293b !important;
+    padding: 12px 28px !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    color: #64748b !important;
+  }
+
+  .breadcrumbs a {
+    color: #38bdf8 !important;
+    font-weight: 600;
+  }
+
+  .breadcrumbs a:hover {
+    color: #0ea5e9 !important;
+    text-decoration: none;
+  }
+
+  /* Sidebar Navigation (SaaS dark list navigation) */
+  #nav-sidebar {
+    background: #0d1322 !important;
+    border-right: 1px solid #1e293b !important;
+    width: 260px !important;
+    flex-shrink: 0;
+  }
+
+  #nav-sidebar .module {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 12px 0 !important;
+    margin: 0 !important;
+  }
+
+  #nav-sidebar th {
+    background: transparent !important;
+    padding: 16px 20px 8px !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #64748b !important;
+    border: none !important;
+  }
+
+  #nav-sidebar td {
+    padding: 4px 16px !important;
+    border: none !important;
+  }
+
+  #nav-sidebar tr:hover td {
+    background: transparent !important;
+  }
+
+  #nav-sidebar .section {
+    margin-bottom: 16px;
+  }
+
+  #nav-sidebar a {
+    display: flex !important;
+    align-items: center !important;
+    padding: 10px 16px !important;
+    border-radius: 8px !important;
+    color: #cbd5e1 !important;
+    font-weight: 500 !important;
+    font-size: 0.9rem !important;
+    transition: all 0.2s ease !important;
+    text-decoration: none !important;
+  }
+
+  #nav-sidebar a:hover {
+    background: rgba(14, 165, 233, 0.08) !important;
+    color: #38bdf8 !important;
+  }
+
+  #nav-sidebar tr.model-imagen a {
+    background: rgba(14, 165, 233, 0.12) !important;
+    color: #38bdf8 !important;
+    font-weight: 600 !important;
+    border-left: 3px solid #0ea5e9;
+    border-radius: 0 8px 8px 0 !important;
+  }
+
+  /* Main Content Area */
+  #content {
+    background: #090d16 !important;
+    padding: 28px !important;
+    flex-grow: 1;
+  }
+
+  #content h1 {
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 1.6rem !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    margin-bottom: 24px !important;
+  }
+
+  /* Modules (Dashboard Cards) */
+  .module {
+    background: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+    padding: 24px !important;
+    margin-bottom: 28px !important;
+  }
+
+  .module h2, .module caption {
+    background: transparent !important;
+    color: #38bdf8 !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 0 14px 0 !important;
+    border-bottom: 1px solid #1e293b !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* Table design in dark mode */
+  table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    width: 100% !important;
+    margin: 12px 0 !important;
+  }
+
+  th {
+    background: #1e293b !important;
+    color: #94a3b8 !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 12px 16px !important;
+    border-bottom: 2px solid #334155 !important;
+  }
+
+  th:first-child {
+    border-radius: 8px 0 0 0 !important;
+  }
+
+  th:last-child {
+    border-radius: 0 8px 0 0 !important;
+  }
+
+  td {
+    background: #111a2e !important;
+    color: #cbd5e1 !important;
+    border-bottom: 1px solid #1e293b !important;
+    padding: 14px 16px !important;
+    font-size: 0.95rem !important;
+  }
+
+  tr:hover td {
+    background: #1e293b !important;
+  }
+
+  /* Action/Submit Buttons row */
+  .submit-row {
+    background: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 12px !important;
+    padding: 16px 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+  }
+
+  input[type="submit"], .button, button {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    color: #ffffff !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    padding: 10px 20px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25) !important;
+    text-transform: none !important;
+    height: auto !important;
+  }
+
+  input[type="submit"]:hover, .button:hover, button:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 18px rgba(14, 165, 233, 0.4) !important;
+  }
+
+  input[type="submit"].default {
+    background: linear-gradient(135deg, #0d9488, #0f766e) !important; /* Primary Teal */
+    box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25) !important;
+  }
+
+  input[type="submit"].default:hover {
+    box-shadow: 0 6px 18px rgba(13, 148, 136, 0.4) !important;
+  }
+
+  .deletelink, a.deletelink {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25) !important;
+    color: #ffffff !important;
+    padding: 10px 20px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+  }
+
+  .deletelink:hover {
+    box-shadow: 0 6px 18px rgba(239, 68, 68, 0.4) !important;
+  }
+
+  /* Form controls and inputs */
+  input[type="text"], input[type="password"], input[type="email"], input[type="number"], select, textarea {
+    background: #090d16 !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 8px !important;
+    color: #f8fafc !important;
+    padding: 10px 14px !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 0.95rem !important;
+    transition: all 0.2s ease !important;
+  }
+
+  input[type="text"]:focus, input[type="password"]:focus, select:focus, textarea:focus {
+    border-color: #0ea5e9 !important;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2) !important;
+    outline: none !important;
+  }
+
+  /* Custom search and filter bar */
+  #changelist-search {
+    background: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 12px !important;
+    padding: 16px 20px !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* Filters list styled like chips */
+  #changelist-filter {
+    background: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+  }
+
+  #changelist-filter h2 {
+    font-size: 0.9rem !important;
+    color: #94a3b8 !important;
+  }
+
+  /* Custom beautiful badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-success {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+  }
+
+  .badge-info {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+  }
+
+  /* Admin Index / Dashboard row action buttons */
+  .dashboard .module table th a {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    color: #f8fafc !important;
+    transition: color 0.2s ease !important;
+    text-decoration: none !important;
+  }
+  .dashboard .module table th a:hover {
+    color: #38bdf8 !important;
+  }
+  .dashboard .module table td {
+    vertical-align: middle !important;
+    padding: 10px 16px !important;
+  }
+  .dashboard .module table tr {
+    border-bottom: 1px solid #1e293b !important;
+    transition: background 0.15s ease !important;
+  }
+  .dashboard .module table tr:hover {
+    background: rgba(30, 41, 59, 0.4) !important;
+  }
+  /* Convert the default add/change text links into awesome rounded SaaS chips */
+  .addlink, .changelink, .viewlink {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 6px 14px !important;
+    border-radius: 8px !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    transition: all 0.2s ease !important;
+    text-decoration: none !important;
+    box-sizing: border-box !important;
+  }
+  .addlink {
+    background: rgba(16, 185, 129, 0.08) !important;
+    color: #10b981 !important;
+    border: 1px solid rgba(16, 185, 129, 0.2) !important;
+  }
+  .addlink:hover {
+    background: rgba(16, 185, 129, 0.2) !important;
+    color: #34d399 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+  }
+  .changelink {
+    background: rgba(14, 165, 233, 0.08) !important;
+    color: #38bdf8 !important;
+    border: 1px solid rgba(14, 165, 233, 0.2) !important;
+  }
+  .changelink:hover {
+    background: rgba(14, 165, 233, 0.2) !important;
+    color: #0ea5e9 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2) !important;
+  }
+
+  /* Login page overrides */
+  body.login {
+    background: radial-gradient(circle at 50% 50%, #0d1527 0%, #020617 100%) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 100vh !important;
+  }
+  .login #container {
+    max-width: 450px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
+    border-radius: 16px !important;
+    background: #090d16 !important;
+    overflow: hidden !important;
+  }
+  .login #container::before {
+    display: none !important;
+  }
+  .login #header {
+    background: #0d1322 !important;
+    border-bottom: 1px solid #1e293b !important;
+    padding: 32px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    height: auto !important;
+  }
+  .login #branding {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+  .login #branding * {
+    display: none !important;
+  }
+  .login #branding h1 {
+    display: none !important;
+  }
+  .login #branding::after {
+    content: "";
+    display: block !important;
+    width: 250px !important;
+    height: 80px !important;
+    background: url("/static/logos/logo_identidad_oscuro-removebg-preview.png") no-repeat center !important;
+    background-size: contain !important;
+  }
+  .login #content {
+    background: #090d16 !important;
+    padding: 32px !important;
+  }
+  .login .form-row {
+    padding: 0 !important;
+    margin-bottom: 20px !important;
+    border: none !important;
+  }
+  .login .form-row label {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .login input[type="text"], .login input[type="password"] {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    background: #111a2e !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 8px !important;
+    color: #ffffff !important;
+    padding: 12px 16px !important;
+    font-size: 0.95rem !important;
+  }
+  .login .submit-row {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin-top: 24px !important;
+    display: flex !important;
+  }
+  .login .submit-row input[type="submit"] {
+    width: 100% !important;
+    background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    padding: 12px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25) !important;
+  }
+
+  /* Workspace link in sidebar */
+  .workspace-link {
+    display: block !important;
+    padding: 12px 16px !important;
+    margin: 8px 12px !important;
+    background: linear-gradient(135deg, rgba(14,165,233,0.1), rgba(14,165,233,0.05)) !important;
+    border: 1px solid rgba(14,165,233,0.2) !important;
+    border-radius: 8px !important;
+    color: #38bdf8 !important;
+    font-weight: 700 !important;
+    font-size: 0.85rem !important;
+    text-decoration: none !important;
+    text-align: center !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .workspace-link:hover {
+    background: linear-gradient(135deg, rgba(14,165,233,0.2), rgba(14,165,233,0.1)) !important;
+    border-color: #0ea5e9 !important;
+    transform: translateY(-1px);
+  }
+
+  /* Sidebar layout tweaks */
+  #content-main {
+    flex-grow: 1;
+  }
+
+  .flex-container {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+  }
+</style>
+{% endblock %}
+
+{% block nav-sidebar %}
+{{ block.super }}
+<a class="workspace-link" href="{% url 'panel_rector:galeria_workspace' %}">🖼 GESTIÓN DE GALERÍA</a>
+{% endblock %}
+
+{% block branding %}
+<div style="display: flex; align-items: center; gap: 16px;">
+  <a href="{% url 'admin:index' %}" style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
+    <img src="{% static 'logos/logo_identidad_claro-removebg-preview.png' %}" alt="ATHENA Código-Beta" style="height: 40px; width: auto;">
+    <span style="font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 800; color: #ffffff; letter-spacing: 0.05em; line-height: 1.2;">ATHENA</span>
+  </a>
+</div>
+{% endblock %}

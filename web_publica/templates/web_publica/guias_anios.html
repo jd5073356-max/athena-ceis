@@ -1,0 +1,18 @@
+{% extends "web_publica/base.html" %}
+{% block titulo %}Guías de estudio{% endblock %}
+{% block contenido %}
+  <p class="breadcrumb">Guías</p>
+  <h2>Guías de estudio · Elige un año</h2>
+  {% if anios %}
+    <div class="tarjetas">
+      {% for a in anios %}
+        <a class="tarjeta" href="{% url 'web_publica:guias_periodos' a.id %}">
+          <h3>{{ a.anio }}</h3>
+          <small>Ver períodos ➜</small>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="vacio">Todavía no hay años publicados.</p>
+  {% endif %}
+{% endblock %}

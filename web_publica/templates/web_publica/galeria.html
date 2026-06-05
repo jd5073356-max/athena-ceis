@@ -1,0 +1,17 @@
+{% extends "web_publica/base.html" %}
+{% block titulo %}Galería{% endblock %}
+{% block contenido %}
+  <p class="breadcrumb">Galería</p>
+  <h2>Galería de imágenes</h2>
+  {% if imagenes %}
+    <div class="galeria-grid">
+      {% for img in imagenes %}
+        <a href="{{ img.archivo.url }}" target="_blank" rel="noopener" title="{{ img.titulo }}">
+          <img src="{{ img.archivo.url }}" alt="{{ img.titulo }}">
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="vacio">Aún no hay imágenes en la galería.</p>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "web_publica/base.html" %}
+{% block titulo %}Guías · {{ materia.nombre }}{% endblock %}
+{% block contenido %}
+  <p class="breadcrumb">
+    <a href="{% url 'web_publica:guias_anios' %}">Guías</a> ›
+    <a href="{% url 'web_publica:guias_periodos' materia.curso.periodo.anio.id %}">{{ materia.curso.periodo.anio.anio }}</a> ›
+    <a href="{% url 'web_publica:guias_cursos' materia.curso.periodo.id %}">{{ materia.curso.periodo.nombre|default:"Período" }} {{ materia.curso.periodo.numero }}</a> ›
+    <a href="{% url 'web_publica:guias_materias' materia.curso.id %}">{{ materia.curso.nombre }}</a> ›
+    {{ materia.nombre }}
+  </p>
+  <h2>{{ materia.nombre }} · Guías de estudio</h2>
+  {% if guias %}
+    <div class="tarjetas">
+      {% for g in guias %}
+        <div class="tarjeta">
+          <h3>{{ g.titulo }}</h3>
+          <small>{{ g.fecha_publicacion|date:"d/m/Y" }}</small>
+          {% if g.descripcion %}<p>{{ g.descripcion }}</p>{% endif %}
+          <p><a class="pdf" href="{{ g.archivo.url }}" target="_blank" rel="noopener">Descargar PDF</a></p>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="vacio">Esta materia aún no tiene guías publicadas.</p>
+  {% endif %}
+{% endblock %}
