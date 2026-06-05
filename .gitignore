@@ -24,3 +24,6 @@ wallet/
 *.log
 .idea/
 .vscode/
+
+# Tooling de skills, ajeno al CMS escolar (se mantiene en disco, fuera del repo)
+/webs/
