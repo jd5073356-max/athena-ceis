@@ -11,7 +11,7 @@ import os
 from django.core.exceptions import ValidationError
 
 EXTENSIONES_PDF = {".pdf"}
-EXTENSIONES_IMAGEN = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+EXTENSIONES_IMAGEN = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif"}
 
 
 def _leer_firma(archivo, n: int = 12) -> bytes:
@@ -48,6 +48,7 @@ def validar_imagen(archivo):
         or firma.startswith(b"\x89PNG\r\n\x1a\n")          # PNG
         or firma[:6] in (b"GIF87a", b"GIF89a")             # GIF
         or (firma[:4] == b"RIFF" and firma[8:12] == b"WEBP")  # WEBP
+        or (firma[4:8] == b"ftyp" and firma[8:12] in (b"avif", b"avis", b"mif1", b"msf1"))  # AVIF
     )
     if not es_valida:
         raise ValidationError("El archivo no es una imagen válida.")

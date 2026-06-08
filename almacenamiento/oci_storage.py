@@ -66,11 +66,17 @@ class AlmacenamientoObjectStorage(Storage):
 
     # --- API de Storage de Django ------------------------------------------
     def _save(self, name, content):
-        """Sube el archivo al bucket. Devuelve el object name (la ruta que se
-        guarda en la base)."""
+        """Sube el archivo al bucket con su content-type correcto (si no, OCI lo
+        sirve como octet-stream/json y el navegador no lo renderiza). Devuelve el
+        object name (la ruta que se guarda en la base)."""
+        import mimetypes
+
         content.seek(0)
         datos = content.read()
-        self.cliente.put_object(self.namespace, self.bucket, name, datos)
+        ext = os.path.splitext(name)[1].lower()
+        tipos_extra = {".avif": "image/avif", ".webp": "image/webp", ".svg": "image/svg+xml"}
+        ctype = tipos_extra.get(ext) or mimetypes.guess_type(name)[0] or "application/octet-stream"
+        self.cliente.put_object(self.namespace, self.bucket, name, datos, content_type=ctype)
         return name
 
     def _open(self, name, mode="rb"):
