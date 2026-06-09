@@ -1,0 +1,96 @@
+{% extends "admin/base_site.html" %}
+{% load athena_admin %}
+
+{% comment %} Gestión de Noticias — diseño Stitch sobre core.Noticia. {% endcomment %}
+
+{% block extrastyle %}{{ block.super }}
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} change-list{% endblock %}
+{% block coltype %}colM{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="ath-list">
+  <div class="ath-list__head">
+    <div>
+      <h1 class="ath-list__title">Gestión de Noticias</h1>
+      <p class="ath-list__sub">Administre las publicaciones, anuncios y eventos del portal escolar.</p>
+    </div>
+    {% if has_add_permission %}
+    <a class="ath-btn" href="{% url 'admin:core_noticia_add' %}"><span class="material-symbols-outlined">add</span> Nueva Noticia</a>
+    {% endif %}
+  </div>
+
+  <div class="ath-news">
+    <div class="ath-news__main">
+      <form class="ath-toolbar" method="get">
+        <label class="ath-search">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" name="q" value="{{ cl.query }}" placeholder="Buscar por título...">
+        </label>
+        <select name="activo__exact" class="ath-select" onchange="this.form.submit()">
+          <option value="">Todos los estados</option>
+          <option value="1" {% if request.GET.activo__exact == '1' %}selected{% endif %}>Publicado</option>
+          <option value="0" {% if request.GET.activo__exact == '0' %}selected{% endif %}>Borrador</option>
+        </select>
+      </form>
+
+      <div class="ath-newslist">
+        {% for n in cl.result_list %}
+        <div class="ath-newscard">
+          <span class="ath-newscard__thumb"><span class="material-symbols-outlined">campaign</span></span>
+          <div class="ath-newscard__body">
+            <div class="ath-newscard__top">
+              <h3>{{ n.titulo }}</h3>
+              {% if n.activo %}
+              <span class="ath-chip ath-chip--ok"><span class="dash-dot"></span>Publicado</span>
+              {% else %}
+              <span class="ath-chip ath-chip--warn"><span class="dash-dot"></span>Borrador</span>
+              {% endif %}
+            </div>
+            <p class="ath-sub" style="white-space:normal;">{{ n.cuerpo|striptags|truncatewords:24 }}</p>
+            <div class="ath-newscard__meta">
+              <span class="material-symbols-outlined">calendar_today</span> {{ n.fecha_publicacion|date:"d M Y" }}
+              · <a href="{% url 'admin:core_noticia_change' n.pk %}">Editar</a>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="ath-card ath-empty">No hay noticias publicadas todavía.</div>
+        {% endfor %}
+      </div>
+
+      {% if cl.paginator.num_pages > 1 %}
+      <div class="ath-pages">
+        {% for n in cl.paginator.page_range %}
+        <a class="ath-page {% if n == cl.page_num %}is-active{% endif %}" href="{% ath_page_url cl n %}">{{ n }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <aside class="ath-news__side">
+      {% ath_noticia_stats as ns %}
+      <div class="ath-card ath-pad">
+        <h3 class="ath-cardtitle">Resumen de publicaciones</h3>
+        <div class="ath-stat"><span>Total</span><strong>{{ ns.total }}</strong></div>
+        <div class="ath-stat"><span>Publicadas</span><strong>{{ ns.pub }}</strong></div>
+        <div class="ath-stat" style="border-bottom:0;"><span>Borradores</span><strong>{{ ns.bor }}</strong></div>
+        <div class="ath-bar"><div class="ath-bar__fill" style="width:{{ ns.pub_pct }}%"></div></div>
+        <p class="ath-sub" style="margin-top:8px;">{{ ns.pub_pct }}% publicadas</p>
+      </div>
+      <div class="ath-card ath-pad ath-cta">
+        <span class="material-symbols-outlined">post_add</span>
+        <h3 class="ath-cardtitle" style="margin-top:8px;">Crear publicación</h3>
+        <p class="ath-sub" style="white-space:normal;">Redacta una nueva noticia, anuncio o evento del colegio.</p>
+        {% if has_add_permission %}<a class="ath-btn" href="{% url 'admin:core_noticia_add' %}"><span class="material-symbols-outlined">add</span> Nueva Noticia</a>{% endif %}
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

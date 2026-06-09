@@ -1,0 +1,92 @@
+{% extends "admin/base_site.html" %}
+{% load athena_admin %}
+
+{% comment %} Años Académicos — diseño Stitch sobre core.Anio (sin fechas inventadas). {% endcomment %}
+
+{% block extrastyle %}{{ block.super }}
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} change-list{% endblock %}
+{% block coltype %}colM{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="ath-list">
+  <div class="ath-list__head">
+    <div>
+      <h1 class="ath-list__title">Años Académicos</h1>
+      <p class="ath-list__sub">Gestione los ciclos escolares y configure los períodos de evaluación de cada año lectivo.</p>
+    </div>
+    {% if has_add_permission %}
+    <a class="ath-btn" href="{% url 'admin:core_anio_add' %}"><span class="material-symbols-outlined">add</span> Nuevo Año</a>
+    {% endif %}
+  </div>
+
+  {% ath_anio_stats as ax %}
+  <div class="ath-hgrid">
+    <div class="ath-hcard">
+      <div class="ath-hcard__label">Año lectivo activo
+        {% if ax.activo %}<span class="ath-chip ath-chip--ok"><span class="dash-dot"></span>Activo</span>{% endif %}
+      </div>
+      <div class="ath-hcard__num">{% if ax.activo %}{{ ax.activo.anio }}{% else %}—{% endif %}</div>
+      <div class="ath-hcard__sub">{{ ax.activo_periodos }} período{{ ax.activo_periodos|pluralize }} configurado{{ ax.activo_periodos|pluralize }}</div>
+    </div>
+    <div class="ath-hcard">
+      <div class="ath-hcard__label">Total de años</div>
+      <div class="ath-hcard__num">{{ ax.total }}</div>
+      <div class="ath-hcard__sub">registrados en el sistema</div>
+    </div>
+  </div>
+
+  <h2 class="ath-blocktitle">Listado histórico</h2>
+  <form class="ath-toolbar" method="get">
+    <label class="ath-search">
+      <span class="material-symbols-outlined">search</span>
+      <input type="text" name="q" value="{{ cl.query }}" placeholder="Buscar año...">
+    </label>
+    <button type="submit" class="ath-btn ath-btn--ghost"><span class="material-symbols-outlined">search</span> Buscar</button>
+  </form>
+
+  <div class="ath-card">
+    <table class="ath-table">
+      <thead><tr><th>Año</th><th>Períodos</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+        {% for a in cl.result_list %}
+        <tr class="{% if not a.activo %}is-inactive{% endif %}">
+          <td>
+            <div class="ath-user">
+              <span class="ath-rowicon"><span class="material-symbols-outlined">calendar_today</span></span>
+              <span class="ath-user__name">{{ a.anio }}</span>
+            </div>
+          </td>
+          <td><span class="ath-badge ath-badge--blue">{{ a.periodos.count }} período{{ a.periodos.count|pluralize }}</span></td>
+          <td>
+            {% if a.activo %}<span class="ath-chip ath-chip--ok"><span class="dash-dot"></span>Activo</span>
+            {% else %}<span class="ath-chip ath-chip--muted"><span class="dash-dot"></span>Inactivo</span>{% endif %}
+          </td>
+          <td class="ath-actions">
+            <a href="{% url 'admin:core_anio_change' a.pk %}" class="ath-iconbtn" title="Editar"><span class="material-symbols-outlined">edit</span></a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="ath-empty">No hay años académicos registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="ath-foot">
+      <span class="ath-muted">{% ath_showing cl "años" %}</span>
+      {% if cl.paginator.num_pages > 1 %}
+      <div class="ath-pages">
+        {% for n in cl.paginator.page_range %}
+        <a class="ath-page {% if n == cl.page_num %}is-active{% endif %}" href="{% ath_page_url cl n %}">{{ n }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

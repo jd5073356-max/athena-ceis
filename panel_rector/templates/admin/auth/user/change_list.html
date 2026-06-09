@@ -1,0 +1,98 @@
+{% extends "admin/base_site.html" %}
+{% load athena_admin %}
+
+{% comment %} Gestión de Usuarios — diseño Stitch sobre el changelist real de auth.User. {% endcomment %}
+
+{% block extrastyle %}{{ block.super }}
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} change-list{% endblock %}
+{% block coltype %}colM{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="ath-list">
+  <div class="ath-list__head">
+    <div>
+      <h1 class="ath-list__title">Gestión de Usuarios</h1>
+      <p class="ath-list__sub">Administre cuentas, roles y estados de acceso del personal docente y administrativo.</p>
+    </div>
+    {% if has_add_permission %}
+    <a class="ath-btn" href="{% url 'admin:auth_user_add' %}"><span class="material-symbols-outlined">add</span> Nuevo Usuario</a>
+    {% endif %}
+  </div>
+
+  <form class="ath-toolbar" method="get">
+    <label class="ath-search">
+      <span class="material-symbols-outlined">search</span>
+      <input type="text" name="q" value="{{ cl.query }}" placeholder="Nombre o correo electrónico...">
+    </label>
+    {% ath_groups as grupos %}
+    <select name="groups__id__exact" class="ath-select" onchange="this.form.submit()">
+      <option value="">Todos los roles</option>
+      {% for g in grupos %}
+      <option value="{{ g.id }}" {% if request.GET.groups__id__exact == g.id|stringformat:'s' %}selected{% endif %}>{{ g.name }}</option>
+      {% endfor %}
+    </select>
+    <select name="is_active__exact" class="ath-select" onchange="this.form.submit()">
+      <option value="">Todos los estados</option>
+      <option value="1" {% if request.GET.is_active__exact == '1' %}selected{% endif %}>Activo</option>
+      <option value="0" {% if request.GET.is_active__exact == '0' %}selected{% endif %}>Inactivo</option>
+    </select>
+    <button type="submit" class="ath-btn ath-btn--ghost"><span class="material-symbols-outlined">filter_list</span> Filtrar</button>
+  </form>
+
+  <div class="ath-card">
+    <table class="ath-table">
+      <thead>
+        <tr>
+          <th>Nombre</th><th>Email</th><th>Rol</th><th>Registro</th><th>Estado</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in cl.result_list %}
+        <tr class="{% if not u.is_active %}is-inactive{% endif %}">
+          <td>
+            <div class="ath-user">
+              <span class="ath-avatar ath-avatar--{{ u|ath_rol_class }}">{{ u|ath_initials }}</span>
+              <span class="ath-user__name">{{ u|ath_fullname }}</span>
+            </div>
+          </td>
+          <td class="ath-muted">{{ u.email|default:"—" }}</td>
+          <td><span class="ath-badge ath-badge--{{ u|ath_rol_class }}">{{ u|ath_rol }}</span></td>
+          <td class="ath-muted">{{ u.date_joined|date:"d M Y" }}</td>
+          <td>
+            {% if u.is_active %}
+            <span class="ath-chip ath-chip--ok"><span class="dash-dot"></span>Activo</span>
+            {% else %}
+            <span class="ath-chip ath-chip--err"><span class="dash-dot"></span>Inactivo</span>
+            {% endif %}
+          </td>
+          <td class="ath-actions">
+            <a href="{% url 'admin:auth_user_change' u.pk %}" class="ath-iconbtn" title="Editar">
+              <span class="material-symbols-outlined">edit</span>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="ath-empty">No hay usuarios que coincidan con el filtro.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="ath-foot">
+      <span class="ath-muted">{% ath_showing cl "usuarios" %}</span>
+      {% if cl.paginator.num_pages > 1 %}
+      <div class="ath-pages">
+        {% for n in cl.paginator.page_range %}
+        <a class="ath-page {% if n == cl.page_num %}is-active{% endif %}" href="{% ath_page_url cl n %}">{{ n }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

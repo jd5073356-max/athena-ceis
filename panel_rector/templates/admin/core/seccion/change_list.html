@@ -1,0 +1,81 @@
+{% extends "admin/base_site.html" %}
+{% load athena_admin %}
+
+{% comment %} Secciones de Texto — diseño Stitch sobre core.Seccion. {% endcomment %}
+
+{% block extrastyle %}{{ block.super }}
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} change-list{% endblock %}
+{% block coltype %}colM{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="ath-list">
+  <div class="ath-list__head">
+    <div>
+      <h1 class="ath-list__title">Secciones de Texto</h1>
+      <p class="ath-list__sub">Administre el contenido textual estático visible en la plataforma pública.</p>
+    </div>
+    {% if has_add_permission %}
+    <a class="ath-btn" href="{% url 'admin:core_seccion_add' %}"><span class="material-symbols-outlined">add</span> Nueva Sección</a>
+    {% endif %}
+  </div>
+
+  <form class="ath-toolbar" method="get">
+    <label class="ath-search">
+      <span class="material-symbols-outlined">search</span>
+      <input type="text" name="q" value="{{ cl.query }}" placeholder="Buscar por título o clave...">
+    </label>
+    <select name="categoria__exact" class="ath-select" onchange="this.form.submit()">
+      <option value="">Todas las ubicaciones</option>
+      <option value="home" {% if request.GET.categoria__exact == 'home' %}selected{% endif %}>Inicio (identidad)</option>
+      <option value="colegio" {% if request.GET.categoria__exact == 'colegio' %}selected{% endif %}>El Colegio</option>
+      <option value="proyecto" {% if request.GET.categoria__exact == 'proyecto' %}selected{% endif %}>Proyectos</option>
+    </select>
+    <button type="submit" class="ath-btn ath-btn--ghost"><span class="material-symbols-outlined">filter_list</span> Filtrar</button>
+  </form>
+
+  <div class="ath-card">
+    <table class="ath-table">
+      <thead><tr><th>Título identificador</th><th>Ubicación</th><th>Clave</th><th></th></tr></thead>
+      <tbody>
+        {% for s in cl.result_list %}
+        <tr>
+          <td>
+            <div class="ath-cellmain">
+              <span class="ath-rowicon"><span class="material-symbols-outlined">article</span></span>
+              <div>
+                <div class="ath-user__name">{{ s.titulo|default:s.clave }}</div>
+                {% if s.contenido %}<div class="ath-sub">{{ s.contenido|striptags|truncatewords:14 }}</div>{% endif %}
+              </div>
+            </div>
+          </td>
+          <td><span class="ath-badge ath-badge--slate">{{ s.get_categoria_display }}</span></td>
+          <td><span class="ath-mono">{{ s.clave }}</span></td>
+          <td class="ath-actions">
+            <a href="{% url 'admin:core_seccion_change' s.pk %}" class="ath-iconbtn" title="Editar"><span class="material-symbols-outlined">edit</span></a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="ath-empty">No hay secciones de texto.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="ath-foot">
+      <span class="ath-muted">{% ath_showing cl "secciones" %}</span>
+      {% if cl.paginator.num_pages > 1 %}
+      <div class="ath-pages">
+        {% for n in cl.paginator.page_range %}
+        <a class="ath-page {% if n == cl.page_num %}is-active{% endif %}" href="{% ath_page_url cl n %}">{{ n }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

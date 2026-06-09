@@ -1,0 +1,85 @@
+{% extends "admin/base_site.html" %}
+{% load athena_admin %}
+
+{% comment %} Períodos Académicos — diseño Stitch sobre core.Periodo (sin semanas/fechas inventadas). {% endcomment %}
+
+{% block extrastyle %}{{ block.super }}
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} change-list{% endblock %}
+{% block coltype %}colM{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="ath-list">
+  <div class="ath-list__head">
+    <div>
+      <h1 class="ath-list__title">Períodos Académicos</h1>
+      <p class="ath-list__sub">Gestione los períodos de evaluación de cada año lectivo y los cursos asociados.</p>
+    </div>
+    {% if has_add_permission %}
+    <a class="ath-btn" href="{% url 'admin:core_periodo_add' %}"><span class="material-symbols-outlined">add</span> Nuevo Período</a>
+    {% endif %}
+  </div>
+
+  {% ath_periodo_stats as ps %}
+  <div class="ath-stats" style="grid-template-columns:repeat(2,1fr);">
+    <div class="ath-statcard">
+      <span class="ath-statcard__icon"><span class="material-symbols-outlined">schedule</span></span>
+      <div><div class="ath-statcard__num">{{ ps.periodos }}</div><div class="ath-statcard__label">Períodos configurados</div></div>
+    </div>
+    <div class="ath-statcard">
+      <span class="ath-statcard__icon"><span class="material-symbols-outlined">school</span></span>
+      <div><div class="ath-statcard__num">{{ ps.cursos }}</div><div class="ath-statcard__label">Cursos en total</div></div>
+    </div>
+  </div>
+
+  <h2 class="ath-blocktitle">Historial de períodos</h2>
+  <form class="ath-toolbar" method="get">
+    <label class="ath-search">
+      <span class="material-symbols-outlined">search</span>
+      <input type="text" name="q" value="{{ cl.query }}" placeholder="Buscar período o año...">
+    </label>
+    <button type="submit" class="ath-btn ath-btn--ghost"><span class="material-symbols-outlined">search</span> Buscar</button>
+  </form>
+
+  <div class="ath-card">
+    <table class="ath-table">
+      <thead><tr><th>Período</th><th>Año</th><th>Cursos</th><th></th></tr></thead>
+      <tbody>
+        {% for p in cl.result_list %}
+        <tr>
+          <td>
+            <div class="ath-user">
+              <span class="ath-rowicon"><span class="material-symbols-outlined">event</span></span>
+              <span class="ath-user__name">{{ p.nombre|default:"Período" }} {{ p.numero }}</span>
+            </div>
+          </td>
+          <td class="ath-muted">{{ p.anio.anio }}</td>
+          <td><span class="ath-badge ath-badge--blue">{{ p.cursos.count }} curso{{ p.cursos.count|pluralize }}</span></td>
+          <td class="ath-actions">
+            <a href="{% url 'admin:core_periodo_change' p.pk %}" class="ath-iconbtn" title="Editar"><span class="material-symbols-outlined">edit</span></a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="ath-empty">No hay períodos registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="ath-foot">
+      <span class="ath-muted">{% ath_showing cl "períodos" %}</span>
+      {% if cl.paginator.num_pages > 1 %}
+      <div class="ath-pages">
+        {% for n in cl.paginator.page_range %}
+        <a class="ath-page {% if n == cl.page_num %}is-active{% endif %}" href="{% ath_page_url cl n %}">{{ n }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

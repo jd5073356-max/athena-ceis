@@ -1,0 +1,75 @@
+{% extends "admin/base_site.html" %}
+{% load athena_admin %}
+
+{% comment %} Gestión de Materias — diseño Stitch sobre core.Materia, agrupado por curso (real). {% endcomment %}
+
+{% block extrastyle %}{{ block.super }}
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} change-list{% endblock %}
+{% block coltype %}colM{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="ath-list">
+  <div class="ath-list__head">
+    <div>
+      <h1 class="ath-list__title">Gestión de Materias</h1>
+      <p class="ath-list__sub">Administre el catálogo de asignaturas organizado por curso y gestione sus guías de estudio.</p>
+    </div>
+    {% if has_add_permission %}
+    <a class="ath-btn" href="{% url 'admin:core_materia_add' %}"><span class="material-symbols-outlined">add</span> Nueva Materia</a>
+    {% endif %}
+  </div>
+
+  <form class="ath-toolbar" method="get">
+    <label class="ath-search">
+      <span class="material-symbols-outlined">search</span>
+      <input type="text" name="q" value="{{ cl.query }}" placeholder="Buscar por nombre de materia o curso...">
+    </label>
+    <button type="submit" class="ath-btn ath-btn--ghost"><span class="material-symbols-outlined">search</span> Buscar</button>
+  </form>
+
+  {% ath_materias_grouped cl as grupos %}
+  {% for curso, materias in grupos %}
+  <div class="ath-group">
+    <div class="ath-group__head">
+      <span class="ath-group__title"><span class="material-symbols-outlined">school</span> {{ curso.nombre }}</span>
+      <span class="ath-group__count">{{ materias|length }} materia{{ materias|length|pluralize }}</span>
+    </div>
+    <div class="ath-cardgrid">
+      {% for m in materias %}
+      <div class="ath-mcard">
+        <div class="ath-mcard__top">
+          <span class="ath-rowicon"><span class="material-symbols-outlined">subject</span></span>
+          <span class="ath-badge ath-badge--blue">{{ m.guias.count }} guía{{ m.guias.count|pluralize }}</span>
+        </div>
+        <h4>{{ m.nombre }}</h4>
+        <div class="ath-mcard__foot">
+          <span class="material-symbols-outlined">menu_book</span> {{ curso.nombre }}
+          <a href="{% url 'admin:core_materia_change' m.pk %}">Editar</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="ath-card ath-empty">No hay materias registradas.</div>
+  {% endfor %}
+
+  <div class="ath-foot" style="border:1px solid var(--dash-border); border-radius:12px; background:var(--dash-surface); margin-top:4px;">
+    <span class="ath-muted">{% ath_showing cl "materias" %}</span>
+    {% if cl.paginator.num_pages > 1 %}
+    <div class="ath-pages">
+      {% for n in cl.paginator.page_range %}
+      <a class="ath-page {% if n == cl.page_num %}is-active{% endif %}" href="{% ath_page_url cl n %}">{{ n }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

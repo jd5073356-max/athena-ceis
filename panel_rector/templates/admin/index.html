@@ -1,0 +1,99 @@
+{% extends "admin/base_site.html" %}
+
+{% comment %}
+  Inicio del Panel del Rector — dashboard "Vista General" (diseño Stitch).
+  Reemplaza la lista de modelos por defecto; la navegación vive en el sidebar.
+{% endcomment %}
+
+{% block extrastyle %}{{ block.super }}
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+{% block coltype %}colM{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="dash">
+
+  <header class="dash-hero">
+    <h1 class="dash-hero__title">Vista General</h1>
+    <p class="dash-hero__sub">Bienvenido, {{ user.get_short_name|default:user.get_username|capfirst }}. Aquí está el estado actual de la institución.</p>
+  </header>
+
+  <div class="dash-grid">
+
+    {% for k in dash_kpis %}
+    <div class="dash-kpi dash-kpi--{{ k.tone }}">
+      <div class="dash-kpi__top">
+        <span class="dash-kpi__label">{{ k.label|upper }}</span>
+        <span class="material-symbols-outlined dash-kpi__icon">{{ k.icon }}</span>
+      </div>
+      <div>
+        <span class="dash-kpi__value">{{ k.value }}</span>
+        <span class="dash-kpi__sub"><span class="material-symbols-outlined">{{ k.sub_icon }}</span>{{ k.sub }}</span>
+      </div>
+    </div>
+    {% endfor %}
+
+    <section class="dash-card dash-card--chart">
+      <div class="dash-card__head">
+        <h2>Actividad institucional</h2>
+        <span class="dash-card__hint">Contenido publicado · últimos 6 meses</span>
+      </div>
+      <div class="dash-bars">
+        {% for b in dash_grafico %}
+        <div class="dash-bar{% if b.activo %} is-active{% endif %}" style="height:{{ b.pct }}%">
+          <span class="dash-bar__tip">{{ b.value }}</span>
+          <span class="dash-bar__label">{{ b.label }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="dash-card dash-card--actions">
+      <div class="dash-card__head"><h2>Acciones rápidas</h2></div>
+      <div class="dash-actions">
+        {% for a in dash_acciones %}
+        <a class="dash-action dash-action--{{ a.tone }}" href="{{ a.url }}">
+          <span class="material-symbols-outlined">{{ a.icon }}</span>
+          <span>{{ a.label }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="dash-card dash-card--table">
+      <div class="dash-card__head"><h2>Actividad reciente</h2></div>
+      <div class="dash-table-wrap">
+        <table class="dash-table">
+          <thead>
+            <tr><th>Acción</th><th>Usuario</th><th>Fecha</th><th>Estado</th></tr>
+          </thead>
+          <tbody>
+            {% for r in dash_recientes %}
+            <tr>
+              <td>
+                <div class="dash-act">
+                  <span class="dash-act__icon dash-act__icon--{{ r.tono }}"><span class="material-symbols-outlined">{{ r.icon }}</span></span>
+                  <span><strong>{{ r.accion }}</strong>{% if r.objeto %} · {{ r.objeto }}{% endif %}</span>
+                </div>
+              </td>
+              <td class="dash-muted">{{ r.usuario }}</td>
+              <td class="dash-muted">Hace {{ r.cuando|timesince }}</td>
+              <td><span class="dash-chip dash-chip--{{ r.tono }}"><span class="dash-dot"></span>{{ r.estado|upper }}</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="dash-empty">Aún no hay actividad registrada. Crea o edita contenido y aparecerá aquí.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

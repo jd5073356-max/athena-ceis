@@ -1,0 +1,82 @@
+{% extends "admin/base_site.html" %}
+{% load athena_admin %}
+
+{% comment %} Gestión de Galería — diseño Stitch sobre core.Imagen (thumbnails reales). {% endcomment %}
+
+{% block extrastyle %}{{ block.super }}
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} change-list{% endblock %}
+{% block coltype %}colM{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="ath-list">
+  <div class="ath-list__head">
+    <div>
+      <h1 class="ath-list__title">Gestión de Galería</h1>
+      <p class="ath-list__sub">Administre los recursos visuales institucionales de la galería pública.</p>
+    </div>
+    {% if has_add_permission %}
+    <a class="ath-btn" href="{% url 'admin:core_imagen_add' %}"><span class="material-symbols-outlined">add_photo_alternate</span> Nueva Imagen</a>
+    {% endif %}
+  </div>
+
+  <form class="ath-toolbar" method="get">
+    <label class="ath-search">
+      <span class="material-symbols-outlined">search</span>
+      <input type="text" name="q" value="{{ cl.query }}" placeholder="Buscar por título...">
+    </label>
+    <button type="submit" class="ath-btn ath-btn--ghost"><span class="material-symbols-outlined">search</span> Buscar</button>
+  </form>
+
+  <div class="ath-repo" style="grid-template-columns:1fr 300px;">
+    <div class="ath-repo__main">
+      <h2 class="ath-blocktitle">Repositorio visual</h2>
+      <div class="ath-imggrid">
+        {% for i in cl.result_list %}
+        <a class="ath-imgcard" href="{% url 'admin:core_imagen_change' i.pk %}">
+          <div class="ath-imgcard__thumb">
+            {% if i.archivo %}<img src="{{ i.archivo.url }}" alt="{{ i.titulo }}" loading="lazy">{% else %}<span class="material-symbols-outlined">image</span>{% endif %}
+          </div>
+          <div class="ath-imgcard__body">
+            <div class="ath-imgcard__title">{{ i.titulo|default:"Imagen" }}</div>
+            <div class="ath-sub">{{ i.fecha|date:"d M Y" }}</div>
+          </div>
+        </a>
+        {% empty %}
+        <div class="ath-card ath-empty" style="grid-column:1/-1;">No hay imágenes en la galería.</div>
+        {% endfor %}
+      </div>
+
+      <div class="ath-foot" style="border:1px solid var(--dash-border); border-radius:12px; background:var(--dash-surface);">
+        <span class="ath-muted">{% ath_showing cl "imágenes" %}</span>
+        {% if cl.paginator.num_pages > 1 %}
+        <div class="ath-pages">
+          {% for n in cl.paginator.page_range %}
+          <a class="ath-page {% if n == cl.page_num %}is-active{% endif %}" href="{% ath_page_url cl n %}">{{ n }}</a>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <aside class="ath-repo__side">
+      <div class="ath-card ath-pad ath-cta">
+        <span class="material-symbols-outlined">add_photo_alternate</span>
+        <h3 class="ath-cardtitle" style="margin-top:8px;">Añadir recurso</h3>
+        <p class="ath-sub" style="white-space:normal;">Sube una nueva imagen a la galería pública.</p>
+        {% if has_add_permission %}<a class="ath-btn" href="{% url 'admin:core_imagen_add' %}"><span class="material-symbols-outlined">add</span> Nueva Imagen</a>{% endif %}
+      </div>
+      <div class="ath-card ath-pad">
+        <h3 class="ath-cardtitle">Galería</h3>
+        <div class="ath-stat" style="border-bottom:0;"><span>Imágenes publicadas</span><strong>{{ cl.result_count }}</strong></div>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

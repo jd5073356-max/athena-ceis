@@ -1,0 +1,96 @@
+{% extends "admin/base_site.html" %}
+{% load athena_admin %}
+
+{% comment %} Gestión de Cursos — diseño Stitch sobre core.Curso (columnas adaptadas a datos reales). {% endcomment %}
+
+{% block extrastyle %}{{ block.super }}
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} change-list{% endblock %}
+{% block coltype %}colM{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="ath-list">
+  <div class="ath-list__head">
+    <div>
+      <h1 class="ath-list__title">Gestión de Cursos</h1>
+      <p class="ath-list__sub">Administre la oferta académica, organice los niveles de instrucción y supervise las materias por curso.</p>
+    </div>
+    {% if has_add_permission %}
+    <a class="ath-btn" href="{% url 'admin:core_curso_add' %}"><span class="material-symbols-outlined">add</span> Nuevo Curso</a>
+    {% endif %}
+  </div>
+
+  {% ath_curso_stats as cs %}
+  <div class="ath-stats">
+    <div class="ath-statcard">
+      <span class="ath-statcard__icon"><span class="material-symbols-outlined">school</span></span>
+      <div><div class="ath-statcard__num">{{ cs.cursos }}</div><div class="ath-statcard__label">Cursos ofertados</div></div>
+    </div>
+    <div class="ath-statcard">
+      <span class="ath-statcard__icon"><span class="material-symbols-outlined">menu_book</span></span>
+      <div><div class="ath-statcard__num">{{ cs.materias }}</div><div class="ath-statcard__label">Materias en total</div></div>
+    </div>
+    <div class="ath-statcard {% if cs.sin_materias %}ath-statcard--warn{% endif %}">
+      <span class="ath-statcard__icon"><span class="material-symbols-outlined">{% if cs.sin_materias %}warning{% else %}check_circle{% endif %}</span></span>
+      <div><div class="ath-statcard__num">{{ cs.sin_materias }}</div><div class="ath-statcard__label">Cursos sin materias asignadas</div></div>
+    </div>
+  </div>
+
+  <form class="ath-toolbar" method="get">
+    <label class="ath-search">
+      <span class="material-symbols-outlined">search</span>
+      <input type="text" name="q" value="{{ cl.query }}" placeholder="Filtrar por nombre o nivel...">
+    </label>
+    {% ath_periodos as periodos %}
+    <select name="periodo__id__exact" class="ath-select" onchange="this.form.submit()">
+      <option value="">Todos los períodos</option>
+      {% for p in periodos %}
+      <option value="{{ p.id }}" {% if request.GET.periodo__id__exact == p.id|stringformat:'s' %}selected{% endif %}>{{ p }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="ath-btn ath-btn--ghost"><span class="material-symbols-outlined">filter_list</span> Filtrar</button>
+  </form>
+
+  <div class="ath-card">
+    <table class="ath-table">
+      <thead><tr><th>Nombre del curso</th><th>Nivel</th><th>Período</th><th>Materias</th><th></th></tr></thead>
+      <tbody>
+        {% for c in cl.result_list %}
+        <tr>
+          <td>
+            <div class="ath-user">
+              <span class="ath-rowicon"><span class="material-symbols-outlined">school</span></span>
+              <span class="ath-user__name">{{ c.nombre }}</span>
+            </div>
+          </td>
+          <td>{% if c.nivel %}<span class="ath-badge ath-badge--slate">{{ c.nivel }}</span>{% else %}<span class="ath-muted">—</span>{% endif %}</td>
+          <td class="ath-muted">{{ c.periodo }}</td>
+          <td><span class="ath-badge ath-badge--blue">{{ c.materias.count }} materia{{ c.materias.count|pluralize }}</span></td>
+          <td class="ath-actions">
+            <a href="{% url 'admin:core_curso_change' c.pk %}" class="ath-iconbtn" title="Editar"><span class="material-symbols-outlined">edit</span></a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="ath-empty">No hay cursos registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="ath-foot">
+      <span class="ath-muted">{% ath_showing cl "cursos" %}</span>
+      {% if cl.paginator.num_pages > 1 %}
+      <div class="ath-pages">
+        {% for n in cl.paginator.page_range %}
+        <a class="ath-page {% if n == cl.page_num %}is-active{% endif %}" href="{% ath_page_url cl n %}">{{ n }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

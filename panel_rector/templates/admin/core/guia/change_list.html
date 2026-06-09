@@ -1,0 +1,92 @@
+{% extends "admin/base_site.html" %}
+{% load athena_admin %}
+
+{% comment %} Repositorio de Guías de Estudio — diseño Stitch sobre core.Guia. {% endcomment %}
+
+{% block extrastyle %}{{ block.super }}
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} change-list{% endblock %}
+{% block coltype %}colM{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="ath-list">
+  <div class="ath-list__head">
+    <div>
+      <h1 class="ath-list__title">Repositorio de Guías de Estudio</h1>
+      <p class="ath-list__sub">Gestión centralizada de material didáctico y documentos académicos.</p>
+    </div>
+    {% if has_add_permission %}
+    <a class="ath-btn" href="{% url 'admin:core_guia_add' %}"><span class="material-symbols-outlined">upload_file</span> Nueva Guía</a>
+    {% endif %}
+  </div>
+
+  <form class="ath-repo" method="get">
+    <aside class="ath-repo__side">
+      <div class="ath-card ath-pad ath-cta">
+        <span class="material-symbols-outlined">upload_file</span>
+        <h3 class="ath-cardtitle" style="margin-top:8px;">Cargar guía</h3>
+        <p class="ath-sub" style="white-space:normal;">Sube un PDF de material didáctico a una materia.</p>
+        {% if has_add_permission %}<a class="ath-btn" href="{% url 'admin:core_guia_add' %}"><span class="material-symbols-outlined">add</span> Nueva Guía</a>{% endif %}
+      </div>
+      <div class="ath-card ath-pad">
+        <h3 class="ath-cardtitle">Filtros de búsqueda</h3>
+        <label class="ath-fieldlabel">Materia</label>
+        {% ath_materias_all as materias %}
+        <select name="materia__id__exact" class="ath-select" style="width:100%;" onchange="this.form.submit()">
+          <option value="">Todas las materias</option>
+          {% for m in materias %}
+          <option value="{{ m.id }}" {% if request.GET.materia__id__exact == m.id|stringformat:'s' %}selected{% endif %}>{{ m.nombre }} · {{ m.curso.nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </aside>
+
+    <div class="ath-repo__main">
+      <label class="ath-search">
+        <span class="material-symbols-outlined">search</span>
+        <input type="text" name="q" value="{{ cl.query }}" placeholder="Buscar por nombre de archivo...">
+      </label>
+      <div class="ath-card">
+        <table class="ath-table">
+          <thead><tr><th>Documento</th><th>Materia / detalles</th><th>Fecha</th><th></th></tr></thead>
+          <tbody>
+            {% for g in cl.result_list %}
+            <tr>
+              <td>
+                <div class="ath-user">
+                  <span class="ath-rowicon"><span class="material-symbols-outlined">picture_as_pdf</span></span>
+                  <span class="ath-user__name">{{ g.titulo }}</span>
+                </div>
+              </td>
+              <td class="ath-muted">{{ g.materia.nombre }} · {{ g.materia.curso.nombre }}</td>
+              <td class="ath-muted">{{ g.fecha_publicacion|date:"d M Y" }}</td>
+              <td class="ath-actions">
+                <a href="{% url 'admin:core_guia_change' g.pk %}" class="ath-iconbtn" title="Editar"><span class="material-symbols-outlined">edit</span></a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="ath-empty">No hay guías cargadas todavía.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="ath-foot">
+          <span class="ath-muted">{% ath_showing cl "documentos" %}</span>
+          {% if cl.paginator.num_pages > 1 %}
+          <div class="ath-pages">
+            {% for n in cl.paginator.page_range %}
+            <a class="ath-page {% if n == cl.page_num %}is-active{% endif %}" href="{% ath_page_url cl n %}">{{ n }}</a>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}
