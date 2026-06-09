@@ -11,3 +11,8 @@ oracledb>=2.0
 # SDK de OCI. Necesario solo cuando STORAGE_BACKEND=oci.
 # Es un paquete grande; en desarrollo (almacenamiento local) no hace falta.
 oci>=2.0
+
+# --- Producción: servidor WSGI + archivos estáticos ---
+# gunicorn ejecuta la app; whitenoise sirve los estáticos sin necesidad de nginx.
+gunicorn>=21.0
+whitenoise>=6.0

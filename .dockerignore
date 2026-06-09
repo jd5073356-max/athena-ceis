@@ -1,0 +1,20 @@
+# No copiar a la imagen: entorno local, secretos, datos y artefactos.
+.git
+.gitignore
+.venv
+__pycache__/
+*.pyc
+*.pyo
+
+# Secretos y datos locales (NUNCA en la imagen)
+.env
+db.sqlite3
+wallet/
+*.zip
+*.pem
+
+# Se regeneran / no aplican en producción
+staticfiles/
+media/
+README.md
+AGENTS.md
