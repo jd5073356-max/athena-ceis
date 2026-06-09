@@ -176,6 +176,9 @@ LOGIN_URL = "/admin/login/"
 
 # Endurecimiento automático cuando DEBUG=False (producción).
 if not DEBUG:
+    # Cloud Run / balanceadores terminan el TLS y reenvían como HTTP. Sin esto,
+    # SECURE_SSL_REDIRECT no detecta el HTTPS real y entra en bucle de redirección.
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = env_bool("DJANGO_SSL_REDIRECT", True)
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
