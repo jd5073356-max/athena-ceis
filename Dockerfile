@@ -14,10 +14,11 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # Recolecta los estáticos (WhiteNoise los sirve comprimidos y con hash de caché).
-RUN python manage.py collectstatic --noinput
+RUN python manage.py collectstatic --noinput && chmod +x /app/entrypoint.sh
 
-EXPOSE 8000
+EXPOSE 8080
 
-# gunicorn sirve la app. La base Oracle ADB, el bucket OCI y los secretos llegan
-# por variables de entorno en tiempo de ejecución (nunca se hornean en la imagen).
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120"]
+# El entrypoint desempaqueta el wallet/llaves (montados como secreto) y arranca gunicorn.
+# La BD Oracle ADB, el bucket OCI y los secretos llegan por variables de entorno y
+# Secret Manager en tiempo de ejecución (nunca se hornean en la imagen).
+ENTRYPOINT ["/app/entrypoint.sh"]

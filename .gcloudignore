@@ -1,0 +1,18 @@
+# No subir a Cloud Build: entorno local, secretos, datos y artefactos.
+.git
+.gitignore
+.venv
+__pycache__/
+*.pyc
+*.pyo
+
+# Secretos y datos locales (NUNCA suben)
+.env
+db.sqlite3
+*.pem
+*.zip
+wallet/
+
+# Se regeneran / no aplican en build
+staticfiles/
+media/
