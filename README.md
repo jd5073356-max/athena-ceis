@@ -4,37 +4,36 @@
 
 # Athena — Enterprise School Management Platform
 
-[![status](https://img.shields.io/badge/status-en%20producción-success?style=for-the-badge)](https://athena.maxstudio.lat)
+[![status](https://img.shields.io/badge/status-migración%20activa-orange?style=for-the-badge)](https://athena.maxstudio.lat)
 [![Python](https://img.shields.io/badge/Python-3.11+-3776ab?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![Django](https://img.shields.io/badge/Django-5.x-092e20?style=for-the-badge&logo=django&logoColor=white)](https://djangoproject.com)
 [![Oracle](https://img.shields.io/badge/Oracle-Database-red?style=for-the-badge&logo=oracle&logoColor=white)](https://oracle.com)
 [![GCP](https://img.shields.io/badge/GCP-Cloud%20Run-4285f4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://cloud.google.com/run)
 
-> **Plataforma de gestión escolar centralizada.** Sistema administrativo de alto rendimiento desarrollado en Django y desplegado sobre Google Cloud Run con base de datos Oracle Enterprise, diseñado para la administración integral de instituciones educativas de gran escala.
-
-- **Demo en vivo:** [athena.maxstudio.lat](https://athena.maxstudio.lat)
+> **Plataforma de gestión escolar centralizada.** Sistema administrativo de alto rendimiento desarrollado en Django y preparado para Google Cloud Run con base de datos Oracle Enterprise, diseñado para la administración integral de instituciones educativas.
 
 ---
 
 ## 🎯 ¿Por qué existe Athena? (La Problemática)
 
-Las instituciones educativas de nivel básico y secundario manejan una carga documental crítica que suele gestionarse en hojas de cálculo desconectadas o carpetas físicas. Esto genera:
-1. **Ineficiencia en la asignación académica:** Asignar docentes a más de 400 asignaturas y 60 cursos sin un sistema centralizado resulta propenso a duplicidades y conflictos de horario.
-2. **Pérdida de material pedagógico:** Cuestionarios, talleres y guías de estudio dispersos sin control de versiones ni repositorio accesible para los estudiantes.
-3. **Falta de métricas rectorales:** La dirección institucional carece de visibilidad instantánea sobre el estado de avance de las guías y la actividad docente.
+Las instituciones educativas manejan una carga documental y académica crítica que requiere un entorno centralizado de alta disponibilidad.
+
+**Desafíos resueltos por la arquitectura de Athena:**
+1. **Centralización de Cargas Académicas:** Eliminación de conflictos en asignaciones de docentes, grados y materias institucionales.
+2. **Estructuración de Contenidos Pedagógicos:** Organización sistemática de guías de estudio, talleres y material académico clasificado por año, periodo y grado.
+3. **Control Rectoral:** Visibilidad estratégica para la dirección escolar sobre la actividad académica y el flujo institucional.
 
 ---
 
-## ⚡ ¿Para qué sirve? (El Propósito y Valor)
+## ⚡ ¿Para qué sirve? (Propósito del Sistema)
 
-**Athena centraliza y automatiza toda la operación académica de la institución:**
-- **Gestión de Cargas Académicas:** Control estructurado de **495 asignaturas** y **66 cursos** con jerarquía clara por áreas del conocimiento.
-- **Repositorio Inteligente de Documentos:** Repositorio centralizado con más de **800 documentos académicos** descargables y clasificables por año, periodo y grado.
-- **Panel de Rectoría y Control:** Panel de administración personalizado (`panel_rector`) con métricas clave, control de publicaciones e importación masiva desde Google Cloud Storage (GCS).
+- **Gestión Académica Centralizada:** Control estructurado de asignaturas y cursos con jerarquía clara por áreas de conocimiento.
+- **Panel de Rectoría:** Interfaz administrativa avanzada (`panel_rector`) para supervisión, métricas de avance y control de publicaciones.
+- **Integración con la Nube:** Preparado para sincronización en la nube con Google Cloud Storage (GCS) y arquitectura serverless container.
 
 ---
 
-## 🏗️ Arquitectura de Infraestructura en la Nube
+## 🏗️ Arquitectura de Infraestructura
 
 ```mermaid
 graph TD
@@ -49,20 +48,9 @@ graph TD
     
     subgraph Capa de Persistencia
         DjangoCore <--> OracleDB[(Oracle Enterprise Database)]
-        DjangoCore <--> GCS[(Google Cloud Storage - Media & PDF)]
+        DjangoCore <--> GCS[(Google Cloud Storage - Media Assets)]
     end
 ```
-
----
-
-## 🧩 Módulos Principales
-
-| Módulo | Descripción Técnica |
-|---|---|
-| **Core & Catálogo** | Modelos relacionales para Asignaturas, Cursos, Guías, Secciones e Imágenes. |
-| **Panel Rector** | Interfaz personalizada para alta dirección escolar, reportes y métricas de avance. |
-| **Importador GCS** | Comando personalizado de gestión (`construir_catalogo.py`) para sincronizar miles de PDFs desde Google Cloud Storage. |
-| **Visor Web Público** | Navegación responsiva de guías por grado, periodo académico y área académica. |
 
 ---
 
@@ -70,52 +58,10 @@ graph TD
 
 - **Lenguaje:** Python 3.11+
 - **Framework Web:** Django 5.x
-- **Base de Datos:** Oracle Enterprise Database (cx_Oracle / oracledb)
-- **Infraestructura:** Google Cloud Run (Serverless Container), Docker
+- **Base de Datos:** Oracle Enterprise Database
+- **Infraestructura:** Google Cloud Run, Docker
 - **Almacenamiento:** Google Cloud Storage (GCS)
-- **Frontend:** HTML5, Vanilla CSS3 (Custom Design System), JavaScript
-
----
-
-## 🔑 Variables de Entorno (`.env`)
-
-```env
-SECRET_KEY=tu_django_secret_key_super_segura
-DEBUG=False
-ALLOWED_HOSTS=athena.maxstudio.lat,localhost
-
-# Base de Datos Oracle
-DB_NAME=XE
-DB_USER=athena_admin
-DB_PASSWORD=tu_oracle_password
-DB_HOST=oracle.internal.host
-DB_PORT=1521
-
-# Google Cloud Storage
-GS_BUCKET_NAME=athena-media-bucket
-GOOGLE_APPLICATION_CREDENTIALS=/path/to/gcp-key.json
-```
-
----
-
-## 🚀 Instalación y Despliegue
-
-```bash
-# 1. Clonar el repositorio
-git clone https://github.com/jd5073356-max/athena-ceis.git
-cd athena-ceis
-
-# 2. Crear entorno virtual
-python -m venv venv
-source venv/bin/activate
-
-# 3. Instalar dependencias
-pip install -r requirements.txt
-
-# 4. Migraciones e inicio
-python manage.py migrate
-python manage.py runserver
-```
+- **Frontend:** HTML5, Vanilla CSS3, JavaScript
 
 ---
 
