@@ -155,7 +155,7 @@ if _sb in ("r2", "s3", "cloudflare"):
                 "access_key": env("R2_ACCESS_KEY_ID", "02fc89c6dbfe4f40f4a928e05aab975e"),
                 "secret_key": env("R2_SECRET_ACCESS_KEY", "4aff049ec9df94700f993e0d62a42892700ec4bcecf94c023e2d25e2607cd144"),
                 "region_name": "auto",
-                "custom_domain": env("R2_CUSTOM_DOMAIN", "pub-a3b6565633ff4d45b19e4c41675573ca.r2.dev"),
+                "custom_domain": "pub-a3b6565633ff4d45b19e4c41675573ca.r2.dev" if "media-athena" in env("R2_CUSTOM_DOMAIN", "") or not env("R2_CUSTOM_DOMAIN", "") else env("R2_CUSTOM_DOMAIN"),
 
                 "file_overwrite": False,
                 "querystring_auth": False,
