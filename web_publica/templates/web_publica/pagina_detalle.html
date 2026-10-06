@@ -1,15 +1,28 @@
 {% extends "web_publica/base.html" %}
+{% load static %}
 {% block titulo %}{{ pagina.titulo }}{% endblock %}
 {% block contenido %}
-  {% if pagina.categoria == 'proyecto' %}
-    <p class="breadcrumb"><a href="{% url 'web_publica:proyectos' %}">Nuestros Proyectos</a> › {{ pagina.titulo }}</p>
-  {% else %}
-    <p class="breadcrumb"><a href="{% url 'web_publica:colegio' %}">El Colegio</a> › {{ pagina.titulo }}</p>
-  {% endif %}
-  <h2>{{ pagina.titulo }}</h2>
+<section class="seccion">
+  <p class="breadcrumb">
+    <a href="{% url 'web_publica:home' %}">Inicio</a> &rsaquo;
+    {% if pagina.categoria == 'proyecto' %}<a href="{% url 'web_publica:proyectos' %}">Nuestros Proyectos</a> &rsaquo;
+    {% elif pagina.categoria == 'colegio' %}<a href="{% url 'web_publica:colegio' %}">Nosotros</a> &rsaquo;{% endif %}
+    {{ pagina.titulo }}
+  </p>
+  <h2 class="titulo-seccion">{{ pagina.titulo }}</h2>
+
   {% if pagina.contenido %}
-    <div class="contenido-pagina">{{ pagina.contenido|linebreaks }}</div>
+    <div style="max-width:840px;font-size:1.02rem">{{ pagina.contenido|linebreaks }}</div>
   {% else %}
     <p class="vacio">Esta sección aún no tiene contenido publicado.</p>
   {% endif %}
+
+  {% if imagenes_seccion %}
+  <div class="galeria-grid" style="margin-top:34px">
+    {% for img in imagenes_seccion %}
+    <a href="{{ img.archivo.url }}" target="_blank" rel="noopener"><img src="{{ img.archivo.url }}" alt="{{ pagina.titulo }}"></a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
 {% endblock %}

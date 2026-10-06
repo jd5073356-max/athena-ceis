@@ -16,3 +16,4 @@ wallet/
 # Se regeneran / no aplican en build
 staticfiles/
 media/
+documentos_prod/

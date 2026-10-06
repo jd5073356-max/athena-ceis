@@ -105,7 +105,7 @@ class Guia(models.Model):
     titulo = models.CharField("Título", max_length=160)
     descripcion = models.TextField("Descripción", blank=True)
     # archivo.name = la RUTA que se guarda en Oracle (columna RUTA_ARCHIVO).
-    archivo = models.FileField("Archivo PDF", upload_to="guias/",
+    archivo = models.FileField("Archivo PDF", upload_to="guias/", max_length=255,
                                validators=[validar_pdf], db_column="RUTA_ARCHIVO")
     fecha_publicacion = models.DateField("Fecha de publicación", auto_now_add=True)
 
@@ -197,18 +197,77 @@ class Seccion(models.Model):
 
 
 class Imagen(models.Model):
-    """Imagen de la galería."""
+    """Imagen de una sección del sitio o de la galería general de la home."""
+    seccion = models.ForeignKey("Seccion", null=True, blank=True,
+                                on_delete=models.SET_NULL, related_name="imagenes",
+                                verbose_name="Sección",
+                                help_text="Sección a la que pertenece (vacío = galería general de la home).")
     titulo = models.CharField("Título", max_length=160, blank=True)
     # archivo.name = la RUTA que se guarda en Oracle (columna RUTA_ARCHIVO).
     archivo = models.FileField("Imagen", upload_to="galeria/",
                                validators=[validar_imagen], db_column="RUTA_ARCHIVO")
+    orden = models.PositiveIntegerField("Orden", default=0)
     fecha = models.DateField("Fecha", auto_now_add=True)
 
     class Meta:
         db_table = "IMAGENES"
-        verbose_name = "Imagen de galería"
-        verbose_name_plural = "Imágenes de galería"
-        ordering = ["-fecha"]
+        verbose_name = "Imagen"
+        verbose_name_plural = "Imágenes"
+        ordering = ["seccion__orden", "orden", "-fecha"]
 
     def __str__(self):
         return self.titulo or f"Imagen #{self.pk}"
+
+
+class Documento(models.Model):
+    """Documento institucional (guía SERC, circular, horario, formato, manual…)
+    que el rector sube desde el admin y que la web muestra/descarga."""
+
+    class Categoria(models.TextChoices):
+        GUIA = "guia", "Guía SERC"
+        CIRCULAR = "circular", "Circular"
+        CRONOGRAMA = "cronograma", "Cronograma"
+        HORARIO = "horario", "Horario"
+        FORMATO = "formato", "Formato"
+        MANUAL = "manual", "Manual / Institucional"
+        OTRO = "otro", "Otro"
+
+    class Nivel(models.TextChoices):
+        PREESCOLAR = "preescolar", "Preescolar"
+        PRIMARIA = "primaria", "Primaria"
+        BACHILLERATO = "bachillerato", "Bachillerato"
+
+    class Periodo(models.TextChoices):
+        I = "I", "I Período"
+        II = "II", "II Período"
+        III = "III", "III Período"
+        IV = "IV", "IV Período"
+
+    titulo = models.CharField("Título", max_length=200)
+    archivo = models.FileField("Archivo", upload_to="documentos/", max_length=255,
+                               db_column="RUTA_ARCHIVO")
+    categoria = models.CharField("Categoría", max_length=20,
+                                 choices=Categoria.choices, default=Categoria.OTRO)
+    anio = models.PositiveIntegerField("Año", null=True, blank=True)
+    # Jerarquía de las guías SERC (igual al Drive): Año → Nivel → Grado → Período → Área.
+    nivel = models.CharField("Nivel", max_length=12, choices=Nivel.choices, blank=True)
+    grado = models.CharField("Grado", max_length=20, blank=True,
+                             help_text="Ej.: 9°, 1º, Transición. En bachillerato suele ir en el título.")
+    periodo = models.CharField("Período", max_length=3, choices=Periodo.choices, blank=True)
+    area = models.CharField("Área / materia", max_length=80, blank=True)
+    descripcion = models.TextField("Descripción", blank=True)
+    orden = models.PositiveIntegerField("Orden", default=0)
+    fecha = models.DateField("Fecha de publicación", auto_now_add=True)
+
+    class Meta:
+        db_table = "DOCUMENTOS"
+        verbose_name = "Documento"
+        verbose_name_plural = "Documentos (circulares, guías…)"
+        ordering = ["categoria", "-anio", "nivel", "periodo", "area", "orden", "titulo"]
+
+    def __str__(self):
+        return self.titulo
+
+    @property
+    def es_pdf(self):
+        return (self.archivo.name or "").lower().endswith(".pdf")

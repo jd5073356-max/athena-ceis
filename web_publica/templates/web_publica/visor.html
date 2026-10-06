@@ -1,0 +1,28 @@
+{% extends "web_publica/base.html" %}
+{% block titulo %}{{ nombre }}{% endblock %}
+{% block contenido %}
+<section class="seccion">
+  <p class="breadcrumb">
+    <a href="{% url 'web_publica:home' %}">Inicio</a> &rsaquo;
+    <a href="{% url 'web_publica:documentos' %}">Circulares, Cronograma y Guías</a> &rsaquo; {{ nombre }}
+  </p>
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:18px">
+    <h2 class="titulo-seccion" style="margin:0">{{ nombre }}</h2>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <a class="btn" href="{{ url }}" target="_blank" rel="noopener">Abrir en pestaña</a>
+      <a class="btn btn-dorado" href="{{ url }}" download>Descargar</a>
+    </div>
+  </div>
+
+  {% if es_pdf %}
+    <iframe src="{{ url }}#view=FitH" title="{{ nombre }}"
+            style="width:100%;height:84vh;border:1px solid var(--borde);border-radius:10px;background:#fff"></iframe>
+  {% elif es_imagen %}
+    <div style="text-align:center;background:var(--gris);border:1px solid var(--borde);border-radius:10px;padding:18px">
+      <img src="{{ url }}" alt="{{ nombre }}" style="max-width:100%;border-radius:6px">
+    </div>
+  {% else %}
+    <p class="vacio">Este archivo no tiene vista previa en el navegador. Usa el botón <strong>Descargar</strong>.</p>
+  {% endif %}
+</section>
+{% endblock %}

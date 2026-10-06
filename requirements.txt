@@ -16,3 +16,7 @@ oci>=2.0
 # gunicorn ejecuta la app; whitenoise sirve los estáticos sin necesidad de nginx.
 gunicorn>=21.0
 whitenoise>=6.0
+
+# --- Almacenamiento de media en Google Cloud Storage (auth por service account,
+# sin API keys). Lo usa el admin para subir imágenes/videos/PDF y la web para verlos.
+django-storages[google]>=1.14

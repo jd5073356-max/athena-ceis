@@ -88,6 +88,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "web_publica.context_processors.menu_publico",
             ],
         },
     },
@@ -97,14 +98,21 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 
 # --- Base de datos ---------------------------------------------------------
-# Django es la ÚNICA capa que habla con la base. Ni la web pública ni el panel
-# tocan Oracle "a mano".
-if env("DB_ENGINE", "sqlite").lower() == "oracle":
+# Django habla con la base de datos según el motor configurado.
+_db_engine = env("DB_ENGINE", "sqlite").lower()
+if _db_engine in ("postgres", "postgresql", "supabase"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env("POSTGRES_DB", env("SUPABASE_DB_NAME", "postgres")),
+            "USER": env("POSTGRES_USER", env("SUPABASE_DB_USER", "postgres.peeczetjwxhqominsbzc")),
+            "PASSWORD": env("POSTGRES_PASSWORD", env("SUPABASE_DB_PASSWORD", "AthenaPostgres2026!Sec")),
+            "HOST": env("POSTGRES_HOST", env("SUPABASE_DB_HOST", "aws-0-sa-east-1.pooler.supabase.com")),
+            "PORT": env("POSTGRES_PORT", env("SUPABASE_DB_PORT", "6543")),
+        }
+    }
+elif _db_engine == "oracle":
     # Producción: Oracle Autonomous Database vía python-oracledb.
-    # El wallet se localiza por la variable de entorno TNS_ADMIN (carpeta del
-    # wallet ya descomprimido). ORACLE_DSN es el alias TNS (ej. athena_high).
-    # Opciones para python-oracledb (modo thin) con el wallet mTLS de la ADB.
-    # El wallet (tnsnames.ora + ewallet.pem) vive en la carpeta TNS_ADMIN.
     _opciones_oracle = {}
     _wallet = env("TNS_ADMIN")
     if _wallet:
@@ -123,7 +131,7 @@ if env("DB_ENGINE", "sqlite").lower() == "oracle":
         }
     }
 else:
-    # Desarrollo: SQLite. Cero configuración, corre al instante.
+    # Desarrollo / Local: SQLite. Cero configuración, corre al instante.
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -132,23 +140,67 @@ else:
     }
 
 
+
 # --- Almacenamiento de archivos (guías PDF, imágenes de galería) -----------
 # La base guarda solo la RUTA; el archivo vive aquí.
-if env("STORAGE_BACKEND", "local").lower() == "oci":
-    _backend_archivos = "almacenamiento.oci_storage.AlmacenamientoObjectStorage"
-else:
-    _backend_archivos = "django.core.files.storage.FileSystemStorage"
+_STATICFILES = {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}
+_sb = env("STORAGE_BACKEND", "local").lower()
+if _sb in ("r2", "s3", "cloudflare"):
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+            "OPTIONS": {
+                "bucket_name": env("R2_BUCKET_NAME", "athena"),
+                "endpoint_url": env("R2_ENDPOINT_URL", "https://2437c55c10f2f7c1dd8e879e832cd97c.r2.cloudflarestorage.com"),
+                "access_key": env("R2_ACCESS_KEY_ID", "02fc89c6dbfe4f40f4a928e05aab975e"),
+                "secret_key": env("R2_SECRET_ACCESS_KEY", "4aff049ec9df94700f993e0d62a42892700ec4bcecf94c023e2d25e2607cd144"),
+                "region_name": "auto",
+                "custom_domain": env("R2_CUSTOM_DOMAIN", None),
+                "file_overwrite": False,
+                "querystring_auth": False,
+            },
+        },
+        "staticfiles": _STATICFILES,
+    }
+elif _sb == "gcs":
 
-STORAGES = {
-    "default": {"BACKEND": _backend_archivos},
-    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
-}
+    # Google Cloud Storage. Auth por cuenta de servicio (ADC) — sin API keys.
+    # Bucket público de lectura: la web pública ve los archivos por URL directa,
+    # y el rector sube imágenes/videos/PDF desde el admin.
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+            "OPTIONS": {
+                "bucket_name": env("GS_BUCKET_NAME", "athena-media-ceis"),
+                "project_id": env("GS_PROJECT_ID", "gen-lang-client-0454730768"),
+                "default_acl": None,        # uniform bucket-level access
+                "querystring_auth": False,  # URLs públicas sin firmar
+                "file_overwrite": False,
+            },
+        },
+        "staticfiles": _STATICFILES,
+    }
+elif _sb == "oci":
+    STORAGES = {
+        "default": {"BACKEND": "almacenamiento.oci_storage.AlmacenamientoObjectStorage"},
+        "staticfiles": _STATICFILES,
+    }
+else:
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": _STATICFILES,
+    }
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+
+# Documentos institucionales (guías por año, manual, horarios, circulares...)
+# descargados del Drive del colegio. La web los navega y sirve desde aquí.
+# En producción se publicarían en Object Storage; configurable por entorno.
+DOCS_ROOT = Path(env("DOCS_ROOT", "/home/juan/iedceis_drive"))
 
 
 # --- Idioma y zona horaria (Colombia, español) -----------------------------

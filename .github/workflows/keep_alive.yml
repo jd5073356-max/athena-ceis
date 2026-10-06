@@ -1,0 +1,31 @@
+name: Athena Supabase Keep-Alive
+
+on:
+  schedule:
+    # Corre a las 12:00 UTC cada 2 días
+    - cron: '0 12 */2 * *'
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Dar permisos y ejecutar Keep-Alive
+        env:
+          DB_ENGINE: postgres
+          POSTGRES_HOST: aws-0-sa-east-1.pooler.supabase.com
+          POSTGRES_PORT: '6543'
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres.peeczetjwxhqominsbzc
+          POSTGRES_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD || 'AthenaPostgres2026!Sec' }}
+        run: |
+          pip install "psycopg[binary]" "Django>=5.0,<5.3"
+          python scripts/keep_alive.py

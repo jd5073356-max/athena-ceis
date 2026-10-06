@@ -12,7 +12,7 @@
       {% for c in cursos %}
         <a class="tarjeta" href="{% url 'web_publica:guias_materias' c.id %}">
           <h3>{{ c.nombre }}</h3>
-          <small>{{ c.nivel }} · Ver materias ➜</small>
+          <small>{{ c.nivel }} · Ver materias</small>
         </a>
       {% endfor %}
     </div>

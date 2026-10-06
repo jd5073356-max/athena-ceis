@@ -5,11 +5,19 @@ Solo LEEN de la base (vía los modelos de core). El rector escribe desde el
 panel; aquí únicamente se muestra. Las guías se navegan con la jerarquía:
 Año → Período → Curso → Materia → Guías.
 """
+import os
+
+from django.conf import settings
+from django.http import Http404
 from django.shortcuts import get_object_or_404, render
 
 from core.models import (
-    Anio, Curso, Guia, Imagen, Materia, Noticia, Periodo, Seccion, Video,
+    Anio, Curso, Documento, Guia, Imagen, Materia, Noticia, Periodo, Seccion, Video,
 )
+
+# Secciones que son solo identidad de la home (no tienen página propia).
+IDENTIDAD = {"nombre_sitio", "lema", "mision", "vision", "contacto"}
+_EXTS_IMG = (".jpg", ".jpeg", ".png", ".webp", ".gif")
 
 
 def _secciones() -> dict:
@@ -18,13 +26,19 @@ def _secciones() -> dict:
     return {s.clave: s for s in Seccion.objects.all()}
 
 
+def _imagenes_seccion(clave: str) -> list:
+    """Imágenes (registros Imagen, gestionables desde el admin) de una sección.
+    Se sirven desde el almacenamiento (GCS en producción)."""
+    seccion = Seccion.objects.filter(clave=clave).first()
+    return list(seccion.imagenes.all()) if seccion else []
+
+
 def home(request):
-    """Página de inicio: textos, noticias recientes, videos y galería."""
+    """Página de inicio: identidad, accesos, noticias y galería institucional."""
     contexto = {
         "secciones": _secciones(),
-        "noticias": Noticia.objects.filter(activo=True)[:4],
-        "videos": Video.objects.all()[:3],
-        "imagenes": Imagen.objects.all()[:8],
+        "noticias": Noticia.objects.filter(activo=True)[:3],
+        "imagenes_inicio": _imagenes_seccion("inicio"),
     }
     return render(request, "web_publica/home.html", contexto)
 
@@ -109,30 +123,119 @@ def videos(request):
 
 
 # --- Páginas institucionales y proyectos -----------------------------------
+def _con_thumb(qs):
+    """Adjunta a cada sección la URL de su primera imagen (para la miniatura)."""
+    paginas = []
+    for s in qs:
+        primera = s.imagenes.first()
+        s.thumb = primera.archivo.url if primera else None
+        paginas.append(s)
+    return paginas
+
+
 def colegio(request):
-    """Listado de páginas institucionales (El Colegio)."""
+    """Listado del submenú 'Nosotros' (páginas institucionales)."""
     return render(request, "web_publica/paginas_lista.html", {
         "secciones": _secciones(),
-        "encabezado": "El Colegio",
-        "paginas": Seccion.objects.filter(categoria=Seccion.Categoria.COLEGIO),
+        "encabezado": "Nosotros",
+        "paginas": _con_thumb(Seccion.objects.filter(categoria=Seccion.Categoria.COLEGIO)),
     })
 
 
 def proyectos(request):
-    """Listado de proyectos transversales."""
+    """Listado del submenú 'Nuestros Proyectos'."""
     return render(request, "web_publica/paginas_lista.html", {
         "secciones": _secciones(),
         "encabezado": "Nuestros Proyectos",
-        "paginas": Seccion.objects.filter(categoria=Seccion.Categoria.PROYECTO),
+        "paginas": _con_thumb(Seccion.objects.filter(categoria=Seccion.Categoria.PROYECTO)),
     })
 
 
 def pagina_detalle(request, clave):
-    """Detalle de una página institucional o de proyecto."""
-    pagina = get_object_or_404(
-        Seccion, clave=clave,
-        categoria__in=[Seccion.Categoria.COLEGIO, Seccion.Categoria.PROYECTO])
+    """Detalle de una sección (Nosotros, Proyectos, Circulares, Pre-Matrícula):
+    texto verbatim del colegio + galería de sus imágenes reales del Wix."""
+    if clave in IDENTIDAD:
+        raise Http404("Sección no pública")
+    pagina = get_object_or_404(Seccion, clave=clave)
     return render(request, "web_publica/pagina_detalle.html", {
         "secciones": _secciones(),
         "pagina": pagina,
+        "imagenes_seccion": _imagenes_seccion(clave),
+    })
+
+
+# --- Circulares, Cronograma y Guías: documentos gestionados desde el admin --
+_CAT_ORDEN = ["guia", "circular", "cronograma", "horario", "formato", "manual", "otro"]
+_NIVEL_ORDEN = ["preescolar", "primaria", "bachillerato", ""]
+_PERIODO_ORDEN = ["I", "II", "III", "IV", ""]
+_AREA_ORDEN = [
+    "Comunicaciones", "Inglés", "Pensamiento Matemático", "Pensamiento Científico",
+    "Pensamiento Social", "Pensamiento Artístico", "Pensamiento Ético y Ciudadano",
+    "Pensamiento Tecnológico", "Cultura Física y Deportiva",
+]
+
+
+def _guias_jerarquia(items):
+    """Estructura las guías igual al Drive: Año → Nivel → Período → Área."""
+    nivel_label = dict(Documento.Nivel.choices)
+    periodo_label = dict(Documento.Periodo.choices)
+    area_key = lambda a: (_AREA_ORDEN.index(a) if a in _AREA_ORDEN else len(_AREA_ORDEN), a)
+
+    anios = []
+    for anio in sorted({d.anio for d in items}, key=lambda x: (x is None, -(x or 0))):
+        d_anio = [d for d in items if d.anio == anio]
+        niveles = []
+        for niv in _NIVEL_ORDEN:
+            d_niv = [d for d in d_anio if (d.nivel or "") == niv]
+            if not d_niv:
+                continue
+            periodos = []
+            for per in _PERIODO_ORDEN:
+                d_per = [d for d in d_niv if (d.periodo or "") == per]
+                if not d_per:
+                    continue
+                areas = []
+                for area in sorted({d.area or "" for d in d_per}, key=area_key):
+                    docs = sorted((d for d in d_per if (d.area or "") == area),
+                                  key=lambda d: (d.grado, d.titulo))
+                    areas.append({"area": area or "General", "docs": docs})
+                periodos.append({"periodo": periodo_label.get(per, "Sin período"), "areas": areas})
+            niveles.append({"nivel": nivel_label.get(niv, "General"), "periodos": periodos})
+        anios.append({"anio": anio or "Sin año", "niveles": niveles})
+    return anios
+
+
+def documentos(request):
+    """Hub de Circulares, Cronograma y Guías: muestra los Documentos que el
+    rector sube desde el admin (servidos desde GCS). Las guías van jerárquicas
+    (Año → Nivel → Período → Área), igual al Drive; el resto, en listas."""
+    docs = list(Documento.objects.all())
+    etiquetas = dict(Documento.Categoria.choices)
+    secciones_doc = []
+    for cat in _CAT_ORDEN:
+        items = [d for d in docs if d.categoria == cat]
+        if not items:
+            continue
+        if cat == "guia":
+            secciones_doc.append({"label": etiquetas[cat], "anios": _guias_jerarquia(items)})
+        else:
+            docs_ord = sorted(items, key=lambda d: (-(d.anio or 0), d.orden, d.titulo))
+            secciones_doc.append({"label": etiquetas[cat], "docs": docs_ord})
+    return render(request, "web_publica/documentos.html", {
+        "secciones": _secciones(),
+        "intro": _secciones().get("circulares_padres"),
+        "secciones_doc": secciones_doc,
+    })
+
+
+def documento_visor(request, pk):
+    """Vista previa embebida (en la web) de un documento, con botón de descarga."""
+    doc = get_object_or_404(Documento, pk=pk)
+    nombre = (doc.archivo.name or "").lower()
+    return render(request, "web_publica/visor.html", {
+        "secciones": _secciones(),
+        "nombre": doc.titulo,
+        "url": doc.archivo.url,
+        "es_pdf": doc.es_pdf,
+        "es_imagen": nombre.endswith((".jpg", ".jpeg", ".png", ".webp", ".gif")),
     })

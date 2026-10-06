@@ -4,383 +4,151 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block titulo %}{{ secciones.nombre_sitio.titulo|default:"Colegio" }}{% endblock %}</title>
+  <title>{% block titulo %}{{ secciones.nombre_sitio.titulo|default:"I.E.D. CEIS Sopó" }}{% endblock %}</title>
   <link rel="icon" type="image/png" href="{% static 'logos/ceis.png' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Outfit:wght@100..900&display=swap');
-
-    :root {
-      --azul: #0a1931;       /* Deep academic navy */
-      --azul-claro: #15305b; /* Medium navy */
-      --azul-brillante: #0052cc;
-      --dorado: #c5a880;     /* Elegant warm champagne gold */
-      --dorado-claro: #e5d5be;
-      --gris: #f7f9fc;       /* Soft slate background */
-      --texto: #1e293b;      /* Slate 800 */
-      --texto-mutado: #64748b; /* Slate 500 */
-      --borde: #e2e8f0;      /* Slate 200 */
+    :root{
+      --azul:#0a1931; --azul-claro:#15305b; --azul-medio:#1d4079;
+      --dorado:#c5a880; --dorado-claro:#e5d5be;
+      --teal:#0f8a8f; --teal-osc:#0b6d71;
+      --gris:#f4f6f9; --borde:#e2e8f0; --texto:#1e293b; --texto-mutado:#64748b;
     }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Inter',system-ui,-apple-system,sans-serif;color:var(--texto);background:#fff;line-height:1.65;-webkit-font-smoothing:antialiased}
+    a{color:var(--azul-claro);text-decoration:none}
+    a:hover{text-decoration:underline}
+    h1,h2,h3,h4{font-family:'Lora',Georgia,serif;color:var(--azul);line-height:1.25}
+    img{max-width:100%}
+    .contenedor{max-width:1140px;margin:0 auto;padding:0 24px}
 
-    * {
-      box-sizing: border-box;
-    }
+    /* Barra superior institucional */
+    .topstrip{background:var(--azul);color:#cdd6e6;font-size:.78rem}
+    .topstrip .contenedor{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 24px;flex-wrap:wrap}
+    .topstrip .tagline{letter-spacing:.04em;text-transform:uppercase;font-weight:600;color:var(--dorado-claro)}
+    .topstrip a{color:#cdd6e6;font-weight:500}
 
-    body {
-      margin: 0;
-      font-family: 'Outfit', system-ui, sans-serif;
-      color: var(--texto);
-      background: #fafbfe;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-    }
+    /* Cabecera con logo */
+    header.principal{background:#fff;border-bottom:1px solid var(--borde)}
+    .cabecera{display:flex;align-items:center;gap:18px;padding:16px 24px;max-width:1140px;margin:0 auto}
+    .cabecera .logo{height:62px;width:auto}
+    .cabecera .marca-txt{display:flex;flex-direction:column;line-height:1.15}
+    .cabecera .marca-txt .nombre{font-family:'Lora',serif;font-weight:700;font-size:1.45rem;color:var(--azul)}
+    .cabecera .marca-txt .lema{font-size:.74rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--dorado)}
 
-    header.principal {
-      background: var(--azul);
-      color: #fff;
-      border-bottom: 4px solid var(--dorado);
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    }
+    /* Menú principal (divisiones del Wix) */
+    nav.menu{background:var(--azul-claro);position:sticky;top:0;z-index:60;box-shadow:0 2px 10px rgba(10,25,49,.18)}
+    .menu-inner{max-width:1140px;margin:0 auto;display:flex;align-items:stretch;flex-wrap:wrap}
+    nav.menu a{color:#eaf0fb;font-weight:600;font-size:.86rem;letter-spacing:.02em;text-transform:uppercase}
+    .menu-link,.menu-top{display:flex;align-items:center;padding:14px 18px;border-bottom:3px solid transparent;transition:.15s}
+    .menu-link:hover,.menu-top:hover,.menu-item:hover .menu-top{background:var(--azul-medio);border-bottom-color:var(--dorado);text-decoration:none}
+    .menu-item{position:relative}
+    .menu-item .caret{margin-left:7px;font-size:.6rem;opacity:.8}
+    .submenu{display:none;position:absolute;top:100%;left:0;min-width:280px;background:#fff;border:1px solid var(--borde);border-top:3px solid var(--dorado);box-shadow:0 12px 30px rgba(10,25,49,.18);border-radius:0 0 8px 8px;padding:6px 0;z-index:70}
+    .menu-item:hover .submenu,.menu-item:focus-within .submenu{display:block}
+    .submenu a{display:block;color:var(--texto);text-transform:none;letter-spacing:0;font-weight:500;font-size:.9rem;padding:9px 18px}
+    .submenu a:hover{background:var(--gris);color:var(--azul-claro);text-decoration:none}
+    .menu-acceso{margin-left:auto}
+    .menu-acceso a{color:var(--dorado-claro)}
 
-    .contenedor {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
+    /* Hamburguesa móvil */
+    .menu-toggle{display:none}
+    .hamb{display:none;cursor:pointer;color:#fff;padding:14px 18px;font-size:1.2rem;margin-left:auto}
 
-    .barra {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 16px;
-      padding: 16px 0;
-    }
+    main{padding:0 0 64px}
+    .seccion{padding:40px 0}
+    h2.titulo-seccion{font-size:1.9rem;border-bottom:3px solid var(--dorado);padding-bottom:8px;display:inline-block;margin:0 0 24px}
+    .breadcrumb{font-size:.85rem;color:var(--texto-mutado);margin:0 0 22px}
+    .breadcrumb a{color:var(--azul-claro)}
 
-    .marca {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      text-decoration: none;
-      transition: opacity 0.2s;
-    }
+    .tarjetas{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:22px}
+    .tarjeta{display:flex;flex-direction:column;background:#fff;border:1px solid var(--borde);border-radius:12px;overflow:hidden;transition:.2s}
+    .tarjeta:hover{transform:translateY(-4px);border-color:var(--dorado);box-shadow:0 12px 28px rgba(10,25,49,.10);text-decoration:none}
+    .tarjeta .tj-img{height:150px;background:var(--gris) center/cover no-repeat}
+    .tarjeta .tj-body{padding:18px}
+    .tarjeta h3{margin:0 0 6px;font-size:1.12rem}
+    .tarjeta p{margin:0;color:var(--texto-mutado);font-size:.92rem}
 
-    .marca:hover {
-      opacity: 0.95;
-      text-decoration: none;
-    }
+    .galeria-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+    .galeria-grid a{border-radius:10px;overflow:hidden;border:1px solid var(--borde);background:#fff}
+    .galeria-grid img{width:100%;height:170px;object-fit:cover;display:block;transition:.25s}
+    .galeria-grid a:hover img{transform:scale(1.05)}
 
-    nav.menu {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 4px;
-    }
+    .btn{display:inline-block;background:linear-gradient(135deg,var(--azul),var(--azul-claro));color:#fff !important;padding:12px 24px;border-radius:8px;font-weight:600;text-decoration:none}
+    .btn:hover{background:var(--azul-claro)}
+    .btn-dorado{background:var(--dorado);color:var(--azul) !important}
+    .vacio{color:var(--texto-mutado);font-style:italic;background:var(--gris);padding:16px 20px;border-radius:8px;border:1px dashed var(--borde)}
 
-    nav.menu a {
-      color: #f1f5f9;
-      padding: 8px 14px;
-      border-radius: 6px;
-      font-weight: 500;
-      font-size: 0.95rem;
-      transition: all 0.2s ease;
-      text-decoration: none;
-    }
+    /* Footer turquesa (igual al Wix) */
+    footer{background:var(--teal);color:#eafafb;padding:42px 0 22px}
+    footer .cols{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:32px}
+    footer h4{color:#fff;font-size:1.05rem;margin:0 0 12px}
+    footer a{color:#d6f5f6}
+    footer .small{font-size:.9rem;line-height:1.7}
+    footer .copy{border-top:1px solid rgba(255,255,255,.18);margin-top:26px;padding-top:16px;font-size:.82rem;color:#cdeef0;text-align:center}
 
-    nav.menu a:hover {
-      color: var(--dorado);
-      background: rgba(255, 255, 255, 0.05);
-      text-decoration: none;
-    }
-
-    main {
-      padding: 48px 0 80px;
-    }
-
-    /* Headings */
-    h1, h2, h3, h4 {
-      color: var(--azul);
-    }
-
-    h2 {
-      font-family: 'Lora', Georgia, serif;
-      font-size: 1.85rem;
-      font-weight: 600;
-      border-bottom: 3px solid var(--dorado);
-      padding-bottom: 8px;
-      margin-top: 48px;
-      margin-bottom: 24px;
-      display: inline-block;
-      letter-spacing: -0.01em;
-    }
-
-    h2:first-of-type {
-      margin-top: 0;
-    }
-
-    h3 {
-      font-family: 'Lora', Georgia, serif;
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin: 0 0 8px;
-    }
-
-    p {
-      color: var(--texto);
-      font-size: 1.05rem;
-      line-height: 1.7;
-      margin-bottom: 1.5rem;
-    }
-
-    /* Cards & Grid */
-    .tarjetas {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 24px;
-      margin: 24px 0;
-    }
-
-    .tarjeta {
-      border: 1px solid var(--borde);
-      border-radius: 12px;
-      padding: 24px;
-      background: #ffffff;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      text-decoration: none;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
-
-    .tarjeta:hover {
-      transform: translateY(-4px);
-      border-color: var(--dorado);
-      box-shadow: 0 10px 25px rgba(10, 25, 49, 0.08);
-      text-decoration: none;
-    }
-
-    .tarjeta h3 {
-      margin: 0 0 8px;
-    }
-
-    .tarjeta h3 a {
-      color: var(--azul);
-      text-decoration: none;
-    }
-
-    .tarjeta h3 a:hover {
-      color: var(--azul-claro);
-      text-decoration: none;
-    }
-
-    .tarjeta p {
-      font-size: 0.95rem;
-      color: var(--texto-mutado);
-      margin-bottom: 16px;
-      flex-grow: 1;
-    }
-
-    .tarjeta small {
-      font-size: 0.85rem;
-      color: var(--texto-mutado);
-      font-weight: 500;
-      margin-bottom: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    /* Link reads */
-    .tarjeta small:last-child {
-      margin-bottom: 0;
-      color: var(--azul-claro);
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .tarjeta:hover small:last-child {
-      color: var(--dorado);
-    }
-
-    /* Breadcrumbs */
-    .breadcrumb {
-      font-size: 0.9rem;
-      color: var(--texto-mutado);
-      margin-bottom: 24px;
-      font-weight: 500;
-      background: #e2e8f0;
-      padding: 10px 16px;
-      border-radius: 8px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .breadcrumb a {
-      color: var(--azul-claro);
-      text-decoration: none;
-    }
-
-    .breadcrumb a:hover {
-      color: var(--azul);
-      text-decoration: underline;
-    }
-
-    /* Galeria Grid */
-    .galeria-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 16px;
-      margin: 24px 0;
-    }
-
-    .galeria-grid a {
-      overflow: hidden;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-      border: 1px solid var(--borde);
-      background: #fff;
-      padding: 6px;
-      transition: all 0.3s ease;
-    }
-
-    .galeria-grid a:hover {
-      transform: scale(1.03);
-      border-color: var(--dorado);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    }
-
-    .galeria-grid img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-
-    /* Video Grid */
-    .video-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 24px;
-      margin: 24px 0;
-    }
-
-    .video-grid > div {
-      background: #fff;
-      border: 1px solid var(--borde);
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
-
-    .video-grid iframe {
-      width: 100%;
-      aspect-ratio: 16/9;
-      border: 0;
-      border-radius: 8px;
-      margin-bottom: 12px;
-    }
-
-    .video-grid h3 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.1rem;
-      margin: 8px 0 4px;
-    }
-
-    .video-grid p {
-      font-size: 0.9rem;
-      color: var(--texto-mutado);
-      margin: 0;
-    }
-
-    /* PDF Button styles */
-    .pdf {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 18px;
-      background: linear-gradient(135deg, var(--azul), var(--azul-claro));
-      color: #fff !important;
-      border-radius: 8px;
-      font-weight: 500;
-      font-size: 0.95rem;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(10, 25, 49, 0.15);
-      text-decoration: none;
-    }
-
-    .pdf:hover {
-      background: linear-gradient(135deg, var(--azul-claro), var(--azul));
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(10, 25, 49, 0.25);
-      text-decoration: none;
-    }
-
-    .pdf::before {
-      content: '⬇';
-      font-weight: bold;
-    }
-
-    .vacio {
-      color: var(--texto-mutado);
-      font-style: italic;
-      background: #f1f5f9;
-      padding: 16px;
-      border-radius: 8px;
-      border: 1px dashed var(--borde);
-    }
-
-    /* Footer styling */
-    footer {
-      background: var(--azul);
-      color: #cbd5e1;
-      padding: 40px 0;
-      font-size: 0.95rem;
-      border-top: 8px solid var(--dorado);
-    }
-
-    footer a {
-      color: var(--dorado);
-      font-weight: 500;
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
-
-    footer .footer-divider {
-      height: 1px;
-      background: rgba(255, 255, 255, 0.1);
-      margin: 24px 0;
+    @media(max-width:860px){
+      .menu-inner{flex-direction:column;align-items:stretch}
+      .hamb{display:block}
+      nav.menu .menu-inner{display:none}
+      .menu-toggle:checked ~ .menu-inner{display:flex}
+      .menu-item{position:static}
+      .submenu{display:block;position:static;box-shadow:none;border:none;border-radius:0;background:rgba(255,255,255,.06);padding:0}
+      .submenu a{color:#dbe6f7;padding-left:34px}
+      .submenu a:hover{background:rgba(255,255,255,.08);color:#fff}
+      .menu-acceso{margin-left:0}
+      footer .cols{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
-  <header class="principal">
-    <div class="barra contenedor">
-      <a class="marca" href="{% url 'web_publica:home' %}">
-        <img src="{% static 'logos/ceis.png' %}" alt="CEIS" style="height: 48px; width: auto;">
-        <span style="font-family: 'Lora', serif; font-size: 1.25rem; font-weight: 700; color: #fff;">I.E.D. CEIS Sopó</span>
-      </a>
-      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-        <nav class="menu">
-          <a href="{% url 'web_publica:home' %}">Inicio</a>
-          <a href="/colegio/">El Colegio</a>
-          <a href="{% url 'web_publica:guias_anios' %}">Guías</a>
-          <a href="/proyectos/">Proyectos</a>
-          <a href="/admin/" style="background: rgba(197, 168, 128, 0.15); border: 1px solid var(--dorado); color: var(--dorado-claro); margin-left: 10px; border-radius: 20px; padding: 6px 16px; font-weight: 600; font-size: 0.88rem; transition: all 0.2s;">Acceso Rector</a>
-        </nav>
-        <img src="{% static 'logos/logo_oscuro.png' %}" alt="Código-Beta" style="height: 36px; width: auto; opacity: 0.85;">
-      </div>
+  <div class="topstrip">
+    <div class="contenedor">
+      <span class="tagline">Sistema Educativo Relacional Cundinamarca &middot; Jornada Única &middot; ISO 9001:2015</span>
+      <span>Sopó, Cundinamarca</span>
     </div>
+  </div>
+
+  <header class="principal">
+    <a class="cabecera" href="{% url 'web_publica:home' %}" style="text-decoration:none">
+      <img class="logo" src="{% static 'logos/ceis.png' %}" alt="I.E.D. CEIS">
+      <span class="marca-txt">
+        <span class="nombre">{{ secciones.nombre_sitio.titulo|default:"I.E.D. CEIS" }}</span>
+        <span class="lema">Paz &middot; Educación &middot; Progreso</span>
+      </span>
+    </a>
   </header>
 
-  {% block hero %}{% endblock %}
+  <nav class="menu">
+    <input type="checkbox" id="menu-toggle" class="menu-toggle">
+    <label for="menu-toggle" class="hamb">&#9776;</label>
+    <div class="menu-inner">
+      <a class="menu-link" href="{% url 'web_publica:home' %}">Inicio</a>
+
+      <div class="menu-item">
+        <a class="menu-top" href="{% url 'web_publica:colegio' %}" tabindex="0">Nosotros <span class="caret">&#9660;</span></a>
+        <div class="submenu">
+          {% for s in menu_nosotros %}<a href="{% url 'web_publica:pagina_detalle' s.clave %}">{{ s.titulo }}</a>{% endfor %}
+        </div>
+      </div>
+
+      <a class="menu-link" href="{% url 'web_publica:documentos' %}">Circulares, Cronograma y Guías</a>
+
+      <div class="menu-item">
+        <a class="menu-top" href="{% url 'web_publica:proyectos' %}" tabindex="0">Nuestros Proyectos <span class="caret">&#9660;</span></a>
+        <div class="submenu">
+          {% for s in menu_proyectos %}<a href="{% url 'web_publica:pagina_detalle' s.clave %}">{{ s.titulo }}</a>{% endfor %}
+        </div>
+      </div>
+
+      <a class="menu-link" href="{% url 'web_publica:pagina_detalle' 'pre_matricula_2026' %}">Pre-Matrícula 2026</a>
+    </div>
+  </nav>
 
   <main>
+    {% block hero %}{% endblock %}
     <div class="contenedor">
       {% block contenido %}{% endblock %}
     </div>
@@ -388,17 +156,29 @@
 
   <footer>
     <div class="contenedor">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px;">
+      <div class="cols">
         <div>
-          <div style="font-family: 'Lora', serif; font-size: 1.2rem; color: #fff; margin-bottom: 8px; font-weight: 600;">{{ secciones.contacto.titulo|default:"Contacto" }}</div>
-          <div style="font-size: 0.95rem; opacity: 0.85; max-width: 600px; line-height: 1.5;">{{ secciones.contacto.contenido|default:"Edita esta sección desde el panel del rector." }}</div>
+          <h4>I.E.D. Complejo Educativo Integral Sopó</h4>
+          <p class="small">{{ secciones.nosotros.contenido|truncatewords:24|default:"Institución Educativa Departamental de la Gobernación de Cundinamarca." }}</p>
         </div>
         <div>
-          <img src="{% static 'logos/logo_identidad_oscuro-removebg-preview.png' %}" alt="ATHENA Código-Beta" style="height: 112px; width: auto; opacity: 0.9; transition: opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.9">
+          <h4>Contacto</h4>
+          <p class="small">
+            Cel. / WhatsApp: <a href="https://wa.me/573108710141">310 871 0141</a><br>
+            Correo: <a href="mailto:iedceis@gmail.com">iedceis@gmail.com</a><br>
+            Carrera 10 No. 1-31, Sopó, Cundinamarca
+          </p>
+        </div>
+        <div>
+          <h4>Atención presencial</h4>
+          <p class="small">
+            Secretaría académica:<br>
+            Martes, miércoles y jueves<br>
+            de 8:00 a.m. a 12:00 m.
+          </p>
         </div>
       </div>
-      <div class="footer-divider"></div>
-      <div style="opacity:.5; font-size: 0.8rem; text-align: center;">© 2026 I.E.D. Complejo Educativo Integral Sopó (CEIS). Todos los derechos reservados.</div>
+      <div class="copy">&copy; 2026 I.E.D. Complejo Educativo Integral Sopó (CEIS). Todos los derechos reservados.</div>
     </div>
   </footer>
 </body>

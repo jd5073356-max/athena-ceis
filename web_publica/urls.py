@@ -15,6 +15,10 @@ urlpatterns = [
     path("guias/curso/<int:curso_id>/", views.guias_materias, name="guias_materias"),
     path("guias/materia/<int:materia_id>/", views.guias_lista, name="guias_lista"),
 
+    # Circulares, Cronograma y Guías (navegador de documentos)
+    path("documentos/", views.documentos, name="documentos"),
+    path("documentos/<int:pk>/", views.documento_visor, name="documento_visor"),
+
     # Páginas institucionales y proyectos
     path("colegio/", views.colegio, name="colegio"),
     path("proyectos/", views.proyectos, name="proyectos"),

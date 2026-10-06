@@ -151,6 +151,7 @@ class AthenaAdminSite(admin.AdminSite):
                     'core.Curso',
                     'core.Materia',
                     'core.Guia',
+                    'core.Documento',
                     'core.Imagen',
                     'core.Noticia',
                     'core.Seccion',

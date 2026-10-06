@@ -1,0 +1,83 @@
+{% extends "web_publica/base.html" %}
+{% block titulo %}Circulares, Cronograma y Guías{% endblock %}
+{% block contenido %}
+<style>
+  .doc-cat{margin-top:34px}
+  .doc-cat>h3{font-family:'Lora',serif;color:var(--azul);font-size:1.35rem;border-left:4px solid var(--dorado);padding-left:12px;margin:0 0 16px}
+  details.acc{border:1px solid var(--borde);border-radius:10px;margin:0 0 10px;background:#fff;overflow:hidden}
+  details.acc>summary{cursor:pointer;padding:12px 18px;font-weight:600;color:var(--azul);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  details.acc>summary::-webkit-details-marker{display:none}
+  details.acc>summary::before{content:"\25B8";color:var(--dorado);font-size:.8rem;transition:transform .15s}
+  details.acc[open]>summary::before{transform:rotate(90deg)}
+  details.acc-anio>summary{background:var(--azul);color:#fff;font-size:1.05rem}
+  details.acc-anio[open]>summary{border-bottom:1px solid var(--borde)}
+  details.acc-anio>summary::before{color:#fff}
+  details.acc-nivel{border:none;border-radius:0;margin:0;border-top:1px solid var(--borde)}
+  details.acc-nivel:first-of-type{border-top:none}
+  details.acc-nivel>summary{background:var(--gris);font-size:.98rem}
+  .acc-body{padding:6px 18px 16px}
+  .acc-periodo{font-family:'Lora',serif;color:var(--texto);font-size:1.02rem;margin:16px 0 6px}
+  .acc-area{margin:12px 0 8px;font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--texto-mutado)}
+  .lista-docs{display:flex;flex-direction:column;border:1px solid var(--borde);border-radius:10px;overflow:hidden}
+  .doc-item{display:flex;align-items:center;gap:14px;padding:11px 16px;border-bottom:1px solid var(--borde);color:var(--texto);text-decoration:none}
+  .doc-item:last-child{border-bottom:none}
+  .doc-item:hover{background:var(--gris);text-decoration:none}
+  .doc-ico{flex-shrink:0;width:44px;text-align:center;font-size:.6rem;font-weight:700;letter-spacing:.04em;padding:5px 0;border-radius:5px;background:var(--azul);color:#fff}
+  .doc-nombre{font-weight:500;line-height:1.3}
+  .doc-meta{margin-left:auto;font-size:.8rem;color:var(--texto-mutado);font-weight:600;white-space:nowrap}
+</style>
+<section class="seccion">
+  <p class="breadcrumb"><a href="{% url 'web_publica:home' %}">Inicio</a> &rsaquo; Circulares, Cronograma y Guías</p>
+  <h2 class="titulo-seccion">Circulares, Cronograma y Guías</h2>
+  {% if intro.contenido %}<p style="max-width:880px">{{ intro.contenido|truncatewords:55 }}</p>{% endif %}
+
+  {% for s in secciones_doc %}
+  <div class="doc-cat">
+    <h3>{{ s.label }}</h3>
+
+    {% if s.anios %}
+      {% for a in s.anios %}
+      <details class="acc acc-anio"{% if forloop.first %} open{% endif %}>
+        <summary>Año {{ a.anio }}</summary>
+        {% for n in a.niveles %}
+        <details class="acc acc-nivel"{% if forloop.first %} open{% endif %}>
+          <summary>{{ n.nivel }}</summary>
+          <div class="acc-body">
+            {% for p in n.periodos %}
+            <h4 class="acc-periodo">{{ p.periodo }}</h4>
+            {% for ar in p.areas %}
+            <p class="acc-area">{{ ar.area }}</p>
+            <div class="lista-docs">
+              {% for d in ar.docs %}
+              <a class="doc-item" href="{% url 'web_publica:documento_visor' d.pk %}">
+                <span class="doc-ico">{% if d.es_pdf %}PDF{% else %}DOC{% endif %}</span>
+                <span class="doc-nombre">{{ d.titulo }}</span>
+                {% if d.grado %}<span class="doc-meta">{{ d.grado }}</span>{% endif %}
+              </a>
+              {% endfor %}
+            </div>
+            {% endfor %}
+            {% endfor %}
+          </div>
+        </details>
+        {% endfor %}
+      </details>
+      {% endfor %}
+
+    {% else %}
+      <div class="lista-docs">
+        {% for d in s.docs %}
+        <a class="doc-item" href="{% url 'web_publica:documento_visor' d.pk %}">
+          <span class="doc-ico">{% if d.es_pdf %}PDF{% else %}DOC{% endif %}</span>
+          <span class="doc-nombre">{{ d.titulo }}</span>
+          {% if d.anio %}<span class="doc-meta">{{ d.anio }}</span>{% endif %}
+        </a>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+  {% empty %}
+    <p class="vacio">Aún no hay documentos publicados. El rector los sube desde el panel.</p>
+  {% endfor %}
+</section>
+{% endblock %}

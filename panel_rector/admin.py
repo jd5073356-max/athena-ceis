@@ -12,7 +12,7 @@ para navegar rápido.
 from django.contrib import admin
 
 from core.models import (
-    Anio, Curso, Guia, Imagen, Materia, Noticia, Periodo, Seccion, Video,
+    Anio, Curso, Documento, Guia, Imagen, Materia, Noticia, Periodo, Seccion, Video,
 )
 
 # --- Marca del panel (en español) ------------------------------------------
@@ -113,6 +113,14 @@ class VideoAdmin(admin.ModelAdmin):
     search_fields = ("titulo", "descripcion")
 
 
+class ImagenInline(admin.TabularInline):
+    """Permite al rector gestionar las imágenes de una sección desde la sección."""
+    model = Imagen
+    extra = 1
+    fields = ("archivo", "titulo", "orden")
+    ordering = ("orden",)
+
+
 @admin.register(Seccion)
 class SeccionAdmin(admin.ModelAdmin):
     list_display = ("titulo", "clave", "categoria", "orden")
@@ -120,10 +128,32 @@ class SeccionAdmin(admin.ModelAdmin):
     list_editable = ("orden",)
     search_fields = ("clave", "titulo", "contenido")
     prepopulated_fields = {"clave": ("titulo",)}
+    inlines = [ImagenInline]
 
 
 @admin.register(Imagen)
 class ImagenAdmin(admin.ModelAdmin):
-    list_display = ("__str__", "titulo", "fecha")
+    list_display = ("__str__", "seccion", "titulo", "orden", "fecha")
+    list_filter = ("seccion",)
+    list_editable = ("orden",)
     search_fields = ("titulo",)
+    autocomplete_fields = ("seccion",)
     date_hierarchy = "fecha"
+
+
+@admin.register(Documento)
+class DocumentoAdmin(admin.ModelAdmin):
+    list_display = ("titulo", "categoria", "anio", "nivel", "periodo", "area", "grado", "orden")
+    list_filter = ("categoria", "anio", "nivel", "periodo", "area")
+    list_editable = ("orden",)
+    search_fields = ("titulo", "descripcion", "area", "grado")
+    date_hierarchy = "fecha"
+    fieldsets = (
+        (None, {"fields": ("titulo", "archivo", "categoria")}),
+        ("Clasificación (guías SERC)", {
+            "fields": ("anio", "nivel", "grado", "periodo", "area"),
+            "description": "Igual al Drive: Año → Nivel → Grado → Período → Área. "
+                           "En bachillerato el grado suele ir en el título.",
+        }),
+        ("Extra", {"fields": ("descripcion", "orden"), "classes": ("collapse",)}),
+    )

@@ -1,23 +1,24 @@
 {% extends "web_publica/base.html" %}
+{% load static %}
 {% block titulo %}{{ encabezado }}{% endblock %}
 {% block contenido %}
-  <p class="breadcrumb">{{ encabezado }}</p>
-  <h2>{{ encabezado }}</h2>
+<section class="seccion">
+  <p class="breadcrumb"><a href="{% url 'web_publica:home' %}">Inicio</a> &rsaquo; {{ encabezado }}</p>
+  <h2 class="titulo-seccion">{{ encabezado }}</h2>
   {% if paginas %}
-    <div class="tarjetas">
-      {% for p in paginas %}
-        <a class="tarjeta" href="{% url 'web_publica:pagina_detalle' p.clave %}">
-          <h3>{{ p.titulo }}</h3>
-          {% if p.contenido %}
-            <p>{{ p.contenido|truncatewords:24 }}</p>
-          {% else %}
-            <p class="vacio">Próximamente.</p>
-          {% endif %}
-          <small>Leer más ➜</small>
-        </a>
-      {% endfor %}
-    </div>
+  <div class="tarjetas">
+    {% for p in paginas %}
+    <a class="tarjeta" href="{% url 'web_publica:pagina_detalle' p.clave %}">
+      {% if p.thumb %}<div class="tj-img" style="background-image:url('{{ p.thumb }}')"></div>{% endif %}
+      <div class="tj-body">
+        <h3>{{ p.titulo }}</h3>
+        {% if p.contenido %}<p>{{ p.contenido|truncatewords:18 }}</p>{% endif %}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
   {% else %}
-    <p class="vacio">Aún no hay contenido en esta sección.</p>
+  <p class="vacio">Aún no hay contenido en esta sección.</p>
   {% endif %}
+</section>
 {% endblock %}
