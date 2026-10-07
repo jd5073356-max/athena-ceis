@@ -6,6 +6,7 @@ panel; aquí únicamente se muestra. Las guías se navegan con la jerarquía:
 Año → Período → Curso → Materia → Guías.
 """
 import os
+import re
 
 from django.conf import settings
 from django.http import Http404
