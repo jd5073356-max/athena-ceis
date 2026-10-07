@@ -46,10 +46,11 @@
     .menu-link:hover,.menu-top:hover,.menu-item:hover .menu-top{background:var(--azul-medio);border-bottom-color:var(--dorado);text-decoration:none}
     .menu-item{position:relative}
     .menu-item .caret{margin-left:7px;font-size:.6rem;opacity:.8}
-    .submenu{display:none;position:absolute;top:100%;left:0;min-width:280px;background:#fff;border:1px solid var(--borde);border-top:3px solid var(--dorado);box-shadow:0 12px 30px rgba(10,25,49,.18);border-radius:0 0 8px 8px;padding:6px 0;z-index:70}
+    .submenu{display:none;position:absolute;top:100%;left:0;min-width:280px;background:var(--azul-claro);border:1px solid rgba(255,255,255,0.15);border-top:3px solid var(--dorado);box-shadow:0 12px 30px rgba(0,0,0,.35);border-radius:0 0 8px 8px;padding:4px 0;z-index:70}
     .menu-item:hover .submenu,.menu-item:focus-within .submenu{display:block}
-    .submenu a{display:block;color:var(--texto);text-transform:none;letter-spacing:0;font-weight:500;font-size:.9rem;padding:9px 18px}
-    .submenu a:hover{background:var(--gris);color:var(--azul-claro);text-decoration:none}
+    nav.menu .submenu a{display:block;color:#ffffff !important;text-transform:uppercase;letter-spacing:.02em;font-weight:600;font-size:.84rem;padding:11px 18px;border-bottom:1px solid rgba(255,255,255,0.08);transition:all .15s}
+    nav.menu .submenu a:last-child{border-bottom:none}
+    nav.menu .submenu a:hover{background:var(--azul-medio);color:var(--dorado-claro) !important;text-decoration:none;padding-left:22px}
     .menu-acceso{margin-left:auto}
     .menu-acceso a{color:var(--dorado-claro)}
 
