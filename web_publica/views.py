@@ -200,22 +200,28 @@ def _guias_jerarquia(items):
     for anio in sorted({d.anio for d in items}, key=lambda x: (x is None, -(x or 0))):
         d_anio = [d for d in items if d.anio == anio]
         niveles = []
+        tot_anio = 0
         for niv in _NIVEL_ORDEN:
             d_niv = [d for d in d_anio if (d.nivel or "") == niv]
             if not d_niv:
                 continue
             cursos = []
+            tot_niv = 0
             distinct_cursos = sorted({_obtener_curso(d) for d in d_niv}, key=curso_key)
             for cur in distinct_cursos:
                 d_cur = [d for d in d_niv if _obtener_curso(d) == cur]
                 materias = []
+                tot_cur = 0
                 for area in sorted({d.area or "" for d in d_cur}, key=area_key):
                     docs = sorted((d for d in d_cur if (d.area or "") == area),
                                   key=lambda d: (_PERIODO_ORDEN.index(d.periodo) if d.periodo in _PERIODO_ORDEN else 99, d.titulo))
-                    materias.append({"materia": area or "General", "docs": docs})
-                cursos.append({"curso": cur, "materias": materias})
-            niveles.append({"nivel": nivel_label.get(niv, "General"), "cursos": cursos})
-        anios.append({"anio": anio or "Sin año", "niveles": niveles})
+                    tot_cur += len(docs)
+                    materias.append({"materia": area or "General", "docs": docs, "total_docs": len(docs)})
+                tot_niv += tot_cur
+                cursos.append({"curso": cur, "materias": materias, "total_docs": tot_cur})
+            tot_anio += tot_niv
+            niveles.append({"nivel": nivel_label.get(niv, "General"), "cursos": cursos, "total_docs": tot_niv})
+        anios.append({"anio": anio or "Sin año", "niveles": niveles, "total_docs": tot_anio})
     return anios
 
 

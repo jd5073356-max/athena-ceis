@@ -2,37 +2,63 @@
 {% block titulo %}Circulares, Cronograma y Guías{% endblock %}
 {% block contenido %}
 <style>
-  .doc-cat{margin-top:34px}
-  .doc-cat>h3{font-family:'Lora',serif;color:var(--azul);font-size:1.35rem;border-left:4px solid var(--dorado);padding-left:12px;margin:0 0 16px}
-  details.acc{border:1px solid var(--borde);border-radius:10px;margin:0 0 10px;background:#fff;overflow:hidden}
-  details.acc>summary{cursor:pointer;padding:12px 18px;font-weight:600;color:var(--azul);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .doc-cat{margin-top:36px}
+  .doc-cat>h3{font-family:'Lora',serif;color:var(--azul);font-size:1.4rem;border-left:4px solid var(--dorado);padding-left:14px;margin:0 0 20px;font-weight:700}
+  
+  /* Acordeón Principal (Año) */
+  details.acc{border:1px solid var(--borde-suave);border-radius:var(--radius-md);margin:0 0 14px;background:#fff;overflow:hidden;box-shadow:var(--sombra-sm);transition:all .25s ease}
+  details.acc:hover{box-shadow:var(--sombra-md)}
+  details.acc>summary{cursor:pointer;padding:14px 22px;font-weight:700;color:var(--azul);list-style:none;display:flex;align-items:center;gap:12px;user-select:none;transition:background .2s ease}
   details.acc>summary::-webkit-details-marker{display:none}
-  details.acc>summary::before{content:"\25B8";color:var(--dorado);font-size:.8rem;transition:transform .15s}
+  details.acc>summary::before{content:"\25B8";color:var(--dorado);font-size:.9rem;transition:transform .2s ease}
   details.acc[open]>summary::before{transform:rotate(90deg)}
-  details.acc-anio>summary{background:var(--azul);color:#fff;font-size:1.05rem}
-  details.acc-anio[open]>summary{border-bottom:1px solid var(--borde)}
-  details.acc-anio>summary::before{color:#fff}
+  
+  details.acc-anio>summary{background:linear-gradient(135deg, var(--azul) 0%, var(--azul-claro) 100%);color:#fff;font-size:1.1rem;letter-spacing:-.01em}
+  details.acc-anio[open]>summary{border-bottom:1px solid rgba(255,255,255,0.1)}
+  details.acc-anio>summary::before{color:var(--dorado-claro)}
+  .badge-count{margin-left:auto;font-size:.76rem;background:rgba(255,255,255,0.16);color:#fff;padding:3px 10px;border-radius:12px;font-weight:700;letter-spacing:.02em}
+  
+  /* Sub-acordeón (Nivel) */
   details.acc-nivel{border:none;border-radius:0;margin:0;border-top:1px solid var(--borde)}
   details.acc-nivel:first-of-type{border-top:none}
-  details.acc-nivel>summary{background:var(--gris);font-size:.98rem}
-  .acc-body{padding:10px 18px 18px}
-  details.acc-curso{border:1px solid var(--borde);border-radius:8px;margin:8px 0 12px;background:#fff;overflow:hidden}
-  details.acc-curso>summary{background:#f8fafc;font-size:.92rem;color:var(--azul-claro);font-weight:600;padding:10px 14px}
-  details.acc-curso[open]>summary{border-bottom:1px solid var(--borde);background:#f1f5f9}
-  .acc-curso-body{padding:10px 16px 16px}
-  .acc-area{margin:14px 0 8px;font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--azul)}
-  .lista-docs{display:flex;flex-direction:column;border:1px solid var(--borde);border-radius:10px;overflow:hidden}
-  .doc-item{display:flex;align-items:center;gap:14px;padding:11px 16px;border-bottom:1px solid var(--borde);color:var(--texto);text-decoration:none}
+  details.acc-nivel>summary{background:var(--gris);font-size:1rem;color:var(--azul-claro);padding:12px 22px}
+  details.acc-nivel>summary .badge-count{background:var(--azul-claro);color:#fff}
+  
+  .acc-body{padding:12px 20px 20px}
+  
+  /* Sub-acordeón (Curso) */
+  details.acc-curso{border:1px solid var(--borde);border-radius:var(--radius-sm);margin:10px 0 14px;background:#fff;overflow:hidden;box-shadow:none}
+  details.acc-curso>summary{background:#f1f5f9;font-size:.95rem;color:var(--azul);font-weight:700;padding:12px 18px}
+  details.acc-curso>summary .badge-count{background:var(--dorado);color:var(--azul);font-size:.74rem}
+  details.acc-curso[open]>summary{border-bottom:1px solid var(--borde);background:#e2e8f0}
+  .acc-curso-body{padding:12px 18px 18px}
+  
+  /* Encabezados de Área con Código de Color */
+  .acc-area{margin:18px 0 10px;font-size:.82rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border-radius:6px;background:var(--gris);border:1px solid var(--borde);color:var(--azul)}
+  .area-comunicaciones{border-left:4px solid #2563eb;color:#1e40af}
+  .area-matematico{border-left:4px solid #4f46e5;color:#3730a3}
+  .area-cientifico{border-left:4px solid #059669;color:#065f46}
+  .area-social{border-left:4px solid #d97706;color:#92400e}
+  .area-ingles{border-left:4px solid #7c3aed;color:#5b21b6}
+  .area-artistico{border-left:4px solid #e11d48;color:#9f1239}
+  .area-fisica{border-left:4px solid #0891b2;color:#155e75}
+  .area-etico{border-left:4px solid #0d9488;color:#115e59}
+  .area-tecnologico{border-left:4px solid #475569;color:#1e293b}
+
+  /* Lista de Documentos */
+  .lista-docs{display:flex;flex-direction:column;border:1px solid var(--borde-suave);border-radius:var(--radius-sm);overflow:hidden;box-shadow:var(--sombra-sm);background:#fff}
+  .doc-item{display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--borde);color:var(--texto);text-decoration:none;transition:all .2s ease}
   .doc-item:last-child{border-bottom:none}
-  .doc-item:hover{background:var(--gris);text-decoration:none}
-  .doc-ico{flex-shrink:0;width:44px;text-align:center;font-size:.6rem;font-weight:700;letter-spacing:.04em;padding:5px 0;border-radius:5px;background:var(--azul);color:#fff}
-  .doc-nombre{font-weight:500;line-height:1.3}
-  .doc-meta{margin-left:auto;font-size:.8rem;color:var(--texto-mutado);font-weight:600;white-space:nowrap;background:var(--gris);padding:3px 8px;border-radius:4px;border:1px solid var(--borde)}
+  .doc-item:hover{background:var(--gris);text-decoration:none;padding-left:22px}
+  .doc-ico{flex-shrink:0;width:46px;text-align:center;font-size:.65rem;font-weight:800;letter-spacing:.05em;padding:6px 0;border-radius:6px;background:linear-gradient(135deg, var(--azul) 0%, var(--azul-claro) 100%);color:#fff;box-shadow:0 2px 6px rgba(10,25,49,0.15)}
+  .doc-nombre{font-weight:600;line-height:1.4;font-size:.94rem;color:var(--texto)}
+  .doc-item:hover .doc-nombre{color:var(--azul-claro)}
+  .doc-meta{margin-left:auto;font-size:.78rem;color:var(--azul-claro);font-weight:700;white-space:nowrap;background:rgba(21,48,91,0.06);padding:4px 10px;border-radius:12px;border:1px solid rgba(21,48,91,0.12)}
 </style>
 <section class="seccion">
   <p class="breadcrumb"><a href="{% url 'web_publica:home' %}">Inicio</a> &rsaquo; Circulares, Cronograma y Guías</p>
   <h2 class="titulo-seccion">Circulares, Cronograma y Guías</h2>
-  {% if intro.contenido %}<p style="max-width:880px">{{ intro.contenido|truncatewords:55 }}</p>{% endif %}
+  {% if intro.contenido %}<p style="max-width:880px;font-size:1.05rem;line-height:1.7;color:var(--texto)">{{ intro.contenido|truncatewords:55 }}</p>{% endif %}
 
   {% for s in secciones_doc %}
   <div class="doc-cat">
@@ -41,17 +67,26 @@
     {% if s.anios %}
       {% for a in s.anios %}
       <details class="acc acc-anio"{% if forloop.first %} open{% endif %}>
-        <summary>Año {{ a.anio }}</summary>
+        <summary>
+          Año {{ a.anio }}
+          <span class="badge-count">{{ a.total_docs }} guías</span>
+        </summary>
         {% for n in a.niveles %}
         <details class="acc acc-nivel"{% if forloop.first %} open{% endif %}>
-          <summary>{{ n.nivel }}</summary>
+          <summary>
+            {{ n.nivel }}
+            <span class="badge-count">{{ n.total_docs }} guías</span>
+          </summary>
           <div class="acc-body">
             {% for c in n.cursos %}
             <details class="acc acc-curso"{% if forloop.first %} open{% endif %}>
-              <summary>Curso {{ c.curso }}</summary>
+              <summary>
+                Curso {{ c.curso }}
+                <span class="badge-count">{{ c.total_docs }} guías</span>
+              </summary>
               <div class="acc-curso-body">
                 {% for m in c.materias %}
-                <p class="acc-area">{{ m.materia }}</p>
+                <p class="acc-area area-{{ m.materia|slugify }}">{{ m.materia }} ({{ m.total_docs }})</p>
                 <div class="lista-docs">
                   {% for d in m.docs %}
                   <a class="doc-item" href="{% url 'web_publica:documento_visor' d.pk %}">
@@ -88,4 +123,3 @@
   {% endfor %}
 </section>
 {% endblock %}
-

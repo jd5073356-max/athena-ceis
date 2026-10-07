@@ -3,20 +3,34 @@
 {% block titulo %}{{ secciones.nombre_sitio.titulo|default:"I.E.D. CEIS Sopó" }}{% endblock %}
 
 {% block hero %}
-<section style="background:linear-gradient(135deg,var(--azul) 0%,var(--azul-claro) 100%);color:#fff;padding:60px 0">
-  <div class="contenedor" style="display:grid;grid-template-columns:1.25fr 1fr;gap:40px;align-items:center">
+<style>
+  .hero-section{background:linear-gradient(135deg, var(--azul) 0%, var(--azul-claro) 60%, var(--azul-medio) 100%);color:#fff;padding:72px 0 80px;position:relative;overflow:hidden}
+  .hero-section::before{content:"";position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle, rgba(197,168,128,0.12) 0%, transparent 60%);pointer-events:none}
+  .hero-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:44px;align-items:center;position:relative;z-index:2}
+  .hero-badge{display:inline-block;color:var(--dorado-claro);font-weight:800;letter-spacing:.2em;text-transform:uppercase;font-size:.78rem;margin-bottom:14px;background:rgba(255,255,255,0.08);padding:6px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);backdrop-filter:blur(6px)}
+  .hero-title{color:#fff;font-size:2.85rem;margin:0 0 16px;font-weight:700;letter-spacing:-.02em;line-height:1.18}
+  .hero-desc{font-size:1.2rem;color:#e2e8f0;max-width:580px;margin:0;line-height:1.65;font-weight:400}
+  .hero-actions{margin-top:32px;display:flex;gap:14px;flex-wrap:wrap}
+  .hero-card{border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.18);position:relative;background:rgba(255,255,255,0.04);backdrop-filter:blur(8px)}
+  .hero-img{width:100%;height:330px;object-fit:cover;display:block;animation:kenBurns 16s ease-in-out infinite alternate}
+  @keyframes kenBurns{0%{transform:scale(1)}100%{transform:scale(1.08)}}
+  @media(max-width:860px){.hero-grid{grid-template-columns:1fr}.hero-title{font-size:2.1rem}}
+</style>
+
+<section class="hero-section">
+  <div class="contenedor hero-grid">
     <div>
-      <p style="color:var(--dorado-claro);font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:.8rem;margin:0 0 12px">Bienvenidos a la comunidad CEIS</p>
-      <h1 style="color:#fff;font-size:2.6rem;margin:0 0 14px">{{ secciones.nombre_sitio.titulo|default:"I.E.D. CEIS Sopó" }}</h1>
-      <p style="font-size:1.18rem;color:#dbe6f7;max-width:560px;margin:0">{{ secciones.lema.contenido|default:"Paz, Educación, Progreso" }}</p>
-      <div style="margin-top:28px;display:flex;gap:12px;flex-wrap:wrap">
-        <a class="btn btn-dorado" href="{% url 'web_publica:documentos' %}">Circulares, Cronograma y Guías</a>
-        <a class="btn" href="{% url 'web_publica:pagina_detalle' 'pre_matricula_2026' %}" style="border:1px solid var(--dorado)">Pre-Matrícula 2026</a>
+      <span class="hero-badge">Bienvenidos a la comunidad CEIS</span>
+      <h1 class="hero-title">{{ secciones.nombre_sitio.titulo|default:"I.E.D. CEIS Sopó" }}</h1>
+      <p class="hero-desc">{{ secciones.lema.contenido|default:"Paz, Educación, Progreso" }}</p>
+      <div class="hero-actions">
+        <a class="btn btn-dorado" href="{% url 'web_publica:documentos' %}">📚 Circulares, Cronograma y Guías</a>
+        <a class="btn" href="{% url 'web_publica:pagina_detalle' 'pre_matricula_2026' %}" style="border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1)">📝 Pre-Matrícula 2026</a>
       </div>
     </div>
     {% if imagenes_inicio %}
-    <div style="border-radius:14px;overflow:hidden;box-shadow:0 18px 44px rgba(0,0,0,.32)">
-      <img src="{{ imagenes_inicio.0.archivo.url }}" alt="I.E.D. CEIS Sopó" style="width:100%;height:310px;object-fit:cover;display:block">
+    <div class="hero-card">
+      <img class="hero-img" src="{{ imagenes_inicio.0.archivo.url }}" alt="I.E.D. CEIS Sopó">
     </div>
     {% endif %}
   </div>
@@ -25,19 +39,46 @@
 
 {% block contenido %}
   {% if secciones.mision.contenido %}
-  <section class="seccion"><h2 class="titulo-seccion">Misión</h2><p style="max-width:860px">{{ secciones.mision.contenido }}</p></section>
+  <section class="seccion">
+    <h2 class="titulo-seccion">Misión</h2>
+    <p style="max-width:880px;font-size:1.05rem;line-height:1.75;color:var(--texto)">{{ secciones.mision.contenido }}</p>
+  </section>
   {% endif %}
+
   {% if secciones.vision.contenido %}
-  <section class="seccion" style="padding-top:0"><h2 class="titulo-seccion">Visión</h2><p style="max-width:860px">{{ secciones.vision.contenido }}</p></section>
+  <section class="seccion" style="padding-top:0">
+    <h2 class="titulo-seccion">Visión</h2>
+    <p style="max-width:880px;font-size:1.05rem;line-height:1.75;color:var(--texto)">{{ secciones.vision.contenido }}</p>
+  </section>
   {% endif %}
 
   <section class="seccion">
     <h2 class="titulo-seccion">Explora el colegio</h2>
     <div class="tarjetas">
-      <a class="tarjeta" href="{% url 'web_publica:colegio' %}"><div class="tj-body"><h3>Nosotros</h3><p>Horizonte institucional, jornada única, inclusión, gobierno escolar, rendición de cuentas.</p></div></a>
-      <a class="tarjeta" href="{% url 'web_publica:proyectos' %}"><div class="tj-body"><h3>Nuestros Proyectos</h3><p>SERC, PRAE, PILEO, Ceisópolis, Tiempo Libre, Lúdico Matemático y más.</p></div></a>
-      <a class="tarjeta" href="{% url 'web_publica:documentos' %}"><div class="tj-body"><h3>Circulares, Cronograma y Guías</h3><p>Documentos para padres y estudiantes: circulares, cronograma y guías SERC por año.</p></div></a>
-      <a class="tarjeta" href="{% url 'web_publica:pagina_detalle' 'pre_matricula_2026' %}"><div class="tj-body"><h3>Pre-Matrícula 2026</h3><p>Requisitos y formulario de inscripción para el año lectivo 2026.</p></div></a>
+      <a class="tarjeta" href="{% url 'web_publica:colegio' %}">
+        <div class="tj-body">
+          <h3>Nosotros</h3>
+          <p>Horizonte institucional, jornada única, inclusión, gobierno escolar, rendición de cuentas.</p>
+        </div>
+      </a>
+      <a class="tarjeta" href="{% url 'web_publica:proyectos' %}">
+        <div class="tj-body">
+          <h3>Nuestros Proyectos</h3>
+          <p>SERC, PRAE, PILEO, Ceisópolis, Tiempo Libre, Lúdico Matemático y más.</p>
+        </div>
+      </a>
+      <a class="tarjeta" href="{% url 'web_publica:documentos' %}">
+        <div class="tj-body">
+          <h3>Circulares, Cronograma y Guías</h3>
+          <p>Documentos para padres y estudiantes: circulares, cronograma y guías SERC por año.</p>
+        </div>
+      </a>
+      <a class="tarjeta" href="{% url 'web_publica:pagina_detalle' 'pre_matricula_2026' %}">
+        <div class="tj-body">
+          <h3>Pre-Matrícula 2026</h3>
+          <p>Requisitos y formulario de inscripción para el año lectivo 2026.</p>
+        </div>
+      </a>
     </div>
   </section>
 
@@ -48,7 +89,7 @@
       {% for n in noticias %}
       <a class="tarjeta" href="{% url 'web_publica:noticia_detalle' n.id %}">
         <div class="tj-body">
-          <p style="font-size:.78rem;color:var(--dorado);text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px">{{ n.fecha_publicacion|date:"d M Y" }}</p>
+          <p style="font-size:.78rem;color:var(--dorado);text-transform:uppercase;letter-spacing:.08em;font-weight:800;margin:0 0 6px">{{ n.fecha_publicacion|date:"d M Y" }}</p>
           <h3>{{ n.titulo }}</h3>
           <p>{{ n.cuerpo|truncatewords:22 }}</p>
         </div>
@@ -60,9 +101,13 @@
 
   {% if imagenes_inicio %}
   <section class="seccion">
-    <h2 class="titulo-seccion">Galería</h2>
+    <h2 class="titulo-seccion">Galería institucional</h2>
     <div class="galeria-grid">
-      {% for img in imagenes_inicio %}<a href="{{ img.archivo.url }}" target="_blank" rel="noopener"><img src="{{ img.archivo.url }}" alt="I.E.D. CEIS"></a>{% endfor %}
+      {% for img in imagenes_inicio %}
+      <a href="{{ img.archivo.url }}" target="_blank" rel="noopener">
+        <img src="{{ img.archivo.url }}" alt="I.E.D. CEIS Sopó">
+      </a>
+      {% endfor %}
     </div>
   </section>
   {% endif %}
