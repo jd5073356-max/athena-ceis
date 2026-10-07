@@ -11,6 +11,8 @@ __pycache__/
 db.sqlite3
 db.sqlite3-journal
 /media/
+/staticfiles/secciones/
+/staticfiles/fotos/
 
 # Secretos y credenciales (NUNCA versionar)
 .env
