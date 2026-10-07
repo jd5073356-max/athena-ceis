@@ -10,7 +10,6 @@ __pycache__/
 # Django
 db.sqlite3
 db.sqlite3-journal
-/staticfiles/
 /media/
 
 # Secretos y credenciales (NUNCA versionar)
