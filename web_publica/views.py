@@ -166,7 +166,8 @@ def pagina_detalle(request, clave):
 
 # --- Circulares, Cronograma y Guías: documentos gestionados desde el admin --
 _CAT_ORDEN = ["guia", "circular", "cronograma", "horario", "formato", "manual", "otro"]
-_NIVEL_ORDEN = ["preescolar", "primaria", "bachillerato", ""]
+_NIVEL_ORDEN = ["bachillerato", "primaria", "preescolar", ""]
+_GRADO_ORDEN = ["Prejardín", "PREJARDIN", "Jardín", "JARDIN", "Transición 0º", "Transición", "1º", "2º", "3º", "4º", "5º", "6°", "7°", "8°", "9°", "10°", "11°"]
 _PERIODO_ORDEN = ["I", "II", "III", "IV", ""]
 _AREA_ORDEN = [
     "Comunicaciones", "Inglés", "Pensamiento Matemático", "Pensamiento Científico",
@@ -175,11 +176,24 @@ _AREA_ORDEN = [
 ]
 
 
+def _obtener_curso(d):
+    """Extrae el curso/grado normalizado (ej. 6°, 7°, 1º, Transición)."""
+    if d.grado:
+        g = d.grado.strip()
+        if "TRANS" in g.upper():
+            return "Transición"
+        return g
+    match = re.search(r'\b(1[0-1]|[6-9])[\s°º\.]*', d.titulo)
+    if match:
+        return f"{match.group(1)}°"
+    return "General"
+
+
 def _guias_jerarquia(items):
-    """Estructura las guías igual al Drive: Año → Nivel → Período → Área."""
+    """Estructura las guías: Año → Nivel → Curso → Materia → Guía."""
     nivel_label = dict(Documento.Nivel.choices)
-    periodo_label = dict(Documento.Periodo.choices)
     area_key = lambda a: (_AREA_ORDEN.index(a) if a in _AREA_ORDEN else len(_AREA_ORDEN), a)
+    curso_key = lambda c: (_GRADO_ORDEN.index(c) if c in _GRADO_ORDEN else len(_GRADO_ORDEN), c)
 
     anios = []
     for anio in sorted({d.anio for d in items}, key=lambda x: (x is None, -(x or 0))):
@@ -189,18 +203,17 @@ def _guias_jerarquia(items):
             d_niv = [d for d in d_anio if (d.nivel or "") == niv]
             if not d_niv:
                 continue
-            periodos = []
-            for per in _PERIODO_ORDEN:
-                d_per = [d for d in d_niv if (d.periodo or "") == per]
-                if not d_per:
-                    continue
-                areas = []
-                for area in sorted({d.area or "" for d in d_per}, key=area_key):
-                    docs = sorted((d for d in d_per if (d.area or "") == area),
-                                  key=lambda d: (d.grado, d.titulo))
-                    areas.append({"area": area or "General", "docs": docs})
-                periodos.append({"periodo": periodo_label.get(per, "Sin período"), "areas": areas})
-            niveles.append({"nivel": nivel_label.get(niv, "General"), "periodos": periodos})
+            cursos = []
+            distinct_cursos = sorted({_obtener_curso(d) for d in d_niv}, key=curso_key)
+            for cur in distinct_cursos:
+                d_cur = [d for d in d_niv if _obtener_curso(d) == cur]
+                materias = []
+                for area in sorted({d.area or "" for d in d_cur}, key=area_key):
+                    docs = sorted((d for d in d_cur if (d.area or "") == area),
+                                  key=lambda d: (_PERIODO_ORDEN.index(d.periodo) if d.periodo in _PERIODO_ORDEN else 99, d.titulo))
+                    materias.append({"materia": area or "General", "docs": docs})
+                cursos.append({"curso": cur, "materias": materias})
+            niveles.append({"nivel": nivel_label.get(niv, "General"), "cursos": cursos})
         anios.append({"anio": anio or "Sin año", "niveles": niveles})
     return anios
 
