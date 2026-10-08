@@ -11,11 +11,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
-      --azul:#0a1931; --azul-claro:#15305b; --azul-medio:#1d4079;
-      --dorado:#c5a880; --dorado-claro:#e5d5be;
-      --teal:#0b6d71; --teal-osc:#074c4f;
+      --azul:{{ config_apariencia.color_principal|default:"#0a1931" }};
+      --azul-claro:{{ config_apariencia.color_secundario|default:"#15305b" }};
+      --azul-medio:{{ config_apariencia.color_secundario|default:"#1d4079" }};
+      --dorado:{{ config_apariencia.color_acento|default:"#c5a880" }};
+      --dorado-claro:{{ config_apariencia.color_acento_suave|default:"#e5d5be" }};
+      --teal:{{ config_apariencia.color_footer|default:"#0b6d71" }};
+      --teal-osc:{{ config_apariencia.color_footer|default:"#074c4f" }};
+      --texto:{{ config_apariencia.color_texto|default:"#0f172a" }};
       --gris:#f8fafc; --borde:#e2e8f0; --borde-suave:rgba(226,232,240,0.8);
-      --texto:#0f172a; --texto-mutado:#64748b;
+      --texto-mutado:#64748b;
       --sombra-sm:0 2px 8px rgba(10,25,49,0.04);
       --sombra-md:0 10px 25px -5px rgba(10,25,49,0.08), 0 8px 10px -6px rgba(10,25,49,0.04);
       --sombra-lg:0 20px 35px -10px rgba(10,25,49,0.15);

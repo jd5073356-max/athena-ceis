@@ -271,3 +271,32 @@ class Documento(models.Model):
     @property
     def es_pdf(self):
         return (self.archivo.name or "").lower().endswith(".pdf")
+
+
+class ConfiguracionApariencia(models.Model):
+    """Personalización dinámica de la paleta de colores de la web pública (gestión desde el admin)."""
+    color_principal = models.CharField("Color Principal (Cabecera/Títulos)", max_length=18, default="#0a1931",
+                                       help_text="Color hex para la barra superior, botones y títulos principales. Ej: #0a1931")
+    color_secundario = models.CharField("Color Secundario (Menú Principal)", max_length=18, default="#15305b",
+                                        help_text="Color hex para la barra del menú principal. Ej: #15305b")
+    color_acento = models.CharField("Color de Acento (Bordes/Destacados)", max_length=18, default="#c5a880",
+                                    help_text="Color de acento para líneas divisoras y botones destacados. Ej: #c5a880")
+    color_acento_suave = models.CharField("Color de Acento Suave", max_length=18, default="#e5d5be",
+                                          help_text="Color claro para detalles secundarios. Ej: #e5d5be")
+    color_footer = models.CharField("Color del Pie de Página (Footer)", max_length=18, default="#0b6d71",
+                                    help_text="Color para el pie de página. Ej: #0b6d71")
+    color_texto = models.CharField("Color de Texto Principal", max_length=18, default="#0f172a",
+                                   help_text="Color oscuro para textos principales. Ej: #0f172a")
+
+    class Meta:
+        db_table = "CONFIGURACION_APARIENCIA"
+        verbose_name = "Apariencia y Colores del Sitio"
+        verbose_name_plural = "Apariencia y Colores del Sitio"
+
+    def __str__(self):
+        return "Configuración de Colores de la Web"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+

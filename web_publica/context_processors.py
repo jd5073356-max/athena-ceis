@@ -6,7 +6,7 @@ Menú de la web pública: las mismas divisiones que el sitio Wix oficial.
 Los submenús de NOSOTROS y NUESTROS PROYECTOS salen de las secciones del colegio
 (categoría 'colegio' y 'proyecto' respectivamente), en su orden.
 """
-from core.models import Seccion
+from core.models import ConfiguracionApariencia, Seccion
 
 
 def menu_publico(request):
@@ -14,7 +14,10 @@ def menu_publico(request):
     if request.path.startswith("/admin"):
         return {}
     secciones = list(Seccion.objects.all())
+    config_apariencia = ConfiguracionApariencia.objects.first()
     return {
         "menu_nosotros": [s for s in secciones if s.categoria == "colegio"],
         "menu_proyectos": [s for s in secciones if s.categoria == "proyecto"],
+        "config_apariencia": config_apariencia,
     }
+

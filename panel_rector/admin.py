@@ -9,14 +9,37 @@ Para facilitar la carga jerárquica usamos "inlines": al abrir un Año se ven su
 Períodos; dentro de un Período sus Cursos; etc. Además cada lista tiene filtros
 para navegar rápido.
 """
+from django import forms
 from django.contrib import admin
 
 from core.models import (
-    Anio, Curso, Documento, Guia, Imagen, Materia, Noticia, Periodo, Seccion, Video,
+    Anio, ConfiguracionApariencia, Curso, Documento, Guia, Imagen, Materia, Noticia, Periodo, Seccion, Video,
 )
 
-# --- Marca del panel (en español) ------------------------------------------
-# El sitio de administración personalizado (AthenaAdminSite) está definido en admin_site.py
+
+class ConfiguracionAparienciaForm(forms.ModelForm):
+    class Meta:
+        model = ConfiguracionApariencia
+        fields = "__all__"
+        widgets = {
+            "color_principal": forms.TextInput(attrs={"type": "color", "style": "height:42px;width:100px;cursor:pointer;"}),
+            "color_secundario": forms.TextInput(attrs={"type": "color", "style": "height:42px;width:100px;cursor:pointer;"}),
+            "color_acento": forms.TextInput(attrs={"type": "color", "style": "height:42px;width:100px;cursor:pointer;"}),
+            "color_acento_suave": forms.TextInput(attrs={"type": "color", "style": "height:42px;width:100px;cursor:pointer;"}),
+            "color_footer": forms.TextInput(attrs={"type": "color", "style": "height:42px;width:100px;cursor:pointer;"}),
+            "color_texto": forms.TextInput(attrs={"type": "color", "style": "height:42px;width:100px;cursor:pointer;"}),
+        }
+
+
+@admin.register(ConfiguracionApariencia)
+class ConfiguracionAparienciaAdmin(admin.ModelAdmin):
+    form = ConfiguracionAparienciaForm
+    list_display = ("__str__", "color_principal", "color_secundario", "color_acento", "color_footer")
+
+    def has_add_permission(self, request):
+        if ConfiguracionApariencia.objects.exists():
+            return False
+        return super().has_add_permission(request)
 
 
 # ===========================================================================

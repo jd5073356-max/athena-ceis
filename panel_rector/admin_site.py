@@ -156,6 +156,7 @@ class AthenaAdminSite(admin.AdminSite):
                     'core.Noticia',
                     'core.Seccion',
                     'core.Video',
+                    'core.ConfiguracionApariencia',
                 ]
             }
         ]
