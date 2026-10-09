@@ -1,0 +1,346 @@
+{% extends "admin/change_form.html" %}
+
+{% block field_sets %}
+<style>
+  .color-editor-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 1024px) {
+    .color-editor-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .presets-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    color: #f8fafc;
+  }
+  .presets-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #fbbf24;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .presets-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .btn-preset {
+    background: #334155;
+    color: #fff;
+    border: 1px solid #475569;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-preset:hover {
+    background: #475569;
+    border-color: #fbbf24;
+    transform: translateY(-2px);
+  }
+  .preset-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 1px solid rgba(255,255,255,0.4);
+  }
+
+  /* Live Preview Box */
+  .preview-container {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 16px;
+    position: sticky;
+    top: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  }
+  .preview-header-bar {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #94a3b8;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .preview-badge-live {
+    background: #10b981;
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    font-weight: 800;
+  }
+
+  /* Mock Web Design */
+  .mock-web {
+    background: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+  .mock-topstrip {
+    background: #0a1931;
+    color: #cdd6e6;
+    font-size: 0.65rem;
+    padding: 5px 12px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+    transition: background 0.3s;
+  }
+  .mock-header {
+    background: #fff;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .mock-logo {
+    width: 28px;
+    height: 28px;
+    background: #0a1931;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 800;
+  }
+  .mock-brand {
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: #0a1931;
+    transition: color 0.3s;
+  }
+  .mock-nav {
+    background: #15305b;
+    padding: 0 12px;
+    display: flex;
+    gap: 12px;
+    transition: background 0.3s;
+  }
+  .mock-nav-item {
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 8px 0;
+    border-bottom: 2px solid transparent;
+  }
+  .mock-nav-item.active {
+    border-bottom-color: #c5a880;
+    color: #e5d5be;
+  }
+  .mock-hero {
+    background: linear-gradient(135deg, #0a1931 0%, #15305b 100%);
+    color: #fff;
+    padding: 18px 14px;
+    transition: background 0.3s;
+  }
+  .mock-hero-title {
+    font-size: 1rem;
+    font-weight: 800;
+    margin: 0 0 6px;
+  }
+  .mock-hero-btn {
+    display: inline-block;
+    background: #c5a880;
+    color: #0a1931;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background 0.3s, color 0.3s;
+  }
+  .mock-content {
+    padding: 14px;
+  }
+  .mock-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-left: 3px solid #c5a880;
+  }
+  .mock-card-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 4px;
+  }
+  .mock-card-txt {
+    font-size: 0.68rem;
+    color: #64748b;
+    margin: 0;
+  }
+  .mock-footer {
+    background: #0b6d71;
+    color: #fff;
+    padding: 10px 14px;
+    font-size: 0.65rem;
+    text-align: center;
+    transition: background 0.3s;
+  }
+</style>
+
+<div class="presets-card">
+  <div class="presets-title">
+    🎨 Paletas de Colores Predefinidas (Haz clic para aplicar en 1-clic)
+  </div>
+  <div class="presets-btns">
+    <button type="button" class="btn-preset" onclick="aplicarPaleta('#0a1931', '#15305b', '#c5a880', '#e5d5be', '#0b6d71', '#0f172a')">
+      <span class="preset-dot" style="background:#0a1931"></span>
+      Institucional Tradicional (Azul / Dorado / Teal)
+    </button>
+    <button type="button" class="btn-preset" onclick="aplicarPaleta('#064e3b', '#047857', '#f59e0b', '#fef3c7', '#065f46', '#064e3b')">
+      <span class="preset-dot" style="background:#047857"></span>
+      Verde Esmeralda & Oro
+    </button>
+    <button type="button" class="btn-preset" onclick="aplicarPaleta('#4c0519', '#881337', '#fbbf24', '#fef3c7', '#4c0519', '#1c1917')">
+      <span class="preset-dot" style="background:#881337"></span>
+      Cobre & Borgoña
+    </button>
+    <button type="button" class="btn-preset" onclick="aplicarPaleta('#0f172a', '#1e293b', '#06b6d4', '#cffaff', '#0f172a', '#0f172a')">
+      <span class="preset-dot" style="background:#1e293b"></span>
+      Grafito & Cian Moderno
+    </button>
+    <button type="button" class="btn-preset" onclick="aplicarPaleta('#1e3a8a', '#2563eb', '#f59e0b', '#fef3c7', '#1e3a8a', '#0f172a')">
+      <span class="preset-dot" style="background:#2563eb"></span>
+      Océano Real
+    </button>
+  </div>
+</div>
+
+<div class="color-editor-grid">
+  <div>
+    {{ block.super }}
+  </div>
+
+  <div>
+    <div class="preview-container">
+      <div class="preview-header-bar">
+        <span>👁️ Vista Previa en Vivo de la Web</span>
+        <span class="preview-badge-live">En Vivo</span>
+      </div>
+
+      <div class="mock-web">
+        <div id="mock-topstrip" class="mock-topstrip">
+          <span>SISTEMA EDUCATIVO RELACIONAL &middot; CEIS</span>
+          <span>SOPÓ</span>
+        </div>
+        <div class="mock-header">
+          <div class="mock-logo">CEIS</div>
+          <span id="mock-brand" class="mock-brand">I.E.D. CEIS SOPÓ</span>
+        </div>
+        <div id="mock-nav" class="mock-nav">
+          <span class="mock-nav-item active">INICIO</span>
+          <span class="mock-nav-item">NOSOTROS ▾</span>
+          <span class="mock-nav-item">GUÍAS</span>
+        </div>
+        <div id="mock-hero" class="mock-hero">
+          <h4 class="mock-hero-title">Bienvenidos a la comunidad CEIS</h4>
+          <span id="mock-hero-btn" class="mock-hero-btn">📚 Ver Guías y Circulares</span>
+        </div>
+        <div class="mock-content">
+          <div id="mock-card" class="mock-card">
+            <h5 id="mock-card-title" class="mock-card-title">Guía 1 Castellano 9°</h5>
+            <p id="mock-card-txt" class="mock-card-txt">Documento SERC de estudio para los estudiantes de grado 9°.</p>
+          </div>
+        </div>
+        <div id="mock-footer" class="mock-footer">
+          &copy; 2026 I.E.D. Complejo Educativo Integral Sopó (CEIS)
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function actualizarVistaPrevia() {
+    const p = document.getElementById('id_color_principal')?.value || '#0a1931';
+    const s = document.getElementById('id_color_secundario')?.value || '#15305b';
+    const a = document.getElementById('id_color_acento')?.value || '#c5a880';
+    const as = document.getElementById('id_color_acento_suave')?.value || '#e5d5be';
+    const f = document.getElementById('id_color_footer')?.value || '#0b6d71';
+    const t = document.getElementById('id_color_texto')?.value || '#0f172a';
+
+    // Topstrip & Brand
+    const topstrip = document.getElementById('mock-topstrip');
+    if (topstrip) topstrip.style.background = p;
+
+    const brand = document.getElementById('mock-brand');
+    if (brand) brand.style.color = p;
+
+    // Nav
+    const nav = document.getElementById('mock-nav');
+    if (nav) nav.style.background = s;
+
+    // Hero
+    const hero = document.getElementById('mock-hero');
+    if (hero) hero.style.background = `linear-gradient(135deg, ${p} 0%, ${s} 100%)`;
+
+    // Hero Btn
+    const heroBtn = document.getElementById('mock-hero-btn');
+    if (heroBtn) {
+      heroBtn.style.background = a;
+      heroBtn.style.color = p;
+    }
+
+    // Card
+    const card = document.getElementById('mock-card');
+    if (card) card.style.borderLeftColor = a;
+
+    const cardTitle = document.getElementById('mock-card-title');
+    if (cardTitle) cardTitle.style.color = t;
+
+    // Footer
+    const footer = document.getElementById('mock-footer');
+    if (footer) footer.style.background = f;
+  }
+
+  function aplicarPaleta(p, s, a, as, f, t) {
+    if (document.getElementById('id_color_principal')) document.getElementById('id_color_principal').value = p;
+    if (document.getElementById('id_color_secundario')) document.getElementById('id_color_secundario').value = s;
+    if (document.getElementById('id_color_acento')) document.getElementById('id_color_acento').value = a;
+    if (document.getElementById('id_color_acento_suave')) document.getElementById('id_color_acento_suave').value = as;
+    if (document.getElementById('id_color_footer')) document.getElementById('id_color_footer').value = f;
+    if (document.getElementById('id_color_texto')) document.getElementById('id_color_texto').value = t;
+    actualizarVistaPrevia();
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const inputs = ['id_color_principal', 'id_color_secundario', 'id_color_acento', 'id_color_acento_suave', 'id_color_footer', 'id_color_texto'];
+    inputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', actualizarVistaPrevia);
+        el.addEventListener('change', actualizarVistaPrevia);
+      }
+    });
+    actualizarVistaPrevia();
+  });
+</script>
+{% endblock %}
