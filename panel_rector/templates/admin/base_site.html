@@ -22,3 +22,10 @@
 {% endblock %}
 
 {% block nav-global %}{% endblock %}
+
+{% block extrabody %}
+  {{ block.super }}
+  {% if user.is_authenticated %}
+    {% include "admin/athena_asesor.html" %}
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,393 @@
+{% load static %}
+<!-- Widget Asesora Athena · Panel del Rector -->
+<style>
+  /* Botón Flotante Athena Admin */
+  .ath-bot-trigger {
+    position: fixed;
+    bottom: 20px;
+    right: 22px;
+    width: 66px;
+    height: 86px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    cursor: pointer;
+    z-index: 998;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+    transition: transform .28s cubic-bezier(0.34, 1.56, 0.64, 1), filter .28s ease;
+    filter: drop-shadow(0 10px 22px rgba(0,0,0,0.65));
+  }
+  .ath-bot-trigger:hover {
+    transform: translateY(-6px) scale(1.08);
+    filter: drop-shadow(0 14px 28px rgba(0,0,0,0.8));
+  }
+  .ath-bot-trigger img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    pointer-events: none;
+  }
+  .ath-bot-badge {
+    position: absolute;
+    top: 6px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background: #10b981;
+    border: 2px solid #16191d;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
+
+  /* Ventana de Chat Athena Admin */
+  .ath-chat-window {
+    display: none;
+    position: fixed;
+    bottom: 114px;
+    right: 22px;
+    width: 380px;
+    max-width: calc(100vw - 32px);
+    height: 530px;
+    max-height: calc(100vh - 134px);
+    background: #16191d;
+    border-radius: 14px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+    border: 1px solid #2a2e33;
+    z-index: 999;
+    flex-direction: column;
+    overflow: hidden;
+    animation: athFadeIn .25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .ath-chat-window.active {
+    display: flex;
+  }
+  @keyframes athFadeIn {
+    from { opacity: 0; transform: translateY(14px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .ath-chat-head {
+    background: linear-gradient(135deg, #1d2024 0%, #16191d 100%);
+    padding: 13px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #4a6e86;
+  }
+  .ath-chat-headinfo {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  }
+  .ath-chat-avatar {
+    width: 36px;
+    height: 44px;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.4));
+  }
+  .ath-chat-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .ath-chat-title {
+    font-weight: 700;
+    font-size: 0.96rem;
+    color: #fff;
+    line-height: 1.2;
+    font-family: "Hanken Grotesk", sans-serif;
+  }
+  .ath-chat-sub {
+    font-size: 0.74rem;
+    color: #a6cbe6;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 500;
+  }
+  .ath-chat-sub::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: #10b981;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .ath-chat-close {
+    background: none;
+    border: none;
+    color: #8c9197;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+  }
+  .ath-chat-close:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.08);
+  }
+
+  .ath-chat-msgs {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    background: #111418;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .ath-chat-msg {
+    max-width: 86%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    word-break: break-word;
+  }
+  .ath-chat-msg-bot {
+    align-self: flex-start;
+    background: #1d2024;
+    color: #e1e2e8;
+    border: 1px solid #2a2e33;
+    border-bottom-left-radius: 2px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .ath-chat-msg-user {
+    align-self: flex-end;
+    background: #355369;
+    color: #fff;
+    border-bottom-right-radius: 2px;
+  }
+  .ath-admin-pills {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .ath-admin-pill {
+    background: #23272c;
+    border: 1px solid #2a2e33;
+    color: #a6cbe6;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 7px 11px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .ath-admin-pill:hover {
+    background: #2a2f35;
+    border-color: #4a6e86;
+    color: #fff;
+    padding-left: 14px;
+  }
+
+  .athena-msg-link {
+    display: inline-block;
+    margin-top: 6px;
+    color: #a6cbe6;
+    font-weight: 700;
+    text-decoration: underline;
+  }
+  .athena-msg-link:hover {
+    color: #c7e7ff;
+  }
+
+  .ath-chat-inputbar {
+    padding: 10px 14px;
+    background: #1d2024;
+    border-top: 1px solid #2a2e33;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ath-chat-input {
+    flex: 1;
+    background: #0e1115;
+    border: 1px solid #2a2e33;
+    border-radius: 20px;
+    padding: 9px 14px;
+    font-size: 0.86rem;
+    color: #e1e2e8;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .ath-chat-input:focus {
+    border-color: #4a6e86;
+    box-shadow: 0 0 0 2px rgba(74,110,134,0.25);
+  }
+  .ath-chat-send {
+    background: #4a6e86;
+    color: #fff;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .2s, transform .15s;
+    flex-shrink: 0;
+  }
+  .ath-chat-send:hover {
+    background: #5b809a;
+    transform: scale(1.05);
+  }
+</style>
+
+<!-- Botón Flotante Athena Admin -->
+<button id="ath-admin-bot-trigger" class="ath-bot-trigger" onclick="alternarAthenaAdminChat()" title="Athena · Asesora del Panel" aria-label="Abrir asesora institucional Athena">
+  <img src="{% static 'logos/athena_personaje_transparente.svg' %}" alt="Athena">
+  <span class="ath-bot-badge"></span>
+</button>
+
+<!-- Ventana de Diálogo Athena Admin -->
+<div id="ath-admin-chat-window" class="ath-chat-window" role="dialog" aria-labelledby="ath-admin-title">
+  <div class="ath-chat-head">
+    <div class="ath-chat-headinfo">
+      <div class="ath-chat-avatar">
+        <img src="{% static 'logos/athena_personaje_transparente.svg' %}" alt="Athena">
+      </div>
+      <div>
+        <div id="ath-admin-title" class="ath-chat-title">Athena</div>
+        <div class="ath-chat-sub">Asesora del Panel · Copiloto</div>
+      </div>
+    </div>
+    <button class="ath-chat-close" onclick="alternarAthenaAdminChat()" aria-label="Cerrar asesora">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+  </div>
+
+  <div id="ath-admin-messages" class="ath-chat-msgs">
+    <div class="ath-chat-msg ath-chat-msg-bot">
+      Saludos. Soy <strong>Athena</strong>, asesora institucional y copiloto de gestión del panel administrativo. Puedo orientarte en la operación del CMS (guías, circulares, noticias, apariencia, usuarios) o asistirte en redacción de comunicaciones escolares oficiales.
+      <div class="ath-admin-pills">
+        <button class="ath-admin-pill" onclick="athenaAdminPregunta('guias')">¿Cómo subir una guía pedagógica?</button>
+        <button class="ath-admin-pill" onclick="athenaAdminPregunta('circulares')">¿Cómo cargar circulares o cronogramas?</button>
+        <button class="ath-admin-pill" onclick="athenaAdminPregunta('noticias')">¿Cómo publicar una noticia institucional?</button>
+        <button class="ath-admin-pill" onclick="athenaAdminPregunta('colores')">¿Cómo cambiar los colores de la web?</button>
+        <button class="ath-admin-pill" onclick="athenaAdminPregunta('usuarios')">¿Cómo gestionar usuarios y docentes?</button>
+      </div>
+    </div>
+  </div>
+
+  <form class="ath-chat-inputbar" onsubmit="enviarMensajeAthenaAdmin(event)">
+    <input type="text" id="ath-admin-input" class="ath-chat-input" placeholder="Pregunta sobre el panel, gestión o redacción..." autocomplete="off">
+    <button type="submit" class="ath-chat-send" aria-label="Enviar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+    </button>
+  </form>
+</div>
+
+<script>
+  function alternarAthenaAdminChat() {
+    const win = document.getElementById('ath-admin-chat-window');
+    if (!win) return;
+    const activo = win.classList.toggle('active');
+    if (activo) {
+      setTimeout(() => {
+        const inp = document.getElementById('ath-admin-input');
+        if (inp) inp.focus();
+      }, 150);
+    }
+  }
+
+  function cerrarAthenaAdminChat() {
+    const win = document.getElementById('ath-admin-chat-window');
+    if (win) win.classList.remove('active');
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      cerrarAthenaAdminChat();
+    }
+  });
+
+  async function responderAthenaAdmin(textoUsuario) {
+    const container = document.getElementById('ath-admin-messages');
+    if (!container) return;
+
+    const userDiv = document.createElement('div');
+    userDiv.className = 'ath-chat-msg ath-chat-msg-user';
+    userDiv.textContent = textoUsuario;
+    container.appendChild(userDiv);
+    container.scrollTop = container.scrollHeight;
+
+    const botDiv = document.createElement('div');
+    botDiv.className = 'ath-chat-msg ath-chat-msg-bot';
+    botDiv.innerHTML = '<span style="opacity:0.6;font-style:italic">Consultando asesoría...</span>';
+    container.appendChild(botDiv);
+    container.scrollTop = container.scrollHeight;
+
+    try {
+      const res = await fetch('/api/chat/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mensaje: textoUsuario, contexto: 'admin' })
+      });
+      const data = await res.json();
+      if (data && data.respuesta) {
+        botDiv.innerHTML = data.respuesta;
+      } else {
+        botDiv.innerHTML = fallbackAthenaAdmin(textoUsuario);
+      }
+    } catch (err) {
+      botDiv.innerHTML = fallbackAthenaAdmin(textoUsuario);
+    }
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function fallbackAthenaAdmin(texto) {
+    const q = texto.toLowerCase();
+    if (q.includes('guia') || q.includes('guías') || q.includes('material')) {
+      return 'Para gestionar guías de estudio:<br>1. Ve a <a class="athena-msg-link" href="/admin/core/guia/add/">Nueva Guía</a>.<br>2. Selecciona materia, curso y adjunta el PDF.<br>Consulta el repositorio en <a class="athena-msg-link" href="/admin/core/guia/">Guías de Estudio</a>.';
+    } else if (q.includes('circular') || q.includes('documento') || q.includes('cronograma')) {
+      return 'Para cargar circulares o cronogramas:<br>Haz clic en <a class="athena-msg-link" href="/admin/core/documento/add/">Agregar Documento</a> y clasifícalo por año y categoría.';
+    } else if (q.includes('noticia') || q.includes('comunicado')) {
+      return 'Para publicar noticias:<br>Ingresa a <a class="athena-msg-link" href="/admin/core/noticia/add/">Crear Noticia</a>, añade título, descripción e imagen destacada.';
+    } else if (q.includes('color') || q.includes('apariencia') || q.includes('diseño')) {
+      return 'Para personalizar colores en tiempo real:<br>Accede a <a class="athena-msg-link" href="/admin/core/configuracionapariencia/">Configuración de Apariencia</a> y usa los selectores visuales.';
+    } else if (q.includes('usuario') || q.includes('docente') || q.includes('profesor') || q.includes('permiso')) {
+      return 'Para administrar cuentas y roles:<br>Gestiona los perfiles desde <a class="athena-msg-link" href="/admin/auth/user/">Usuarios del Sistema</a>.';
+    }
+    return 'Estoy a tu disposición para asesorarte en cualquier módulo del panel y en la redacción formal de directrices y circulares escolares.';
+  }
+
+  function athenaAdminPregunta(tipo) {
+    const mapa = {
+      'guias': '¿Cómo subir una guía pedagógica a una materia?',
+      'circulares': '¿Cómo cargar una circular oficial o cronograma?',
+      'noticias': '¿Cómo publicar una noticia institucional?',
+      'colores': '¿Cómo cambiar los colores de la web pública?',
+      'usuarios': '¿Cómo crear usuarios docentes y asignar permisos?'
+    };
+    if (mapa[tipo]) {
+      responderAthenaAdmin(mapa[tipo]);
+    }
+  }
+
+  function enviarMensajeAthenaAdmin(e) {
+    e.preventDefault();
+    const input = document.getElementById('ath-admin-input');
+    const val = input.value.trim();
+    if (!val) return;
+    input.value = '';
+    responderAthenaAdmin(val);
+  }
+</script>

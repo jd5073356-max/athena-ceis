@@ -279,6 +279,58 @@ def _fallback_respuesta(q: str) -> str:
     return "Para brindarte información precisa sobre esa solicitud particular o trámites de constancias, por favor contacta a secretaría académica al celular <strong>310 871 0141</strong> o al correo <a class='athena-msg-link' href='mailto:iedceis@gmail.com'>iedceis@gmail.com</a>."
 
 
+def _fallback_admin_respuesta(q: str) -> str:
+    q = q.lower()
+    if any(w in q for w in ["guia", "guías", "taller", "material"]):
+        return (
+            "Para gestionar o subir guías de estudio pedagógicas:<br>"
+            "1. Ve a <a class='athena-msg-link' href='/admin/core/guia/add/'>Nueva Guía</a> en el panel.<br>"
+            "2. Asigna la materia, curso, período y adjunta el PDF correspondiente.<br>"
+            "Consulta el listado completo en el <a class='athena-msg-link' href='/admin/core/guia/'>Repositorio de Guías</a>."
+        )
+    elif any(w in q for w in ["circular", "documento", "cronograma", "horario", "formato", "manual"]):
+        return (
+            "Las circulares, cronogramas, formatos y manuales se administran en <strong>Documentos Institucionales</strong>:<br>"
+            "Haz clic en <a class='athena-msg-link' href='/admin/core/documento/add/'>Agregar Documento</a> para cargar un nuevo archivo oficial en PDF clasificándolo por año y categoría."
+        )
+    elif any(w in q for w in ["noticia", "comunicado", "publicar", "boletin", "boletín"]):
+        return (
+            "Para publicar noticias o comunicados en la página web pública:<br>"
+            "Ingresa a <a class='athena-msg-link' href='/admin/core/noticia/add/'>Crear Noticia</a>, diligencia título, texto, fecha y adjunta la imagen destacada."
+        )
+    elif any(w in q for w in ["color", "colores", "apariencia", "diseño", "paleta", "tema"]):
+        return (
+            "Puedes personalizar la apariencia y colores de la web pública en tiempo real desde:<br>"
+            "<a class='athena-msg-link' href='/admin/core/configuracionapariencia/'>Configuración de Apariencia</a>.<br>"
+            "Usa el selector visual de color para cambiar el azul primario, secundario o dorado institucional."
+        )
+    elif any(w in q for w in ["foto", "imagen", "galeria", "galería"]):
+        return (
+            "Para agregar fotografías al archivo visual de la institución:<br>"
+            "Entra a <a class='athena-msg-link' href='/admin/core/imagen/add/'>Agregar Imagen</a> y selecciona la sección a la que pertenece."
+        )
+    elif any(w in q for w in ["video", "youtube"]):
+        return (
+            "Para añadir videos institucionales:<br>"
+            "Ingresa a <a class='athena-msg-link' href='/admin/core/video/add/'>Nuevo Video</a> e introduce el título y el enlace o código de YouTube."
+        )
+    elif any(w in q for w in ["usuario", "clave", "contraseña", "docente", "profesor", "permiso", "rol"]):
+        return (
+            "La gestión de accesos y permisos se realiza en:<br>"
+            "<a class='athena-msg-link' href='/admin/auth/user/'>Usuarios del Sistema</a>. Desde allí puedes crear perfiles de docentes o coordinadores y otorgar permisos."
+        )
+    elif any(w in q for w in ["curso", "materia", "grado", "año", "periodo", "período"]):
+        return (
+            "La estructura académica se gestiona mediante la jerarquía:<br>"
+            "Años Escolares &rarr; Períodos &rarr; Cursos (1° a 11°) &rarr; Materias.<br>"
+            "Puedes revisarla y editarla directamente en el menú lateral del panel."
+        )
+    return (
+        "Estoy a tu disposición para asesorarte en la administración del panel (guías, circulares, noticias, apariencia, usuarios) "
+        "y en la redacción formal de comunicaciones institucionales para el colegio."
+    )
+
+
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
@@ -288,47 +340,77 @@ import urllib.request
 @csrf_exempt
 @require_POST
 def athena_chat_api(request):
-    """Endpoint de IA para el asistente Athena conectado a Groq."""
+    """Endpoint de IA para el asistente Athena conectado a Groq (modo público o asesor admin)."""
     try:
         data = json.loads(request.body.decode("utf-8"))
         mensaje = data.get("mensaje", "").strip()
+        contexto = data.get("contexto", "publico").strip().lower()
     except Exception:
         return JsonResponse({"error": "Formato inválido"}, status=400)
 
     if not mensaje:
         return JsonResponse({"error": "Mensaje requerido"}, status=400)
 
+    es_admin = (contexto == "admin") or (request.user.is_authenticated and request.user.is_staff)
+
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
-        return JsonResponse({"respuesta": _fallback_respuesta(mensaje)})
+        fallback = _fallback_admin_respuesta(mensaje) if es_admin else _fallback_respuesta(mensaje)
+        return JsonResponse({"respuesta": fallback})
 
-    system_prompt = (
-        "Eres Athena, el asistente virtual institucional de la Institución Educativa Departamental "
-        "Complejo Educativo Integral Sopó (I.E.D. CEIS), ubicada en Sopó, Cundinamarca, Colombia.\n"
-        "Información Institucional Oficial:\n"
-        "- Rector: Lic. Juan Carlos Aguirre Nieto.\n"
-        "- Lema: Paz, Educación y Progreso.\n"
-        "- Ubicación: Carrera 10 No. 1-31, Sopó, Cundinamarca.\n"
-        "- Celular / WhatsApp de secretaría: 310 871 0141.\n"
-        "- Correo electrónico: iedceis@gmail.com.\n"
-        "- Horario de atención presencial: Martes, miércoles y jueves de 8:00 a.m. a 12:00 m.\n"
-        "- Pre-Matrícula 2026: Formulario y requisitos disponibles en /p/pre_matricula_2026/.\n"
-        "- Guías escolares y circulares: Repositorio por año, grado y materia disponible en /documentos/.\n"
-        "- Proyectos institucionales: SERC (Sistema Educativo Relacional), PRAE, PILEO, Ceisópolis (en /proyectos/).\n"
-        "Reglas de Estilo:\n"
-        "1. Responde en tono formal, conciso, respetuoso y claro (máximo 1 o 2 párrafos cortos).\n"
-        "2. NUNCA uses emojis ni símbolos informales.\n"
-        "3. Si refieres a secciones de la web, incluye el enlace en formato HTML: <a class='athena-msg-link' href='/documentos/'>Circulares y Guías</a> o <a class='athena-msg-link' href='/p/pre_matricula_2026/'>Pre-Matrícula 2026</a>.\n"
-        "4. Si no sabes un dato específico, remite a la secretaría académica (310 871 0141 o iedceis@gmail.com)."
-    )
+    if es_admin:
+        system_prompt = (
+            "Eres Athena, la Asesora Oficial y Copiloto de Gestión del Panel del Rector de la "
+            "Institución Educativa Departamental Complejo Educativo Integral Sopó (I.E.D. CEIS), ubicada en Sopó, Cundinamarca.\n"
+            "Tu misión es asesorar al rector, directivos y administradores en la operación del CMS institucional "
+            "y en la gestión escolar directiva (redacción de circulares, directrices académicas, comités, normativa MEN).\n\n"
+            "Módulos y Enlaces Directos del Panel de Administración:\n"
+            "- Guías Pedagógicas: /admin/core/guia/ (Subir nueva: /admin/core/guia/add/). Permite cargar PDFs didácticos organizados por año, período, curso y materia.\n"
+            "- Documentos Institucionales y Circulares: /admin/core/documento/ (Cargar nuevo: /admin/core/documento/add/). Circulares oficiales, cronogramas, formatos de secretaría y manual escolar.\n"
+            "- Noticias Institucionales: /admin/core/noticia/ (Nueva noticia: /admin/core/noticia/add/). Publicación con título, fecha, contenido e imagen destacada.\n"
+            "- Galería de Imágenes: /admin/core/imagen/ (Subir imagen: /admin/core/imagen/add/). Carga de fotografías por sección (Colegio, Proyectos, Eventos).\n"
+            "- Videos Institucionales: /admin/core/video/ (Nuevo video: /admin/core/video/add/). Vinculación de videos mediante enlace o ID de YouTube.\n"
+            "- Estructura Académica: /admin/core/anio/, /admin/core/periodo/, /admin/core/curso/, /admin/core/materia/. Configuración de años, períodos, grados (Preescolar a 11°) y materias.\n"
+            "- Apariencia y Colores: /admin/core/configuracionapariencia/. Selector interactivo de colores de la web pública (azul, dorado, fondo) en vivo sin tocar código.\n"
+            "- Usuarios y Roles: /admin/auth/user/ (Crear usuario: /admin/auth/user/add/). Cuentas de docentes, coordinadores o administradores con permisos de acceso.\n\n"
+            "Contexto Institucional:\n"
+            "- Rector: Lic. Juan Carlos Aguirre Nieto. Lema: Paz, Educación y Progreso.\n"
+            "- Modelo: Sistema Educativo Relacional (SERC), junto con PRAE, PILEO y Ceisópolis.\n"
+            "- Puedes redactar borradores formales y diplomáticos de circulares a padres, comunicados internos y actas según normativa educativa colombiana (Decreto 1075 de 2015).\n\n"
+            "Reglas de Estilo:\n"
+            "1. Responde con tono ejecutivo, formal, respetuoso, conciso y orientador (máximo 2 párrafos cortos).\n"
+            "2. NUNCA uses emojis ni símbolos informales.\n"
+            "3. Cuando refieras a acciones del panel, incluye el enlace en HTML: ej. <a class='athena-msg-link' href='/admin/core/guia/add/'>Cargar nueva guía</a>.\n"
+            "4. Si te piden redactar un texto para circular o comunicado institucional, proporciónalo listo para publicar."
+        )
+    else:
+        system_prompt = (
+            "Eres Athena, el asistente virtual institucional de la Institución Educativa Departamental "
+            "Complejo Educativo Integral Sopó (I.E.D. CEIS), ubicada en Sopó, Cundinamarca, Colombia.\n"
+            "Información Institucional Oficial:\n"
+            "- Rector: Lic. Juan Carlos Aguirre Nieto.\n"
+            "- Lema: Paz, Educación y Progreso.\n"
+            "- Ubicación: Carrera 10 No. 1-31, Sopó, Cundinamarca.\n"
+            "- Celular / WhatsApp de secretaría: 310 871 0141.\n"
+            "- Correo electrónico: iedceis@gmail.com.\n"
+            "- Horario de atención presencial: Martes, miércoles y jueves de 8:00 a.m. a 12:00 m.\n"
+            "- Pre-Matrícula 2026: Formulario y requisitos disponibles en /p/pre_matricula_2026/.\n"
+            "- Guías escolares y circulares: Repositorio por año, grado y materia disponible en /documentos/.\n"
+            "- Proyectos institucionales: SERC (Sistema Educativo Relacional), PRAE, PILEO, Ceisópolis (en /proyectos/).\n"
+            "Reglas de Estilo:\n"
+            "1. Responde en tono formal, conciso, respetuoso y claro (máximo 1 o 2 párrafos cortos).\n"
+            "2. NUNCA uses emojis ni símbolos informales.\n"
+            "3. Si refieres a secciones de la web, incluye el enlace en formato HTML: <a class='athena-msg-link' href='/documentos/'>Circulares y Guías</a> o <a class='athena-msg-link' href='/p/pre_matricula_2026/'>Pre-Matrícula 2026</a>.\n"
+            "4. Si no sabes un dato específico, remite a la secretaría académica (310 871 0141 o iedceis@gmail.com)."
+        )
 
     payload = {
         "model": "openai/gpt-oss-20b",
         "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": mensaje[:500]},
+            {"role": "user", "content": mensaje[:600]},
         ],
-        "max_tokens": 300,
+        "max_tokens": 350,
         "temperature": 0.3,
     }
 
@@ -348,5 +430,6 @@ def athena_chat_api(request):
             texto_ia = texto_ia.replace("\n", "<br>")
             return JsonResponse({"respuesta": texto_ia})
     except Exception:
-        return JsonResponse({"respuesta": _fallback_respuesta(mensaje)})
+        fallback = _fallback_admin_respuesta(mensaje) if es_admin else _fallback_respuesta(mensaje)
+        return JsonResponse({"respuesta": fallback})
 
