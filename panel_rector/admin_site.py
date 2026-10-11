@@ -88,8 +88,8 @@ class AthenaAdminSite(admin.AdminSite):
              "url": reverse("admin:core_noticia_add")},
             {"label": "Subir imagen", "icon": "add_photo_alternate", "tone": "secondary",
              "url": reverse("admin:core_imagen_add")},
-            {"label": "Gestión de períodos", "icon": "event", "tone": "muted",
-             "url": reverse("admin:core_periodo_changelist")},
+            {"label": "Personalizar Colores", "icon": "palette", "tone": "muted",
+             "url": reverse("admin:core_configuracionapariencia_changelist")},
         ]
 
         # --- Actividad reciente (log de auditoría real de Django) ---

@@ -41,6 +41,13 @@ class ConfiguracionAparienciaAdmin(admin.ModelAdmin):
             return False
         return super().has_add_permission(request)
 
+    def changelist_view(self, request, extra_context=None):
+        config = ConfiguracionApariencia.objects.first()
+        if config:
+            from django.shortcuts import redirect
+            return redirect(f"/admin/core/configuracionapariencia/{config.pk}/change/")
+        return super().changelist_view(request, extra_context)
+
 
 # ===========================================================================
 #  Inlines: edición jerárquica guiada
