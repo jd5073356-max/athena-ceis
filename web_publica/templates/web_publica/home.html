@@ -20,12 +20,12 @@
 <section class="hero-section">
   <div class="contenedor hero-grid">
     <div>
-      <span class="hero-badge">Bienvenidos a la comunidad CEIS</span>
+      <p style="color:var(--dorado-claro);font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:.82rem;margin:0 0 10px">Sistema Educativo Relacional Cundinamarca</p>
       <h1 class="hero-title">{{ secciones.nombre_sitio.titulo|default:"I.E.D. CEIS Sopó" }}</h1>
       <p class="hero-desc">{{ secciones.lema.contenido|default:"Paz, Educación, Progreso" }}</p>
       <div class="hero-actions">
-        <a class="btn btn-dorado" href="{% url 'web_publica:documentos' %}">📚 Circulares, Cronograma y Guías</a>
-        <a class="btn" href="{% url 'web_publica:pagina_detalle' 'pre_matricula_2026' %}" style="border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1)">📝 Pre-Matrícula 2026</a>
+        <a class="btn btn-dorado" href="{% url 'web_publica:documentos' %}">Circulares, Cronograma y Guías</a>
+        <a class="btn" href="{% url 'web_publica:pagina_detalle' 'pre_matricula_2026' %}" style="border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.08)">Pre-Matrícula 2026</a>
       </div>
     </div>
     {% if imagenes_inicio %}
