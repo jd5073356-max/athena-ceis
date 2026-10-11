@@ -128,9 +128,45 @@
     .search-item-meta{font-size:.76rem;background:var(--azul-claro);color:#fff;padding:3px 8px;border-radius:4px;font-weight:700}
 
     /* Botón Flotante Volver Arriba */
-    .btn-back-top{position:fixed;bottom:28px;right:28px;width:46px;height:46px;background:var(--azul);color:#fff;border:none;border-radius:50%;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:var(--sombra-lg);z-index:90;transition:all .25s ease}
-    .btn-back-top:hover{background:var(--dorado);color:var(--azul);transform:translateY(-4px)}
+    .btn-back-top{position:fixed;bottom:92px;right:28px;width:44px;height:44px;background:var(--azul);color:#fff;border:none;border-radius:50%;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:var(--sombra-md);z-index:90;transition:all .25s ease}
+    .btn-back-top:hover{background:var(--dorado);color:var(--azul);transform:translateY(-3px)}
     .btn-back-top.show{display:flex}
+
+    /* Asistente Institucional Athena */
+    .athena-bot-trigger{position:fixed;bottom:24px;right:24px;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--azul) 0%,var(--azul-claro) 100%);border:2.5px solid var(--dorado);box-shadow:0 8px 24px rgba(10,25,49,0.35);cursor:pointer;z-index:98;display:flex;align-items:center;justify-content:center;padding:0;transition:all .25s cubic-bezier(0.4, 0, 0.2, 1)}
+    .athena-bot-trigger:hover{transform:translateY(-3px) scale(1.05);box-shadow:0 12px 30px rgba(10,25,49,0.45);border-color:var(--dorado-claro)}
+    .athena-bot-trigger img{width:34px;height:34px;object-fit:contain;border-radius:50%;display:block}
+    .athena-bot-badge{position:absolute;top:2px;right:2px;width:12px;height:12px;background:#10b981;border:2.5px solid #fff;border-radius:50%}
+
+    .athena-chat-window{display:none;position:fixed;bottom:90px;right:24px;width:370px;max-width:calc(100vw - 32px);height:520px;max-height:calc(100vh - 110px);background:#fff;border-radius:var(--radius-lg);box-shadow:0 18px 45px rgba(10,25,49,0.3);border:1px solid var(--borde);z-index:99;flex-direction:column;overflow:hidden;animation:athenaIn .25s cubic-bezier(0.16, 1, 0.3, 1)}
+    .athena-chat-window.active{display:flex}
+    @keyframes athenaIn{from{opacity:0;transform:translateY(14px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+    .athena-header{background:linear-gradient(135deg,var(--azul) 0%,var(--azul-claro) 100%);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--dorado)}
+    .athena-header-info{display:flex;align-items:center;gap:11px}
+    .athena-header-avatar{width:38px;height:38px;border-radius:50%;background:#fff;border:1.5px solid var(--dorado);display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .athena-header-avatar img{width:100%;height:100%;object-fit:contain}
+    .athena-header-title{font-weight:700;font-size:1rem;color:#fff;line-height:1.2}
+    .athena-header-status{font-size:.74rem;color:var(--dorado-claro);display:flex;align-items:center;gap:5px;font-weight:500}
+    .athena-header-status::before{content:"";width:6px;height:6px;background:#10b981;border-radius:50%;display:inline-block}
+    .athena-header-close{background:none;border:none;color:#cbd5e1;cursor:pointer;padding:4px;border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+    .athena-header-close:hover{color:#fff;background:rgba(255,255,255,0.15)}
+
+    .athena-messages{flex:1;overflow-y:auto;padding:16px;background:#f8fafc;display:flex;flex-direction:column;gap:12px}
+    .athena-msg{max-width:86%;padding:10px 14px;border-radius:12px;font-size:.88rem;line-height:1.55}
+    .athena-msg-bot{align-self:flex-start;background:#fff;color:var(--texto);border:1px solid var(--borde);border-bottom-left-radius:2px;box-shadow:var(--sombra-sm)}
+    .athena-msg-user{align-self:flex-end;background:var(--azul);color:#fff;border-bottom-right-radius:2px}
+    .athena-quick-actions{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+    .athena-quick-btn{background:#fff;border:1px solid var(--borde-suave);color:var(--azul);font-size:.82rem;font-weight:600;padding:8px 12px;border-radius:6px;cursor:pointer;text-align:left;transition:all .2s;display:flex;align-items:center;justify-content:space-between}
+    .athena-quick-btn:hover{background:var(--gris);border-color:var(--dorado);color:var(--azul-claro);padding-left:14px}
+    .athena-msg-link{display:inline-block;margin-top:6px;color:var(--azul);font-weight:700;text-decoration:underline}
+    .athena-msg-link:hover{color:var(--dorado)}
+
+    .athena-input-bar{padding:10px 14px;background:#fff;border-top:1px solid var(--borde);display:flex;align-items:center;gap:8px}
+    .athena-input{flex:1;border:1px solid var(--borde);border-radius:20px;padding:9px 14px;font-size:.86rem;font-family:inherit;outline:none;transition:border-color .2s}
+    .athena-input:focus{border-color:var(--dorado)}
+    .athena-send{background:var(--azul);color:#fff;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+    .athena-send:hover{background:var(--azul-claro)}
 
     @media(max-width:860px){
       .cabecera{flex-direction:column;align-items:flex-start}
@@ -248,6 +284,48 @@
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
   </button>
 
+  <!-- Botón Flotante Athena -->
+  <button id="athena-bot-trigger" class="athena-bot-trigger" onclick="alternarAthenaChat()" title="Asistente Institucional Athena" aria-label="Abrir asistente institucional Athena">
+    <img src="{% static 'logos/athena_isotipo_limpio.svg' %}" alt="Athena">
+    <span class="athena-bot-badge"></span>
+  </button>
+
+  <!-- Ventana de Chat Athena -->
+  <div id="athena-chat-window" class="athena-chat-window" role="dialog" aria-labelledby="athena-title">
+    <div class="athena-header">
+      <div class="athena-header-info">
+        <div class="athena-header-avatar">
+          <img src="{% static 'logos/athena_isotipo_limpio.svg' %}" alt="Athena">
+        </div>
+        <div>
+          <div id="athena-title" class="athena-header-title">Athena</div>
+          <div class="athena-header-status">Asistente Institucional</div>
+        </div>
+      </div>
+      <button class="athena-header-close" onclick="alternarAthenaChat()" aria-label="Cerrar asistente">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div id="athena-messages" class="athena-messages">
+      <div class="athena-msg athena-msg-bot">
+        Saludos. Soy <strong>Athena</strong>, asistente institucional de la I.E.D. CEIS Sopó. ¿En qué información puedo colaborarte hoy?
+        <div class="athena-quick-actions">
+          <button class="athena-quick-btn" onclick="athenaPregunta('guias')">Circulares, Cronograma y Guías</button>
+          <button class="athena-quick-btn" onclick="athenaPregunta('matricula')">Pre-Matrícula 2026</button>
+          <button class="athena-quick-btn" onclick="athenaPregunta('horarios')">Horarios de Secretaría</button>
+          <button class="athena-quick-btn" onclick="athenaPregunta('contacto')">Canales de Contacto</button>
+          <button class="athena-quick-btn" onclick="athenaPregunta('proyectos')">Nuestros Proyectos (SERC)</button>
+        </div>
+      </div>
+    </div>
+    <form class="athena-input-bar" onsubmit="enviarMensajeAthena(event)">
+      <input type="text" id="athena-input" class="athena-input" placeholder="Escribe tu consulta institucional..." autocomplete="off">
+      <button type="submit" class="athena-send" aria-label="Enviar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
+    </form>
+  </div>
+
   <script>
     // Atajo Ctrl+K / Cmd+K para abrir buscador
     document.addEventListener('keydown', function(e) {
@@ -256,6 +334,7 @@
         abrirBuscador();
       } else if (e.key === 'Escape') {
         cerrarBuscador();
+        cerrarAthenaChat();
       }
     });
 
@@ -307,6 +386,79 @@
         btn.classList.remove('show');
       }
     });
+
+    // Control del Asistente Athena
+    function alternarAthenaChat() {
+      const win = document.getElementById('athena-chat-window');
+      const activo = win.classList.toggle('active');
+      if (activo) {
+        setTimeout(() => document.getElementById('athena-input').focus(), 150);
+      }
+    }
+
+    function cerrarAthenaChat() {
+      const win = document.getElementById('athena-chat-window');
+      if (win) win.classList.remove('active');
+    }
+
+    function responderAthena(textoUsuario) {
+      const container = document.getElementById('athena-messages');
+      const userDiv = document.createElement('div');
+      userDiv.className = 'athena-msg athena-msg-user';
+      userDiv.textContent = textoUsuario;
+      container.appendChild(userDiv);
+      container.scrollTop = container.scrollHeight;
+
+      const botDiv = document.createElement('div');
+      botDiv.className = 'athena-msg athena-msg-bot';
+
+      const q = textoUsuario.toLowerCase();
+      let resp = '';
+
+      if (q.includes('guia') || q.includes('guías') || q.includes('circular') || q.includes('cronograma') || q.includes('taller')) {
+        resp = 'Puedes consultar y descargar las circulares, cronogramas y guías SERC organizadas por año, nivel, grado y materia en el repositorio institucional:<br><a class="athena-msg-link" href="/documentos/">Ir al repositorio de Circulares y Guías</a>';
+      } else if (q.includes('matricula') || q.includes('matrícula') || q.includes('inscripci') || q.includes('cupo') || q.includes('2026')) {
+        resp = 'El proceso de Pre-Matrícula 2026 se realiza diligenciando la hoja de matrícula y adjuntando en PDF el documento de identidad del estudiante y certificado de afiliación en salud:<br><a class="athena-msg-link" href="/p/pre_matricula_2026/">Ver detalles de Pre-Matrícula 2026</a>';
+      } else if (q.includes('horario') || q.includes('atencion') || q.includes('atención') || q.includes('presencial')) {
+        resp = 'La secretaría académica atiende presencialmente en la sede principal (Carrera 10 No. 1-31, Sopó, Cundinamarca):<br><strong>Martes, miércoles y jueves</strong><br>de <strong>8:00 a.m. a 12:00 m.</strong>';
+      } else if (q.includes('contacto') || q.includes('telefono') || q.includes('teléfono') || q.includes('whatsapp') || q.includes('correo') || q.includes('email') || q.includes('celular')) {
+        resp = 'Canales de atención oficial de la I.E.D. CEIS:<br>• Celular / WhatsApp: <a class="athena-msg-link" href="https://wa.me/573108710141" target="_blank" rel="noopener">310 871 0141</a><br>• Correo institucional: <a class="athena-msg-link" href="mailto:iedceis@gmail.com">iedceis@gmail.com</a>';
+      } else if (q.includes('proyecto') || q.includes('serc') || q.includes('prae') || q.includes('pileo') || q.includes('ceisopolis')) {
+        resp = 'La institución cuenta con proyectos formativos activos como el Sistema Educativo Relacional (SERC), PRAE ambiental, PILEO y Ceisópolis:<br><a class="athena-msg-link" href="/proyectos/">Ver Proyectos Institucionales</a>';
+      } else if (q.includes('rector') || q.includes('colegio') || q.includes('mision') || q.includes('misión') || q.includes('vision') || q.includes('visión') || q.includes('nosotros')) {
+        resp = 'La I.E.D. Complejo Educativo Integral Sopó (CEIS) es dirigida por el Lic. Juan Carlos Aguirre Nieto bajo el lema Paz, Educación y Progreso:<br><a class="athena-msg-link" href="/colegio/">Conocer más sobre el colegio</a>';
+      } else {
+        resp = 'Para brindarte información precisa sobre esa solicitud particular o trámites de constancias, por favor contacta a secretaría académica al celular <strong>310 871 0141</strong> o al correo <a class="athena-msg-link" href="mailto:iedceis@gmail.com">iedceis@gmail.com</a>.';
+      }
+
+      setTimeout(() => {
+        botDiv.innerHTML = resp;
+        container.appendChild(botDiv);
+        container.scrollTop = container.scrollHeight;
+      }, 300);
+    }
+
+    function athenaPregunta(tipo) {
+      const mapa = {
+        'guias': '¿Dónde encuentro las guías y circulares?',
+        'matricula': '¿Cómo es el proceso de Pre-Matrícula 2026?',
+        'horarios': '¿Cuáles son los horarios de atención?',
+        'contacto': '¿Cuáles son los canales de contacto?',
+        'proyectos': '¿Qué proyectos tiene el colegio?'
+      };
+      if (mapa[tipo]) {
+        responderAthena(mapa[tipo]);
+      }
+    }
+
+    function enviarMensajeAthena(e) {
+      e.preventDefault();
+      const input = document.getElementById('athena-input');
+      const val = input.value.trim();
+      if (!val) return;
+      input.value = '';
+      responderAthena(val);
+    }
   </script>
 </body>
 </html>
