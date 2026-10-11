@@ -401,7 +401,7 @@
       if (win) win.classList.remove('active');
     }
 
-    function responderAthena(textoUsuario) {
+    async function responderAthena(textoUsuario) {
       const container = document.getElementById('athena-messages');
       const userDiv = document.createElement('div');
       userDiv.className = 'athena-msg athena-msg-user';
@@ -409,33 +409,47 @@
       container.appendChild(userDiv);
       container.scrollTop = container.scrollHeight;
 
+      // Indicador de carga
       const botDiv = document.createElement('div');
       botDiv.className = 'athena-msg athena-msg-bot';
+      botDiv.innerHTML = '<span style="opacity:0.6;font-style:italic">Consultando información...</span>';
+      container.appendChild(botDiv);
+      container.scrollTop = container.scrollHeight;
 
-      const q = textoUsuario.toLowerCase();
-      let resp = '';
-
-      if (q.includes('guia') || q.includes('guías') || q.includes('circular') || q.includes('cronograma') || q.includes('taller')) {
-        resp = 'Puedes consultar y descargar las circulares, cronogramas y guías SERC organizadas por año, nivel, grado y materia en el repositorio institucional:<br><a class="athena-msg-link" href="/documentos/">Ir al repositorio de Circulares y Guías</a>';
-      } else if (q.includes('matricula') || q.includes('matrícula') || q.includes('inscripci') || q.includes('cupo') || q.includes('2026')) {
-        resp = 'El proceso de Pre-Matrícula 2026 se realiza diligenciando la hoja de matrícula y adjuntando en PDF el documento de identidad del estudiante y certificado de afiliación en salud:<br><a class="athena-msg-link" href="/p/pre_matricula_2026/">Ver detalles de Pre-Matrícula 2026</a>';
-      } else if (q.includes('horario') || q.includes('atencion') || q.includes('atención') || q.includes('presencial')) {
-        resp = 'La secretaría académica atiende presencialmente en la sede principal (Carrera 10 No. 1-31, Sopó, Cundinamarca):<br><strong>Martes, miércoles y jueves</strong><br>de <strong>8:00 a.m. a 12:00 m.</strong>';
-      } else if (q.includes('contacto') || q.includes('telefono') || q.includes('teléfono') || q.includes('whatsapp') || q.includes('correo') || q.includes('email') || q.includes('celular')) {
-        resp = 'Canales de atención oficial de la I.E.D. CEIS:<br>• Celular / WhatsApp: <a class="athena-msg-link" href="https://wa.me/573108710141" target="_blank" rel="noopener">310 871 0141</a><br>• Correo institucional: <a class="athena-msg-link" href="mailto:iedceis@gmail.com">iedceis@gmail.com</a>';
-      } else if (q.includes('proyecto') || q.includes('serc') || q.includes('prae') || q.includes('pileo') || q.includes('ceisopolis')) {
-        resp = 'La institución cuenta con proyectos formativos activos como el Sistema Educativo Relacional (SERC), PRAE ambiental, PILEO y Ceisópolis:<br><a class="athena-msg-link" href="/proyectos/">Ver Proyectos Institucionales</a>';
-      } else if (q.includes('rector') || q.includes('colegio') || q.includes('mision') || q.includes('misión') || q.includes('vision') || q.includes('visión') || q.includes('nosotros')) {
-        resp = 'La I.E.D. Complejo Educativo Integral Sopó (CEIS) es dirigida por el Lic. Juan Carlos Aguirre Nieto bajo el lema Paz, Educación y Progreso:<br><a class="athena-msg-link" href="/colegio/">Conocer más sobre el colegio</a>';
-      } else {
-        resp = 'Para brindarte información precisa sobre esa solicitud particular o trámites de constancias, por favor contacta a secretaría académica al celular <strong>310 871 0141</strong> o al correo <a class="athena-msg-link" href="mailto:iedceis@gmail.com">iedceis@gmail.com</a>.';
+      try {
+        const res = await fetch('/api/chat/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mensaje: textoUsuario })
+        });
+        const data = await res.json();
+        if (data.respuesta) {
+          botDiv.innerHTML = data.respuesta;
+        } else {
+          botDiv.innerHTML = fallbackLocalAthena(textoUsuario);
+        }
+      } catch (err) {
+        botDiv.innerHTML = fallbackLocalAthena(textoUsuario);
       }
+      container.scrollTop = container.scrollHeight;
+    }
 
-      setTimeout(() => {
-        botDiv.innerHTML = resp;
-        container.appendChild(botDiv);
-        container.scrollTop = container.scrollHeight;
-      }, 300);
+    function fallbackLocalAthena(textoUsuario) {
+      const q = textoUsuario.toLowerCase();
+      if (q.includes('guia') || q.includes('guías') || q.includes('circular') || q.includes('cronograma') || q.includes('taller')) {
+        return 'Puedes consultar y descargar las circulares, cronogramas y guías SERC organizadas por año, nivel, grado y materia en el repositorio institucional:<br><a class="athena-msg-link" href="/documentos/">Ir al repositorio de Circulares y Guías</a>';
+      } else if (q.includes('matricula') || q.includes('matrícula') || q.includes('inscripci') || q.includes('cupo') || q.includes('2026')) {
+        return 'El proceso de Pre-Matrícula 2026 se realiza diligenciando la hoja de matrícula y adjuntando en PDF el documento de identidad del estudiante y certificado de afiliación en salud:<br><a class="athena-msg-link" href="/p/pre_matricula_2026/">Ver detalles de Pre-Matrícula 2026</a>';
+      } else if (q.includes('horario') || q.includes('atencion') || q.includes('atención') || q.includes('presencial')) {
+        return 'La secretaría académica atiende presencialmente en la sede principal (Carrera 10 No. 1-31, Sopó, Cundinamarca):<br><strong>Martes, miércoles y jueves</strong><br>de <strong>8:00 a.m. a 12:00 m.</strong>';
+      } else if (q.includes('contacto') || q.includes('telefono') || q.includes('teléfono') || q.includes('whatsapp') || q.includes('correo') || q.includes('email') || q.includes('celular')) {
+        return 'Canales de atención oficial de la I.E.D. CEIS:<br>• Celular / WhatsApp: <a class="athena-msg-link" href="https://wa.me/573108710141" target="_blank" rel="noopener">310 871 0141</a><br>• Correo institucional: <a class="athena-msg-link" href="mailto:iedceis@gmail.com">iedceis@gmail.com</a>';
+      } else if (q.includes('proyecto') || q.includes('serc') || q.includes('prae') || q.includes('pileo') || q.includes('ceisopolis')) {
+        return 'La institución cuenta con proyectos formativos activos como el Sistema Educativo Relacional (SERC), PRAE ambiental, PILEO y Ceisópolis:<br><a class="athena-msg-link" href="/proyectos/">Ver Proyectos Institucionales</a>';
+      } else if (q.includes('rector') || q.includes('colegio') || q.includes('mision') || q.includes('misión') || q.includes('vision') || q.includes('visión') || q.includes('nosotros')) {
+        return 'La I.E.D. Complejo Educativo Integral Sopó (CEIS) es dirigida por el Lic. Juan Carlos Aguirre Nieto bajo el lema Paz, Educación y Progreso:<br><a class="athena-msg-link" href="/colegio/">Conocer más sobre el colegio</a>';
+      }
+      return 'Para brindarte información precisa sobre esa solicitud particular o trámites de constancias, por favor contacta a secretaría académica al celular <strong>310 871 0141</strong> o al correo <a class="athena-msg-link" href="mailto:iedceis@gmail.com">iedceis@gmail.com</a>.';
     }
 
     function athenaPregunta(tipo) {

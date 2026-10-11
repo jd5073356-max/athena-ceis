@@ -29,4 +29,7 @@ urlpatterns = [
     path("noticias/<int:noticia_id>/", views.noticia_detalle, name="noticia_detalle"),
     path("galeria/", views.galeria, name="galeria"),
     path("videos/", views.videos, name="videos"),
+
+    # Asistente Virtual Athena (IA)
+    path("api/chat/", views.athena_chat_api, name="athena_chat_api"),
 ]

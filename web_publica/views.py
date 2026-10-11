@@ -259,3 +259,94 @@ def documento_visor(request, pk):
         "es_pdf": doc.es_pdf,
         "es_imagen": nombre.endswith((".jpg", ".jpeg", ".png", ".webp", ".gif")),
     })
+
+
+# --- Asistente Virtual Athena (Groq AI) --------------------------------------
+def _fallback_respuesta(q: str) -> str:
+    q = q.lower()
+    if any(w in q for w in ["guia", "guías", "circular", "cronograma", "taller"]):
+        return "Puedes consultar y descargar las circulares, cronogramas y guías SERC organizadas por año, nivel, grado y materia en el repositorio institucional: <br><a class='athena-msg-link' href='/documentos/'>Ir a Circulares, Cronograma y Guías</a>"
+    elif any(w in q for w in ["matricula", "matrícula", "inscripci", "cupo", "2026"]):
+        return "El proceso de Pre-Matrícula 2026 se realiza diligenciando la hoja de matrícula y adjuntando en PDF el documento de identidad del estudiante y certificado de afiliación en salud: <br><a class='athena-msg-link' href='/p/pre_matricula_2026/'>Ver detalles de Pre-Matrícula 2026</a>"
+    elif any(w in q for w in ["horario", "atencion", "atención", "presencial"]):
+        return "La secretaría académica atiende presencialmente en la sede principal (Carrera 10 No. 1-31, Sopó, Cundinamarca) los días <strong>martes, miércoles y jueves</strong> de <strong>8:00 a.m. a 12:00 m.</strong>"
+    elif any(w in q for w in ["contacto", "telefono", "teléfono", "whatsapp", "correo", "email", "celular"]):
+        return "Canales de atención oficial de la I.E.D. CEIS:<br>• Celular / WhatsApp: <a class='athena-msg-link' href='https://wa.me/573108710141' target='_blank' rel='noopener'>310 871 0141</a><br>• Correo institucional: <a class='athena-msg-link' href='mailto:iedceis@gmail.com'>iedceis@gmail.com</a>"
+    elif any(w in q for w in ["proyecto", "serc", "prae", "pileo", "ceisopolis"]):
+        return "La institución cuenta con proyectos formativos activos como el Sistema Educativo Relacional (SERC), PRAE ambiental, PILEO y Ceisópolis: <br><a class='athena-msg-link' href='/proyectos/'>Ver Proyectos Institucionales</a>"
+    elif any(w in q for w in ["rector", "colegio", "mision", "misión", "vision", "visión", "nosotros"]):
+        return "La I.E.D. Complejo Educativo Integral Sopó (CEIS) es dirigida por el Lic. Juan Carlos Aguirre Nieto bajo el lema Paz, Educación y Progreso: <br><a class='athena-msg-link' href='/colegio/'>Conocer más sobre el colegio</a>"
+    return "Para brindarte información precisa sobre esa solicitud particular o trámites de constancias, por favor contacta a secretaría académica al celular <strong>310 871 0141</strong> o al correo <a class='athena-msg-link' href='mailto:iedceis@gmail.com'>iedceis@gmail.com</a>."
+
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+import json
+import urllib.request
+
+@csrf_exempt
+@require_POST
+def athena_chat_api(request):
+    """Endpoint de IA para el asistente Athena conectado a Groq."""
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        mensaje = data.get("mensaje", "").strip()
+    except Exception:
+        return JsonResponse({"error": "Formato inválido"}, status=400)
+
+    if not mensaje:
+        return JsonResponse({"error": "Mensaje requerido"}, status=400)
+
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        return JsonResponse({"respuesta": _fallback_respuesta(mensaje)})
+
+    system_prompt = (
+        "Eres Athena, el asistente virtual institucional de la Institución Educativa Departamental "
+        "Complejo Educativo Integral Sopó (I.E.D. CEIS), ubicada en Sopó, Cundinamarca, Colombia.\n"
+        "Información Institucional Oficial:\n"
+        "- Rector: Lic. Juan Carlos Aguirre Nieto.\n"
+        "- Lema: Paz, Educación y Progreso.\n"
+        "- Ubicación: Carrera 10 No. 1-31, Sopó, Cundinamarca.\n"
+        "- Celular / WhatsApp de secretaría: 310 871 0141.\n"
+        "- Correo electrónico: iedceis@gmail.com.\n"
+        "- Horario de atención presencial: Martes, miércoles y jueves de 8:00 a.m. a 12:00 m.\n"
+        "- Pre-Matrícula 2026: Formulario y requisitos disponibles en /p/pre_matricula_2026/.\n"
+        "- Guías escolares y circulares: Repositorio por año, grado y materia disponible en /documentos/.\n"
+        "- Proyectos institucionales: SERC (Sistema Educativo Relacional), PRAE, PILEO, Ceisópolis (en /proyectos/).\n"
+        "Reglas de Estilo:\n"
+        "1. Responde en tono formal, conciso, respetuoso y claro (máximo 1 o 2 párrafos cortos).\n"
+        "2. NUNCA uses emojis ni símbolos informales.\n"
+        "3. Si refieres a secciones de la web, incluye el enlace en formato HTML: <a class='athena-msg-link' href='/documentos/'>Circulares y Guías</a> o <a class='athena-msg-link' href='/p/pre_matricula_2026/'>Pre-Matrícula 2026</a>.\n"
+        "4. Si no sabes un dato específico, remite a la secretaría académica (310 871 0141 o iedceis@gmail.com)."
+    )
+
+    payload = {
+        "model": "openai/gpt-oss-20b",
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": mensaje[:500]},
+        ],
+        "max_tokens": 300,
+        "temperature": 0.3,
+    }
+
+    try:
+        req = urllib.request.Request(
+            "https://api.groq.com/openai/v1/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+                "User-Agent": "AthenaCEIS/1.0",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=6) as resp:
+            res = json.loads(resp.read().decode("utf-8"))
+            texto_ia = res["choices"][0]["message"]["content"].strip()
+            texto_ia = texto_ia.replace("\n", "<br>")
+            return JsonResponse({"respuesta": texto_ia})
+    except Exception:
+        return JsonResponse({"respuesta": _fallback_respuesta(mensaje)})
+
