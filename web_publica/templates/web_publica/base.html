@@ -128,23 +128,23 @@
     .search-item-meta{font-size:.76rem;background:var(--azul-claro);color:#fff;padding:3px 8px;border-radius:4px;font-weight:700}
 
     /* Botón Flotante Volver Arriba */
-    .btn-back-top{position:fixed;bottom:92px;right:28px;width:44px;height:44px;background:var(--azul);color:#fff;border:none;border-radius:50%;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:var(--sombra-md);z-index:90;transition:all .25s ease}
+    .btn-back-top{position:fixed;bottom:116px;right:28px;width:44px;height:44px;background:var(--azul);color:#fff;border:none;border-radius:50%;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:var(--sombra-md);z-index:90;transition:all .25s ease}
     .btn-back-top:hover{background:var(--dorado);color:var(--azul);transform:translateY(-3px)}
     .btn-back-top.show{display:flex}
 
-    /* Asistente Institucional Athena */
-    .athena-bot-trigger{position:fixed;bottom:24px;right:24px;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--azul) 0%,var(--azul-claro) 100%);border:2.5px solid var(--dorado);box-shadow:0 8px 24px rgba(10,25,49,0.35);cursor:pointer;z-index:98;display:flex;align-items:center;justify-content:center;padding:0;transition:all .25s cubic-bezier(0.4, 0, 0.2, 1)}
-    .athena-bot-trigger:hover{transform:translateY(-3px) scale(1.05);box-shadow:0 12px 30px rgba(10,25,49,0.45);border-color:var(--dorado-claro)}
-    .athena-bot-trigger img{width:34px;height:34px;object-fit:contain;border-radius:50%;display:block}
-    .athena-bot-badge{position:absolute;top:2px;right:2px;width:12px;height:12px;background:#10b981;border:2.5px solid #fff;border-radius:50%}
+    /* Asistente Institucional Athena — Muñeco flotante transparente */
+    .athena-bot-trigger{position:fixed;bottom:18px;right:18px;width:66px;height:86px;background:transparent;border:none;box-shadow:none;cursor:pointer;z-index:98;display:flex;align-items:flex-end;justify-content:center;padding:0;transition:transform .28s cubic-bezier(0.34, 1.56, 0.64, 1), filter .28s ease;filter:drop-shadow(0 8px 16px rgba(10,25,49,0.32))}
+    .athena-bot-trigger:hover{transform:translateY(-6px) scale(1.08);filter:drop-shadow(0 14px 22px rgba(10,25,49,0.42))}
+    .athena-bot-trigger img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
+    .athena-bot-badge{position:absolute;top:6px;right:2px;width:12px;height:12px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.25)}
 
-    .athena-chat-window{display:none;position:fixed;bottom:90px;right:24px;width:370px;max-width:calc(100vw - 32px);height:520px;max-height:calc(100vh - 110px);background:#fff;border-radius:var(--radius-lg);box-shadow:0 18px 45px rgba(10,25,49,0.3);border:1px solid var(--borde);z-index:99;flex-direction:column;overflow:hidden;animation:athenaIn .25s cubic-bezier(0.16, 1, 0.3, 1)}
+    .athena-chat-window{display:none;position:fixed;bottom:112px;right:22px;width:370px;max-width:calc(100vw - 32px);height:520px;max-height:calc(100vh - 130px);background:#fff;border-radius:var(--radius-lg);box-shadow:0 18px 45px rgba(10,25,49,0.3);border:1px solid var(--borde);z-index:99;flex-direction:column;overflow:hidden;animation:athenaIn .25s cubic-bezier(0.16, 1, 0.3, 1)}
     .athena-chat-window.active{display:flex}
     @keyframes athenaIn{from{opacity:0;transform:translateY(14px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
 
     .athena-header{background:linear-gradient(135deg,var(--azul) 0%,var(--azul-claro) 100%);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--dorado)}
     .athena-header-info{display:flex;align-items:center;gap:11px}
-    .athena-header-avatar{width:38px;height:38px;border-radius:50%;background:#fff;border:1.5px solid var(--dorado);display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .athena-header-avatar{width:36px;height:44px;background:transparent;border:none;display:flex;align-items:center;justify-content:center;overflow:visible;filter:drop-shadow(0 2px 5px rgba(0,0,0,0.25))}
     .athena-header-avatar img{width:100%;height:100%;object-fit:contain}
     .athena-header-title{font-weight:700;font-size:1rem;color:#fff;line-height:1.2}
     .athena-header-status{font-size:.74rem;color:var(--dorado-claro);display:flex;align-items:center;gap:5px;font-weight:500}
@@ -286,7 +286,7 @@
 
   <!-- Botón Flotante Athena -->
   <button id="athena-bot-trigger" class="athena-bot-trigger" onclick="alternarAthenaChat()" title="Asistente Institucional Athena" aria-label="Abrir asistente institucional Athena">
-    <img src="{% static 'logos/athena_isotipo_limpio.svg' %}" alt="Athena">
+    <img src="{% static 'logos/athena_personaje_transparente.svg' %}" alt="Athena">
     <span class="athena-bot-badge"></span>
   </button>
 
@@ -295,7 +295,7 @@
     <div class="athena-header">
       <div class="athena-header-info">
         <div class="athena-header-avatar">
-          <img src="{% static 'logos/athena_isotipo_limpio.svg' %}" alt="Athena">
+          <img src="{% static 'logos/athena_personaje_transparente.svg' %}" alt="Athena">
         </div>
         <div>
           <div id="athena-title" class="athena-header-title">Athena</div>
