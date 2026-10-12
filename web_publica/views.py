@@ -314,11 +314,11 @@ def _fallback_admin_respuesta(q: str) -> str:
             "Para publicar noticias o comunicados en la página web pública:<br>"
             "Ingresa a <a class='athena-msg-link' href='/admin/core/noticia/add/'>Crear Noticia</a>, diligencia título, texto, fecha y adjunta la imagen destacada."
         )
-    elif any(w in q for w in ["color", "colores", "apariencia", "diseño", "paleta", "tema"]):
+    elif any(w in q for w in ["color", "colores", "apariencia", "diseño", "paleta", "tema", "letra", "fuente", "tipografia", "tipografía", "tamaño"]):
         return (
-            "Puedes personalizar la apariencia y colores de la web pública en tiempo real desde:<br>"
-            "<a class='athena-msg-link' href='/admin/core/configuracionapariencia/'>Configuración de Apariencia</a>.<br>"
-            "Usa el selector visual de color para cambiar el azul primario, secundario o dorado institucional."
+            "Puedes personalizar la apariencia, tipografía y tamaño de letra de la web pública en tiempo real desde:<br>"
+            "<a class='athena-msg-link' href='/admin/core/configuracionapariencia/'>Apariencia, Tipografía y Colores</a>.<br>"
+            "Allí puedes elegir fuentes para párrafos y títulos (Plus Jakarta Sans, Inter, Lora, Outfit, Roboto, Montserrat), ajustar la escala general de texto y modificar la paleta institucional."
         )
     elif any(w in q for w in ["foto", "imagen", "galeria", "galería"]):
         return (
@@ -387,7 +387,7 @@ def athena_chat_api(request):
             "- Galería de Imágenes: /admin/core/imagen/ (Subir imagen: /admin/core/imagen/add/). Carga de fotografías por sección (Colegio, Proyectos, Eventos).\n"
             "- Videos Institucionales: /admin/core/video/ (Nuevo video: /admin/core/video/add/). Vinculación de videos mediante enlace o ID de YouTube.\n"
             "- Estructura Académica: /admin/core/anio/, /admin/core/periodo/, /admin/core/curso/, /admin/core/materia/. Configuración de años, períodos, grados (Preescolar a 11°) y materias.\n"
-            "- Apariencia y Colores: /admin/core/configuracionapariencia/. Selector interactivo de colores de la web pública (azul, dorado, fondo) en vivo sin tocar código.\n"
+            "- Apariencia, Tipografía y Colores: /admin/core/configuracionapariencia/. Personalización en vivo de la paleta institucional (azul, dorado, acentos), fuentes de navegación/párrafos/títulos (Plus Jakarta Sans, Inter, Lora, Outfit, Roboto, Montserrat) y escala de tamaño de letra de todo el portal sin tocar código.\n"
             "- Usuarios y Roles: /admin/auth/user/ (Crear usuario: /admin/auth/user/add/). Cuentas de docentes, coordinadores o administradores con permisos de acceso.\n\n"
             "Contexto Institucional:\n"
             "- Rector: Lic. Juan Carlos Aguirre Nieto. Lema: Paz, Educación y Progreso.\n"

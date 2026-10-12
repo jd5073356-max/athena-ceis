@@ -28,13 +28,51 @@ class ConfiguracionAparienciaForm(forms.ModelForm):
             "color_acento_suave": forms.TextInput(attrs={"type": "color", "style": "height:42px;width:100px;cursor:pointer;"}),
             "color_footer": forms.TextInput(attrs={"type": "color", "style": "height:42px;width:100px;cursor:pointer;"}),
             "color_texto": forms.TextInput(attrs={"type": "color", "style": "height:42px;width:100px;cursor:pointer;"}),
+            "tipografia_principal": forms.Select(attrs={"style": "max-width:480px;font-size:0.95rem;padding:8px 12px;"}),
+            "tipografia_titulos": forms.Select(attrs={"style": "max-width:480px;font-size:0.95rem;padding:8px 12px;"}),
+            "tamano_letra": forms.Select(attrs={"style": "max-width:480px;font-size:0.95rem;padding:8px 12px;"}),
         }
 
 
 @admin.register(ConfiguracionApariencia)
 class ConfiguracionAparienciaAdmin(admin.ModelAdmin):
     form = ConfiguracionAparienciaForm
-    list_display = ("__str__", "color_principal", "color_secundario", "color_acento", "color_footer")
+    list_display = (
+        "__str__",
+        "tipografia_principal",
+        "tipografia_titulos",
+        "tamano_letra",
+        "color_principal",
+        "color_secundario",
+        "color_acento",
+    )
+    fieldsets = (
+        (
+            "Paleta de Colores Institucional",
+            {
+                "description": "Selecciona los colores de la cabecera, menú, botones y pie de página con el selector de color.",
+                "fields": (
+                    ("color_principal", "color_secundario"),
+                    ("color_acento", "color_acento_suave"),
+                    ("color_footer", "color_texto"),
+                ),
+            },
+        ),
+        (
+            "Tipografía y Estilo de Fuente",
+            {
+                "description": "Elige la familia tipográfica para los textos de navegación, párrafos y títulos de la web pública.",
+                "fields": ("tipografia_principal", "tipografia_titulos"),
+            },
+        ),
+        (
+            "Tamaño de Letra y Accesibilidad",
+            {
+                "description": "Ajusta la escala proporcional de tamaño de letra de todo el portal público para optimizar la legibilidad.",
+                "fields": ("tamano_letra",),
+            },
+        ),
+    )
 
     def has_add_permission(self, request):
         if ConfiguracionApariencia.objects.exists():

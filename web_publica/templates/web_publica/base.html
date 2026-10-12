@@ -55,7 +55,7 @@
   <link rel="icon" type="image/png" href="{% static 'logos/ceis.png' %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;0,700;1,400&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
   <style>
     :root{
       --azul:{{ config_apariencia.color_principal|default:"#0a1931" }};
@@ -66,6 +66,10 @@
       --teal:{{ config_apariencia.color_footer|default:"#0b6d71" }};
       --teal-osc:{{ config_apariencia.color_footer|default:"#074c4f" }};
       --texto:{{ config_apariencia.color_texto|default:"#0f172a" }};
+      --fuente-principal:{{ config_apariencia.css_fuente_principal|default:"'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" }};
+      --fuente-titulos:{{ config_apariencia.css_fuente_titulos|default:"'Lora', Georgia, serif" }};
+      --escala-fuente:{{ config_apariencia.css_escala_fuente|default:"100%" }};
+      --tamano-base:{{ config_apariencia.css_tamano_base|default:"16px" }};
       --gris:#f8fafc; --borde:#e2e8f0; --borde-suave:rgba(226,232,240,0.8);
       --texto-mutado:#64748b;
       --sombra-sm:0 2px 8px rgba(10,25,49,0.04);
@@ -74,11 +78,11 @@
       --radius-sm:8px; --radius-md:12px; --radius-lg:16px;
     }
     *{box-sizing:border-box}
-    html{scroll-behavior:smooth}
-    body{margin:0;font-family:'Plus Jakarta Sans','Inter',system-ui,-apple-system,sans-serif;color:var(--texto);background:#fff;line-height:1.65;-webkit-font-smoothing:antialiased}
+    html{font-size:var(--escala-fuente);scroll-behavior:smooth}
+    body{margin:0;font-family:var(--fuente-principal);font-size:var(--tamano-base);color:var(--texto);background:#fff;line-height:1.65;-webkit-font-smoothing:antialiased}
     a{color:var(--azul-claro);text-decoration:none;transition:color .2s, opacity .2s}
     a:hover{color:var(--azul-medio)}
-    h1,h2,h3,h4{font-family:'Lora',Georgia,serif;color:var(--azul);line-height:1.25}
+    h1,h2,h3,h4{font-family:var(--fuente-titulos);color:var(--azul);line-height:1.25}
     img{max-width:100%}
     .contenedor{max-width:1160px;margin:0 auto;padding:0 24px}
 
@@ -90,7 +94,7 @@
     .cabecera .logo{height:62px;width:auto;transition:transform .25s ease}
     .cabecera-marca:hover .logo{transform:scale(1.03)}
     .cabecera .marca-txt{display:flex;flex-direction:column;line-height:1.15}
-    .cabecera .marca-txt .nombre{font-family:'Lora',serif;font-weight:700;font-size:1.5rem;color:var(--azul);letter-spacing:-.01em}
+    .cabecera .marca-txt .nombre{font-family:var(--fuente-titulos);font-weight:700;font-size:1.5rem;color:var(--azul);letter-spacing:-.01em}
     .cabecera .marca-txt .lema{font-size:.74rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--dorado);margin-top:2px}
 
     /* Botón de Búsqueda Rápida */
@@ -152,7 +156,7 @@
     /* Footer Turquesa Oscuro de Alto Impacto */
     footer{background:linear-gradient(180deg, var(--teal) 0%, var(--teal-osc) 100%);color:#eafafb;padding:52px 0 24px;margin-top:40px;border-top:4px solid var(--dorado)}
     footer .cols{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:36px}
-    footer h4{color:#fff;font-size:1.1rem;margin:0 0 16px;font-family:'Lora',serif;font-weight:700}
+    footer h4{color:#fff;font-size:1.1rem;margin:0 0 16px;font-family:var(--fuente-titulos);font-weight:700}
     footer a{color:#d6f5f6;font-weight:500}
     footer a:hover{color:#fff;text-decoration:underline}
     footer .small{font-size:.9rem;line-height:1.75;opacity:.94}

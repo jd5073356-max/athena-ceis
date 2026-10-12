@@ -274,7 +274,32 @@ class Documento(models.Model):
 
 
 class ConfiguracionApariencia(models.Model):
-    """Personalización dinámica de la paleta de colores de la web pública (gestión desde el admin)."""
+    """Personalización dinámica de colores, tipografía y escala de fuente de la web pública (gestión desde el admin)."""
+
+    class TipografiaPrincipal(models.TextChoices):
+        PLUS_JAKARTA = "plus_jakarta_sans", "Plus Jakarta Sans (Moderna y geométrica — Predeterminada)"
+        INTER = "inter", "Inter (Neutral y alta legibilidad)"
+        OUTFIT = "outfit", "Outfit (Elegante y contemporánea)"
+        ROBOTO = "roboto", "Roboto (Clásica y formal)"
+        MONTSERRAT = "montserrat", "Montserrat (Institucional y sólida)"
+        OPEN_SANS = "open_sans", "Open Sans (Cálida y balanceada)"
+        MERRIWEATHER = "merriweather", "Merriweather (Académica tradicional)"
+
+    class TipografiaTitulos(models.TextChoices):
+        LORA = "lora", "Lora (Editorial y académica — Predeterminada)"
+        PLUS_JAKARTA = "plus_jakarta_sans", "Plus Jakarta Sans (Moderna y limpia)"
+        PLAYFAIR = "playfair", "Playfair Display (Clásica refinada)"
+        OUTFIT = "outfit", "Outfit (Contemporánea contundente)"
+        MONTSERRAT = "montserrat", "Montserrat (Sólida y corporativa)"
+        MERRIWEATHER = "merriweather", "Merriweather (Serif formal)"
+
+    class TamanoLetra(models.TextChoices):
+        COMPACTO = "compacto", "Compacto (90% — mayor densidad de contenido)"
+        NORMAL = "normal", "Estándar (100% — tamaño equilibrado predeterminado)"
+        COMODO = "comodo", "Cómodo (+8% — lectura relajada)"
+        GRANDE = "grande", "Grande (+16% — alta visibilidad y accesibilidad)"
+        MUY_GRANDE = "muy_grande", "Extra Grande (+25% — máxima legibilidad)"
+
     color_principal = models.CharField("Color Principal (Cabecera/Títulos)", max_length=18, default="#0a1931",
                                        help_text="Color hex para la barra superior, botones y títulos principales. Ej: #0a1931")
     color_secundario = models.CharField("Color Secundario (Menú Principal)", max_length=18, default="#15305b",
@@ -288,15 +313,85 @@ class ConfiguracionApariencia(models.Model):
     color_texto = models.CharField("Color de Texto Principal", max_length=18, default="#0f172a",
                                    help_text="Color oscuro para textos principales. Ej: #0f172a")
 
+    # Tipografía y Tamaño de Fuente
+    tipografia_principal = models.CharField(
+        "Tipo de Letra Principal (Cuerpo y Menús)",
+        max_length=40,
+        choices=TipografiaPrincipal.choices,
+        default=TipografiaPrincipal.PLUS_JAKARTA,
+        help_text="Familia tipográfica para párrafos, menús y navegación."
+    )
+    tipografia_titulos = models.CharField(
+        "Tipo de Letra para Títulos (Encabezados)",
+        max_length=40,
+        choices=TipografiaTitulos.choices,
+        default=TipografiaTitulos.LORA,
+        help_text="Familia tipográfica para títulos principales H1, H2, H3."
+    )
+    tamano_letra = models.CharField(
+        "Tamaño de Letra del Sitio",
+        max_length=20,
+        choices=TamanoLetra.choices,
+        default=TamanoLetra.NORMAL,
+        help_text="Escala proporcional de fuentes de todo el portal público."
+    )
+
     class Meta:
         db_table = "CONFIGURACION_APARIENCIA"
-        verbose_name = "Apariencia y Colores del Sitio"
-        verbose_name_plural = "Apariencia y Colores del Sitio"
+        verbose_name = "Apariencia, Tipografía y Colores"
+        verbose_name_plural = "Apariencia, Tipografía y Colores"
 
     def __str__(self):
-        return "Configuración de Colores de la Web"
+        return "Configuración de Apariencia de la Web"
 
     def save(self, *args, **kwargs):
         self.pk = 1
         super().save(*args, **kwargs)
+
+    @property
+    def css_fuente_principal(self) -> str:
+        fuentes = {
+            "plus_jakarta_sans": "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
+            "inter": "'Inter', system-ui, -apple-system, sans-serif",
+            "outfit": "'Outfit', system-ui, -apple-system, sans-serif",
+            "roboto": "'Roboto', system-ui, -apple-system, sans-serif",
+            "montserrat": "'Montserrat', system-ui, -apple-system, sans-serif",
+            "open_sans": "'Open Sans', system-ui, -apple-system, sans-serif",
+            "merriweather": "'Merriweather', Georgia, serif",
+        }
+        return fuentes.get(self.tipografia_principal, fuentes["plus_jakarta_sans"])
+
+    @property
+    def css_fuente_titulos(self) -> str:
+        fuentes = {
+            "lora": "'Lora', Georgia, serif",
+            "plus_jakarta_sans": "'Plus Jakarta Sans', system-ui, sans-serif",
+            "playfair": "'Playfair Display', Georgia, serif",
+            "outfit": "'Outfit', system-ui, sans-serif",
+            "montserrat": "'Montserrat', system-ui, sans-serif",
+            "merriweather": "'Merriweather', Georgia, serif",
+        }
+        return fuentes.get(self.tipografia_titulos, fuentes["lora"])
+
+    @property
+    def css_escala_fuente(self) -> str:
+        escalas = {
+            "compacto": "92%",
+            "normal": "100%",
+            "comodo": "108%",
+            "grande": "116%",
+            "muy_grande": "125%",
+        }
+        return escalas.get(self.tamano_letra, "100%")
+
+    @property
+    def css_tamano_base(self) -> str:
+        tamanos = {
+            "compacto": "14.5px",
+            "normal": "16px",
+            "comodo": "17.2px",
+            "grande": "18.5px",
+            "muy_grande": "20px",
+        }
+        return tamanos.get(self.tamano_letra, "16px")
 
