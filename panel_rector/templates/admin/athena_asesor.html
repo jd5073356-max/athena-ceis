@@ -24,25 +24,12 @@
     transform: translateY(-6px) scale(1.08);
     filter: drop-shadow(0 14px 28px rgba(0,0,0,0.8));
   }
-  .ath-bot-trigger:hover .ath-mouth {
-    animation: athMouthTalk .26s infinite ease-in-out !important;
-  }
-  .ath-bot-trigger.is-talking .ath-mouth, .ath-chat-avatar.is-talking .ath-mouth {
-    animation: athMouthTalk .2s infinite ease-in-out !important;
-  }
-  .ath-bot-trigger.is-talking .ath-body, .ath-chat-avatar.is-talking .ath-body {
-    animation: athTalkBob .32s infinite ease-in-out !important;
-  }
   .ath-bot-trigger img, .ath-bot-trigger svg {
     width: 100%;
     height: 100%;
     object-fit: contain;
     display: block;
     pointer-events: none;
-  }
-  @keyframes athTalkBob {
-    0%, 100% { transform: translate(180px, 210px) scale(1.6) translateY(0); }
-    50% { transform: translate(180px, 210px) scale(1.6) translateY(-2.5px); }
   }
   .ath-bot-badge {
     position: absolute;
@@ -266,7 +253,7 @@
 
 <!-- Botón Flotante Athena Admin -->
 <button id="ath-admin-bot-trigger" class="ath-bot-trigger" onclick="alternarAthenaAdminChat()" title="Athena · Asesora del Panel" aria-label="Abrir asesora institucional Athena">
-  {% include "web_publica/athena_personaje_svg.html" %}
+  <img src="{% static 'logos/athena_personaje_transparente.svg' %}" alt="Athena">
   <span class="ath-bot-badge"></span>
 </button>
 
@@ -275,7 +262,7 @@
   <div class="ath-chat-head">
     <div class="ath-chat-headinfo">
       <div class="ath-chat-avatar">
-        {% include "web_publica/athena_personaje_svg.html" %}
+        <img src="{% static 'logos/athena_personaje_transparente.svg' %}" alt="Athena">
       </div>
       <div>
         <div id="ath-admin-title" class="ath-chat-title">Athena</div>
