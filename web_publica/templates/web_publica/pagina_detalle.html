@@ -1,6 +1,9 @@
 {% extends "web_publica/base.html" %}
 {% load static %}
-{% block titulo %}{{ pagina.titulo }}{% endblock %}
+{% block titulo %}{{ pagina.titulo }} | {{ secciones.nombre_sitio.titulo|default:"I.E.D. CEIS Sopó" }}{% endblock %}
+{% block meta_description %}{{ pagina.contenido|striptags|truncatewords:28|default:"Información institucional de la I.E.D. Complejo Educativo Integral Sopó (CEIS)." }}{% endblock %}
+{% block og_title %}{{ pagina.titulo }} | I.E.D. CEIS Sopó{% endblock %}
+{% block og_description %}{{ pagina.contenido|striptags|truncatewords:28|default:"Información institucional de la I.E.D. Complejo Educativo Integral Sopó (CEIS)." }}{% endblock %}
 {% block contenido %}
 <section class="seccion">
   <p class="breadcrumb">

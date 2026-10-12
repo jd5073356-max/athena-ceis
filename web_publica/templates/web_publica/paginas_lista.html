@@ -1,6 +1,8 @@
 {% extends "web_publica/base.html" %}
 {% load static %}
-{% block titulo %}{{ encabezado }}{% endblock %}
+{% block titulo %}{{ encabezado }} | {{ secciones.nombre_sitio.titulo|default:"I.E.D. CEIS Sopó" }}{% endblock %}
+{% block meta_description %}{{ encabezado }} de la Institución Educativa Departamental Complejo Educativo Integral Sopó (CEIS), Sopó, Cundinamarca.{% endblock %}
+{% block og_title %}{{ encabezado }} | I.E.D. CEIS Sopó{% endblock %}
 {% block contenido %}
 <section class="seccion">
   <p class="breadcrumb"><a href="{% url 'web_publica:home' %}">Inicio</a> &rsaquo; {{ encabezado }}</p>

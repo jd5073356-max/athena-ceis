@@ -4,7 +4,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block titulo %}{{ secciones.nombre_sitio.titulo|default:"I.E.D. CEIS Sopó" }}{% endblock %}</title>
+  <title>{% block titulo %}{{ secciones.nombre_sitio.titulo|default:"I.E.D. Complejo Educativo Integral Sopó (CEIS)" }}{% endblock %} | Paz, Educación y Progreso</title>
+  <meta name="description" content="{% block meta_description %}Portal institucional oficial de la Institución Educativa Departamental Complejo Educativo Integral Sopó (CEIS), Cundinamarca, Colombia. Repositorio de guías pedagógicas SERC, admisiones 2026 y proyectos formativos.{% endblock %}">
+  <meta name="keywords" content="IED CEIS, CEIS Sopo, Complejo Educativo Integral Sopo, Colegio Sopo Cundinamarca, SERC, guias escolares, pre-matricula 2026, educacion Cundinamarca">
+  <meta name="author" content="I.E.D. Complejo Educativo Integral Sopó">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+  <!-- Open Graph / Redes Sociales -->
+  <meta property="og:locale" content="es_CO">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="I.E.D. CEIS Sopó">
+  <meta property="og:title" content="{% block og_title %}{{ secciones.nombre_sitio.titulo|default:'I.E.D. Complejo Educativo Integral Sopó (CEIS)' }} | Paz, Educación y Progreso{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Portal institucional de la I.E.D. Complejo Educativo Integral Sopó (CEIS), Cundinamarca. Guías de estudio SERC, proyectos educativos y atención a la comunidad.{% endblock %}">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  <meta property="og:image" content="https://athena.maxstudio.lat{% static 'logos/ceis.png' %}">
+  <meta property="og:image:secure_url" content="https://athena.maxstudio.lat{% static 'logos/ceis.png' %}">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:alt" content="Escudo oficial I.E.D. Complejo Educativo Integral Sopó">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{% block tw_title %}{{ secciones.nombre_sitio.titulo|default:'I.E.D. Complejo Educativo Integral Sopó (CEIS)' }}{% endblock %}">
+  <meta name="twitter:description" content="{% block tw_description %}Portal institucional de la I.E.D. Complejo Educativo Integral Sopó (CEIS), Cundinamarca. Paz, Educación y Progreso.{% endblock %}">
+  <meta name="twitter:image" content="https://athena.maxstudio.lat{% static 'logos/ceis.png' %}">
+
+  <!-- Schema.org JSON-LD Datos Estructurados -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "EducationalOrganization",
+    "name": "I.E.D. Complejo Educativo Integral Sopó",
+    "alternateName": ["IED CEIS", "CEIS Sopó"],
+    "url": "https://athena.maxstudio.lat/",
+    "logo": "https://athena.maxstudio.lat{% static 'logos/ceis.png' %}",
+    "slogan": "Paz, Educación y Progreso",
+    "telephone": "+57-310-871-0141",
+    "email": "iedceis@gmail.com",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Carrera 10 No. 1-31",
+      "addressLocality": "Sopó",
+      "addressRegion": "Cundinamarca",
+      "postalCode": "251001",
+      "addressCountry": "CO"
+    }
+  }
+  </script>
+
   <link rel="icon" type="image/png" href="{% static 'logos/ceis.png' %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -194,9 +241,9 @@
           <span class="lema">Paz &middot; Educación &middot; Progreso</span>
         </span>
       </a>
-      <button class="btn-search-trigger" onclick="abrirBuscador()" aria-label="Buscar guías o circulares">
+      <button class="btn-search-trigger" onclick="abrirBuscador()" aria-label="Buscar guías de estudio">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <span>Buscar guías o circulares...</span>
+        <span>Buscar guías de estudio...</span>
         <kbd class="cmd-k">Ctrl + K</kbd>
       </button>
     </div>
@@ -215,7 +262,7 @@
         </div>
       </div>
 
-      <a class="menu-link" href="{% url 'web_publica:documentos' %}">Circulares, Cronograma y Guías</a>
+      <a class="menu-link" href="{% url 'web_publica:documentos' %}">Guías de Estudio</a>
 
       <div class="menu-item">
         <a class="menu-top" href="{% url 'web_publica:proyectos' %}" tabindex="0">Nuestros Proyectos <span class="caret">&#9660;</span></a>
@@ -268,7 +315,7 @@
     <div class="search-box" onclick="event.stopPropagation()">
       <div class="search-header">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--texto-mutado);flex-shrink:0" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <input type="text" id="search-input" placeholder="Buscar guías, circulares o materias (ej: Castellano, 9°, Matemáticas)..." oninput="filtrarBusqueda(this.value)">
+        <input type="text" id="search-input" placeholder="Buscar guías de estudio o asignaturas (ej: 9°, Matemáticas, Ciencias)..." oninput="filtrarBusqueda(this.value)">
         <button class="search-close" onclick="cerrarBuscador()" aria-label="Cerrar búsqueda">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
@@ -310,7 +357,7 @@
       <div class="athena-msg athena-msg-bot">
         Saludos. Soy <strong>Athena</strong>, asistente institucional de la I.E.D. CEIS Sopó. ¿En qué información puedo colaborarte hoy?
         <div class="athena-quick-actions">
-          <button class="athena-quick-btn" onclick="athenaPregunta('guias')">Circulares, Cronograma y Guías</button>
+          <button class="athena-quick-btn" onclick="athenaPregunta('guias')">Guías de Estudio</button>
           <button class="athena-quick-btn" onclick="athenaPregunta('matricula')">Pre-Matrícula 2026</button>
           <button class="athena-quick-btn" onclick="athenaPregunta('horarios')">Horarios de Secretaría</button>
           <button class="athena-quick-btn" onclick="athenaPregunta('contacto')">Canales de Contacto</button>
@@ -448,7 +495,7 @@
     function fallbackLocalAthena(textoUsuario) {
       const q = textoUsuario.toLowerCase();
       if (q.includes('guia') || q.includes('guías') || q.includes('circular') || q.includes('cronograma') || q.includes('taller')) {
-        return 'Puedes consultar y descargar las circulares, cronogramas y guías SERC organizadas por año, nivel, grado y materia en el repositorio institucional:<br><a class="athena-msg-link" href="/documentos/">Ir al repositorio de Circulares y Guías</a>';
+        return 'Puedes consultar y descargar las guías pedagógicas SERC organizadas por año, nivel, grado y materia en el repositorio institucional:<br><a class="athena-msg-link" href="/documentos/">Ir al repositorio de Guías de Estudio</a>';
       } else if (q.includes('matricula') || q.includes('matrícula') || q.includes('inscripci') || q.includes('cupo') || q.includes('2026')) {
         return 'El proceso de Pre-Matrícula 2026 se realiza diligenciando la hoja de matrícula y adjuntando en PDF el documento de identidad del estudiante y certificado de afiliación en salud:<br><a class="athena-msg-link" href="/p/pre_matricula_2026/">Ver detalles de Pre-Matrícula 2026</a>';
       } else if (q.includes('horario') || q.includes('atencion') || q.includes('atención') || q.includes('presencial')) {
@@ -465,7 +512,7 @@
 
     function athenaPregunta(tipo) {
       const mapa = {
-        'guias': '¿Dónde encuentro las guías y circulares?',
+        'guias': '¿Dónde encuentro las guías de estudio?',
         'matricula': '¿Cómo es el proceso de Pre-Matrícula 2026?',
         'horarios': '¿Cuáles son los horarios de atención?',
         'contacto': '¿Cuáles son los canales de contacto?',

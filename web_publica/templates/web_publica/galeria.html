@@ -1,17 +1,21 @@
 {% extends "web_publica/base.html" %}
-{% block titulo %}Galería{% endblock %}
+{% block titulo %}Galería Institucional | {{ secciones.nombre_sitio.titulo|default:"I.E.D. CEIS Sopó" }}{% endblock %}
+{% block meta_description %}Archivo fotográfico y memoria institucional de la I.E.D. Complejo Educativo Integral Sopó (CEIS).{% endblock %}
+{% block og_title %}Galería Institucional | I.E.D. CEIS Sopó{% endblock %}
 {% block contenido %}
-  <p class="breadcrumb">Galería</p>
-  <h2>Galería de imágenes</h2>
+<section class="seccion">
+  <p class="breadcrumb"><a href="{% url 'web_publica:home' %}">Inicio</a> &rsaquo; Galería</p>
+  <h2 class="titulo-seccion">Galería Institucional</h2>
   {% if imagenes %}
     <div class="galeria-grid">
       {% for img in imagenes %}
-        <a href="{{ img.archivo.url }}" target="_blank" rel="noopener" title="{{ img.titulo }}">
-          <img src="{{ img.archivo.url }}" alt="{{ img.titulo }}">
+        <a href="{{ img.archivo.url }}" target="_blank" rel="noopener" title="{{ img.titulo|default:'I.E.D. CEIS Sopó' }}">
+          <img src="{{ img.archivo.url }}" alt="{{ img.titulo|default:'I.E.D. CEIS Sopó' }}">
         </a>
       {% endfor %}
     </div>
   {% else %}
     <p class="vacio">Aún no hay imágenes en la galería.</p>
   {% endif %}
+</section>
 {% endblock %}

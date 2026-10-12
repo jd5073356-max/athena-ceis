@@ -1,8 +1,15 @@
 {% extends "web_publica/base.html" %}
-{% block titulo %}{{ noticia.titulo }}{% endblock %}
+{% block titulo %}{{ noticia.titulo }} | {{ secciones.nombre_sitio.titulo|default:"I.E.D. CEIS Sopó" }}{% endblock %}
+{% block meta_description %}{{ noticia.cuerpo|striptags|truncatewords:26 }}{% endblock %}
+{% block og_title %}{{ noticia.titulo }} | I.E.D. CEIS Sopó{% endblock %}
+{% block og_description %}{{ noticia.cuerpo|striptags|truncatewords:26 }}{% endblock %}
 {% block contenido %}
-  <p class="breadcrumb"><a href="{% url 'web_publica:noticias' %}">Noticias</a> › {{ noticia.titulo }}</p>
-  <h2>{{ noticia.titulo }}</h2>
-  <small>{{ noticia.fecha_publicacion|date:"d/m/Y H:i" }}</small>
-  <p>{{ noticia.cuerpo|linebreaks }}</p>
+<section class="seccion">
+  <p class="breadcrumb"><a href="{% url 'web_publica:home' %}">Inicio</a> &rsaquo; <a href="{% url 'web_publica:noticias' %}">Noticias</a> &rsaquo; {{ noticia.titulo }}</p>
+  <p style="font-size:.82rem;color:var(--dorado);text-transform:uppercase;letter-spacing:.08em;font-weight:800;margin:0 0 8px">{{ noticia.fecha_publicacion|date:"d M Y" }}</p>
+  <h2 class="titulo-seccion" style="margin-bottom:20px">{{ noticia.titulo }}</h2>
+  <div style="max-width:840px;font-size:1.06rem;line-height:1.75;color:var(--texto)">
+    {{ noticia.cuerpo|linebreaks }}
+  </div>
+</section>
 {% endblock %}

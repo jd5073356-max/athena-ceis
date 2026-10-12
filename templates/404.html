@@ -1,0 +1,142 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Página no encontrada | I.E.D. Complejo Educativo Integral Sopó</title>
+  <link rel="icon" type="image/png" href="{% static 'logos/ceis.png' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --azul: #0a1931;
+      --azul-claro: #15305b;
+      --dorado: #c5a880;
+      --dorado-claro: #e5d5be;
+      --texto: #0f172a;
+      --texto-mutado: #64748b;
+      --gris: #f8fafc;
+      --borde: #e2e8f0;
+      --sombra: 0 20px 35px -10px rgba(10,25,49,0.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      color: var(--texto);
+      background: var(--gris);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+    .card-error {
+      background: #fff;
+      max-width: 580px;
+      width: 100%;
+      padding: 48px 36px;
+      border-radius: 16px;
+      border: 1px solid var(--borde);
+      box-shadow: var(--sombra);
+    }
+    .logo-ceis {
+      height: 76px;
+      width: auto;
+      margin-bottom: 20px;
+    }
+    .codigo-error {
+      font-family: 'Lora', serif;
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: var(--azul);
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+    .titulo-error {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--azul-claro);
+      margin-bottom: 14px;
+    }
+    .desc-error {
+      font-size: .95rem;
+      color: var(--texto-mutado);
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .botones-accion {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: .88rem;
+      text-decoration: none;
+      transition: all .2s ease;
+    }
+    .btn-principal {
+      background: var(--azul);
+      color: #fff;
+    }
+    .btn-principal:hover {
+      background: var(--azul-claro);
+      transform: translateY(-2px);
+    }
+    .btn-secundario {
+      background: var(--gris);
+      color: var(--azul);
+      border: 1px solid var(--borde);
+    }
+    .btn-secundario:hover {
+      background: #fff;
+      border-color: var(--dorado);
+    }
+    .pie-error {
+      border-top: 1px solid var(--borde);
+      padding-top: 20px;
+      font-size: .82rem;
+      color: var(--texto-mutado);
+      line-height: 1.5;
+    }
+    .pie-error a {
+      color: var(--azul-claro);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .pie-error a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="card-error">
+    <img class="logo-ceis" src="{% static 'logos/ceis.png' %}" alt="I.E.D. CEIS Sopó">
+    <div class="codigo-error">404</div>
+    <h1 class="titulo-error">Página no disponible</h1>
+    <p class="desc-error">
+      La página que buscas no existe o se encuentra temporalmente en preparación por parte del equipo directivo.
+    </p>
+    <div class="botones-accion">
+      <a class="btn btn-principal" href="/">Volver al Inicio</a>
+      <a class="btn btn-secundario" href="/documentos/">Guías de Estudio</a>
+      <a class="btn btn-secundario" href="/p/pre_matricula_2026/">Pre-Matrícula 2026</a>
+    </div>
+    <div class="pie-error">
+      <strong>I.E.D. Complejo Educativo Integral Sopó (CEIS)</strong><br>
+      Carrera 10 No. 1-31, Sopó, Cundinamarca &middot; Secretaría: <a href="https://wa.me/573108710141">310 871 0141</a>
+    </div>
+  </div>
+</body>
+</html>

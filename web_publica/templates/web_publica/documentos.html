@@ -1,5 +1,6 @@
 {% extends "web_publica/base.html" %}
-{% block titulo %}Circulares, Cronograma y Guías{% endblock %}
+{% block titulo %}Guías de Estudio | {{ secciones.nombre_sitio.titulo|default:"I.E.D. CEIS" }}{% endblock %}
+{% block meta_description %}Consulta y descarga las guías de estudio pedagógicas del Sistema Educativo Relacional Cundinamarca (SERC) de la I.E.D. Complejo Educativo Integral Sopó (CEIS).{% endblock %}
 {% block contenido %}
 <style>
   .doc-cat{margin-top:36px}
@@ -56,9 +57,9 @@
   .doc-meta{margin-left:auto;font-size:.78rem;color:var(--azul-claro);font-weight:700;white-space:nowrap;background:rgba(21,48,91,0.06);padding:4px 10px;border-radius:12px;border:1px solid rgba(21,48,91,0.12)}
 </style>
 <section class="seccion">
-  <p class="breadcrumb"><a href="{% url 'web_publica:home' %}">Inicio</a> &rsaquo; Circulares, Cronograma y Guías</p>
-  <h2 class="titulo-seccion">Circulares, Cronograma y Guías</h2>
-  {% if intro.contenido %}<p style="max-width:880px;font-size:1.05rem;line-height:1.7;color:var(--texto)">{{ intro.contenido|truncatewords:55 }}</p>{% endif %}
+  <p class="breadcrumb"><a href="{% url 'web_publica:home' %}">Inicio</a> &rsaquo; Guías de Estudio</p>
+  <h2 class="titulo-seccion">Guías de Estudio</h2>
+  <p style="max-width:880px;font-size:1.05rem;line-height:1.7;color:var(--texto-mutado)">Repositorio institucional de guías pedagógicas del Sistema Educativo Relacional Cundinamarca (SERC), organizadas por año académico, nivel, grado y área para consulta y descarga.</p>
 
   {% for s in secciones_doc %}
   <div class="doc-cat">

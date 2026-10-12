@@ -1,19 +1,25 @@
 {% extends "web_publica/base.html" %}
-{% block titulo %}Noticias{% endblock %}
+{% block titulo %}Noticias Institucionales | {{ secciones.nombre_sitio.titulo|default:"I.E.D. CEIS Sopó" }}{% endblock %}
+{% block meta_description %}Comunicados oficiales y noticias de la Institución Educativa Departamental Complejo Educativo Integral Sopó (CEIS).{% endblock %}
+{% block og_title %}Noticias Institucionales | I.E.D. CEIS Sopó{% endblock %}
 {% block contenido %}
-  <p class="breadcrumb">Noticias</p>
-  <h2>Noticias y anuncios</h2>
+<section class="seccion">
+  <p class="breadcrumb"><a href="{% url 'web_publica:home' %}">Inicio</a> &rsaquo; Noticias</p>
+  <h2 class="titulo-seccion">Noticias y Comunicados</h2>
   {% if noticias %}
     <div class="tarjetas">
       {% for n in noticias %}
-        <div class="tarjeta">
-          <h3><a href="{% url 'web_publica:noticia_detalle' n.id %}">{{ n.titulo }}</a></h3>
-          <small>{{ n.fecha_publicacion|date:"d/m/Y" }}</small>
-          <p>{{ n.cuerpo|truncatewords:30 }}</p>
-        </div>
+        <a class="tarjeta" href="{% url 'web_publica:noticia_detalle' n.id %}">
+          <div class="tj-body">
+            <p style="font-size:.78rem;color:var(--dorado);text-transform:uppercase;letter-spacing:.08em;font-weight:800;margin:0 0 6px">{{ n.fecha_publicacion|date:"d M Y" }}</p>
+            <h3>{{ n.titulo }}</h3>
+            <p>{{ n.cuerpo|truncatewords:28 }}</p>
+          </div>
+        </a>
       {% endfor %}
     </div>
   {% else %}
     <p class="vacio">Aún no hay noticias publicadas.</p>
   {% endif %}
+</section>
 {% endblock %}

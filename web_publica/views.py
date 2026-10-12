@@ -9,7 +9,7 @@ import os
 import re
 
 from django.conf import settings
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, render
 
 from core.models import (
@@ -18,6 +18,8 @@ from core.models import (
 
 # Secciones que son solo identidad de la home (no tienen página propia).
 IDENTIDAD = {"nombre_sitio", "lema", "mision", "vision", "contacto"}
+# Secciones vacías o provisionales ocultadas hasta que se agregue texto
+SECCIONES_OCULTAS = {"jornada_unica", "autoevaluacion", "familia_calidad", "circulares_padres"}
 _EXTS_IMG = (".jpg", ".jpeg", ".png", ".webp", ".gif")
 
 
@@ -117,9 +119,13 @@ def galeria(request):
 
 
 def videos(request):
+    """Galería de videos. Oculta si no hay videos registrados."""
+    videos_qs = Video.objects.all()
+    if not videos_qs.exists():
+        raise Http404("La galería de videos se encuentra en preparación.")
     return render(request, "web_publica/videos.html", {
         "secciones": _secciones(),
-        "videos": Video.objects.all(),
+        "videos": videos_qs,
     })
 
 
@@ -135,29 +141,39 @@ def _con_thumb(qs):
 
 
 def colegio(request):
-    """Listado del submenú 'Nosotros' (páginas institucionales)."""
+    """Listado del submenú 'Nosotros' (solo páginas institucionales con contenido activo)."""
+    paginas_activas = [
+        s for s in Seccion.objects.filter(categoria=Seccion.Categoria.COLEGIO)
+        if s.contenido and s.contenido.strip() and s.clave not in SECCIONES_OCULTAS
+    ]
     return render(request, "web_publica/paginas_lista.html", {
         "secciones": _secciones(),
         "encabezado": "Nosotros",
-        "paginas": _con_thumb(Seccion.objects.filter(categoria=Seccion.Categoria.COLEGIO)),
+        "paginas": _con_thumb(paginas_activas),
     })
 
 
 def proyectos(request):
-    """Listado del submenú 'Nuestros Proyectos'."""
+    """Listado del submenú 'Nuestros Proyectos' (solo proyectos con contenido activo)."""
+    paginas_activas = [
+        s for s in Seccion.objects.filter(categoria=Seccion.Categoria.PROYECTO)
+        if s.contenido and s.contenido.strip() and s.clave not in SECCIONES_OCULTAS
+    ]
     return render(request, "web_publica/paginas_lista.html", {
         "secciones": _secciones(),
         "encabezado": "Nuestros Proyectos",
-        "paginas": _con_thumb(Seccion.objects.filter(categoria=Seccion.Categoria.PROYECTO)),
+        "paginas": _con_thumb(paginas_activas),
     })
 
 
 def pagina_detalle(request, clave):
-    """Detalle de una sección (Nosotros, Proyectos, Circulares, Pre-Matrícula):
-    texto verbatim del colegio + galería de sus imágenes reales del Wix."""
-    if clave in IDENTIDAD:
-        raise Http404("Sección no pública")
+    """Detalle de una sección (Nosotros, Proyectos, Pre-Matrícula).
+    Oculta secciones vacías o provisionales levantando 404 hasta que tengan contenido."""
+    if clave in IDENTIDAD or clave in SECCIONES_OCULTAS:
+        raise Http404("Sección no disponible")
     pagina = get_object_or_404(Seccion, clave=clave)
+    if not pagina.contenido or not pagina.contenido.strip():
+        raise Http404("Esta sección aún no tiene contenido publicado.")
     return render(request, "web_publica/pagina_detalle.html", {
         "secciones": _secciones(),
         "pagina": pagina,
@@ -432,4 +448,63 @@ def athena_chat_api(request):
     except Exception:
         fallback = _fallback_admin_respuesta(mensaje) if es_admin else _fallback_respuesta(mensaje)
         return JsonResponse({"respuesta": fallback})
+
+
+# --- Vistas Técnicas SEO: robots.txt y sitemap.xml --------------------------
+def robots_txt(request):
+    """Archivo robots.txt para control de indexación de motores de búsqueda."""
+    sitemap_url = f"{request.scheme}://{request.get_host()}/sitemap.xml"
+    contenido = (
+        "User-agent: *\n"
+        "Disallow: /admin/\n"
+        "Disallow: /api/\n"
+        "Allow: /\n\n"
+        f"Sitemap: {sitemap_url}\n"
+    )
+    return HttpResponse(contenido, content_type="text/plain; charset=utf-8")
+
+
+def sitemap_xml(request):
+    """Mapa de sitio XML dinámico con las rutas activas de la institución."""
+    base_url = f"{request.scheme}://{request.get_host()}"
+    urls = [
+        {"loc": f"{base_url}/", "changefreq": "daily", "priority": "1.0"},
+        {"loc": f"{base_url}/colegio/", "changefreq": "weekly", "priority": "0.8"},
+        {"loc": f"{base_url}/proyectos/", "changefreq": "weekly", "priority": "0.8"},
+        {"loc": f"{base_url}/documentos/", "changefreq": "weekly", "priority": "0.9"},
+        {"loc": f"{base_url}/noticias/", "changefreq": "daily", "priority": "0.8"},
+        {"loc": f"{base_url}/galeria/", "changefreq": "monthly", "priority": "0.7"},
+        {"loc": f"{base_url}/p/pre_matricula_2026/", "changefreq": "weekly", "priority": "0.9"},
+    ]
+
+    # Secciones institucionales activas con texto
+    for s in Seccion.objects.filter(categoria__in=[Seccion.Categoria.COLEGIO, Seccion.Categoria.PROYECTO]):
+        if s.contenido and s.contenido.strip() and s.clave not in SECCIONES_OCULTAS and s.clave not in IDENTIDAD and s.clave != "pre_matricula_2026":
+            urls.append({
+                "loc": f"{base_url}/p/{s.clave}/",
+                "changefreq": "monthly",
+                "priority": "0.7",
+            })
+
+    # Noticias activas publicadas
+    for n in Noticia.objects.filter(activo=True):
+        urls.append({
+            "loc": f"{base_url}/noticias/{n.id}/",
+            "changefreq": "monthly",
+            "priority": "0.7",
+        })
+
+    xml_lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ]
+    for u in urls:
+        xml_lines.append("  <url>")
+        xml_lines.append(f"    <loc>{u['loc']}</loc>")
+        xml_lines.append(f"    <changefreq>{u['changefreq']}</changefreq>")
+        xml_lines.append(f"    <priority>{u['priority']}</priority>")
+        xml_lines.append("  </url>")
+    xml_lines.append("</urlset>")
+
+    return HttpResponse("\n".join(xml_lines), content_type="application/xml; charset=utf-8")
 

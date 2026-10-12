@@ -23,7 +23,7 @@
       <h1 class="hero-title">{{ secciones.nombre_sitio.titulo|default:"I.E.D. CEIS Sopó" }}</h1>
       <p class="hero-desc">{{ secciones.lema.contenido|default:"Paz, Educación, Progreso" }}</p>
       <div class="hero-actions">
-        <a class="btn btn-dorado" href="{% url 'web_publica:documentos' %}">Circulares, Cronograma y Guías</a>
+        <a class="btn btn-dorado" href="{% url 'web_publica:documentos' %}">Guías de Estudio</a>
         <a class="btn" href="{% url 'web_publica:pagina_detalle' 'pre_matricula_2026' %}" style="border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.08)">Pre-Matrícula 2026</a>
       </div>
     </div>
@@ -57,7 +57,7 @@
       <a class="tarjeta" href="{% url 'web_publica:colegio' %}">
         <div class="tj-body">
           <h3>Nosotros</h3>
-          <p>Horizonte institucional, jornada única, inclusión, gobierno escolar, rendición de cuentas.</p>
+          <p>Horizonte institucional, inclusión, gobierno escolar y rendición de cuentas.</p>
         </div>
       </a>
       <a class="tarjeta" href="{% url 'web_publica:proyectos' %}">
@@ -68,8 +68,8 @@
       </a>
       <a class="tarjeta" href="{% url 'web_publica:documentos' %}">
         <div class="tj-body">
-          <h3>Circulares, Cronograma y Guías</h3>
-          <p>Documentos para padres y estudiantes: circulares, cronograma y guías SERC por año.</p>
+          <h3>Guías de Estudio</h3>
+          <p>Repositorio pedagógico SERC por año, nivel, grado y materia para estudiantes y familias.</p>
         </div>
       </a>
       <a class="tarjeta" href="{% url 'web_publica:pagina_detalle' 'pre_matricula_2026' %}">
