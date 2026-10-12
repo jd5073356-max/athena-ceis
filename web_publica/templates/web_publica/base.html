@@ -52,7 +52,7 @@
   }
   </script>
 
-  <link rel="icon" type="image/png" href="{% static 'logos/ceis.png' %}">
+  <link rel="icon" type="image/png" href="{% if config_apariencia.favicon_institucional %}{{ config_apariencia.favicon_institucional.url }}{% else %}{% static 'logos/ceis.png' %}{% endif %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;0,700;1,400&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -72,10 +72,15 @@
       --tamano-base:{{ config_apariencia.css_tamano_base|default:"16px" }};
       --gris:#f8fafc; --borde:#e2e8f0; --borde-suave:rgba(226,232,240,0.8);
       --texto-mutado:#64748b;
-      --sombra-sm:0 2px 8px rgba(10,25,49,0.04);
-      --sombra-md:0 10px 25px -5px rgba(10,25,49,0.08), 0 8px 10px -6px rgba(10,25,49,0.04);
-      --sombra-lg:0 20px 35px -10px rgba(10,25,49,0.15);
-      --radius-sm:8px; --radius-md:12px; --radius-lg:16px;
+      --sombra-sm:{{ config_apariencia.css_sombra_sm|default:"0 2px 8px rgba(10,25,49,0.04)" }};
+      --sombra-md:{{ config_apariencia.css_sombra_md|default:"0 10px 25px -5px rgba(10,25,49,0.08), 0 8px 10px -6px rgba(10,25,49,0.04)" }};
+      --sombra-lg:{{ config_apariencia.css_sombra_lg|default:"0 20px 35px -10px rgba(10,25,49,0.15)" }};
+      --radius-sm:{{ config_apariencia.css_radius_sm|default:"8px" }};
+      --radius-md:{{ config_apariencia.css_radius_md|default:"12px" }};
+      --radius-lg:{{ config_apariencia.css_radius_lg|default:"16px" }};
+      --menu-bg:{{ config_apariencia.css_menu_bg|default:"var(--azul-claro)" }};
+      --menu-texto:{{ config_apariencia.css_menu_texto|default:"#f1f5f9" }};
+      --menu-backdrop:{{ config_apariencia.css_menu_backdrop|default:"blur(12px)" }};
     }
     *{box-sizing:border-box}
     html{font-size:var(--escala-fuente);scroll-behavior:smooth}
@@ -86,6 +91,13 @@
     img{max-width:100%}
     .contenedor{max-width:1160px;margin:0 auto;padding:0 24px}
 
+    /* Barra de Aviso Superior */
+    .barra-aviso{padding:10px 20px;font-size:.88rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:14px;text-align:center;line-height:1.4;position:relative;z-index:70}
+    .barra-aviso.aviso-informativo{background:linear-gradient(135deg, var(--azul), var(--teal));color:#fff}
+    .barra-aviso.aviso-alerta{background:linear-gradient(135deg, #d97706, #b45309);color:#fff}
+    .barra-aviso.aviso-urgente{background:linear-gradient(135deg, #dc2626, #991b1b);color:#fff}
+    .barra-aviso a.btn-aviso{display:inline-flex;align-items:center;padding:3px 12px;border-radius:20px;background:rgba(255,255,255,0.22);color:#fff;font-size:.8rem;font-weight:700;border:1px solid rgba(255,255,255,0.35);text-decoration:none;transition:all .2s ease;margin-left:6px}
+    .barra-aviso a.btn-aviso:hover{background:#fff;color:var(--azul);text-decoration:none}
 
     /* Cabecera principal */
     header.principal{background:#fff;border-bottom:1px solid var(--borde-suave);box-shadow:var(--sombra-sm)}
@@ -103,9 +115,9 @@
     .btn-search-trigger .cmd-k{background:#fff;border:1px solid var(--borde);border-radius:6px;padding:2px 6px;font-size:.72rem;font-family:monospace;font-weight:700;color:var(--texto-mutado)}
 
     /* Menú principal dinámico */
-    nav.menu{background:var(--azul-claro);position:sticky;top:0;z-index:60;box-shadow:0 8px 20px rgba(10,25,49,0.18);backdrop-filter:blur(12px)}
+    nav.menu{background:var(--menu-bg);position:sticky;top:0;z-index:60;box-shadow:var(--sombra-md);backdrop-filter:var(--menu-backdrop)}
     .menu-inner{max-width:1160px;margin:0 auto;display:flex;align-items:stretch;flex-wrap:wrap}
-    nav.menu a{color:#f1f5f9;font-weight:700;font-size:.85rem;letter-spacing:.04em;text-transform:uppercase;text-decoration:none}
+    nav.menu a{color:var(--menu-texto);font-weight:700;font-size:.85rem;letter-spacing:.04em;text-transform:uppercase;text-decoration:none}
     .menu-link,.menu-top{display:flex;align-items:center;padding:15px 20px;border-bottom:3px solid transparent;transition:all .2s ease;position:relative}
     .menu-link:hover,.menu-top:hover,.menu-item:hover .menu-top{background:var(--azul-medio);border-bottom-color:var(--dorado);color:#fff;text-decoration:none}
     .menu-item{position:relative}
@@ -236,13 +248,22 @@
 </head>
 <body>
 
+  {% if config_apariencia.aviso_activo and config_apariencia.aviso_texto %}
+  <aside class="barra-aviso aviso-{{ config_apariencia.aviso_tipo|default:'informativo' }}" role="alert">
+    <span>{{ config_apariencia.aviso_texto }}</span>
+    {% if config_apariencia.aviso_enlace %}
+    <a class="btn-aviso" href="{{ config_apariencia.aviso_enlace }}">{{ config_apariencia.aviso_texto_enlace|default:"Más información" }} &rarr;</a>
+    {% endif %}
+  </aside>
+  {% endif %}
+
   <header class="principal">
     <div class="cabecera">
       <a class="cabecera-marca" href="{% url 'web_publica:home' %}">
-        <img class="logo" src="{% static 'logos/ceis.png' %}" alt="I.E.D. CEIS">
+        <img class="logo" src="{% if config_apariencia.logo_institucional %}{{ config_apariencia.logo_institucional.url }}{% else %}{% static 'logos/ceis.png' %}{% endif %}" alt="{{ config_apariencia.titulo_hero|default:secciones.nombre_sitio.titulo|default:'I.E.D. CEIS' }}">
         <span class="marca-txt">
-          <span class="nombre">{{ secciones.nombre_sitio.titulo|default:"I.E.D. CEIS" }}</span>
-          <span class="lema">Paz &middot; Educación &middot; Progreso</span>
+          <span class="nombre">{{ config_apariencia.titulo_hero|default:secciones.nombre_sitio.titulo|default:"I.E.D. CEIS" }}</span>
+          <span class="lema">{{ config_apariencia.lema_institucional|default:"Paz &middot; Educación &middot; Progreso" }}</span>
         </span>
       </a>
       <button class="btn-search-trigger" onclick="abrirBuscador()" aria-label="Buscar guías de estudio">
@@ -290,27 +311,45 @@
     <div class="contenedor">
       <div class="cols">
         <div>
-          <h4>I.E.D. Complejo Educativo Integral Sopó</h4>
+          <h4>{{ config_apariencia.titulo_hero|default:"I.E.D. Complejo Educativo Integral Sopó" }}</h4>
           <p class="small">{{ secciones.nosotros.contenido|truncatewords:24|default:"Institución Educativa Departamental de la Gobernación de Cundinamarca." }}</p>
+          {% if config_apariencia.red_facebook or config_apariencia.red_youtube or config_apariencia.red_instagram %}
+          <div style="display:flex;gap:12px;margin-top:16px;">
+            {% if config_apariencia.red_facebook %}
+            <a href="{{ config_apariencia.red_facebook }}" target="_blank" rel="noopener" aria-label="Facebook" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:rgba(255,255,255,0.12);border-radius:50%;color:#fff;transition:transform .2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+            </a>
+            {% endif %}
+            {% if config_apariencia.red_youtube %}
+            <a href="{{ config_apariencia.red_youtube }}" target="_blank" rel="noopener" aria-label="YouTube" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:rgba(255,255,255,0.12);border-radius:50%;color:#fff;transition:transform .2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
+            </a>
+            {% endif %}
+            {% if config_apariencia.red_instagram %}
+            <a href="{{ config_apariencia.red_instagram }}" target="_blank" rel="noopener" aria-label="Instagram" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:rgba(255,255,255,0.12);border-radius:50%;color:#fff;transition:transform .2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            </a>
+            {% endif %}
+          </div>
+          {% endif %}
         </div>
         <div>
           <h4>Contacto</h4>
           <p class="small">
-            Cel. / WhatsApp: <a href="https://wa.me/573108710141">310 871 0141</a><br>
-            Correo: <a href="mailto:iedceis@gmail.com">iedceis@gmail.com</a><br>
-            Carrera 10 No. 1-31, Sopó, Cundinamarca
+            Cel. / WhatsApp: <a href="https://wa.me/57{{ config_apariencia.whatsapp_contacto|slugify|default:'3108710141' }}">{{ config_apariencia.telefono_contacto|default:"310 871 0141" }}</a><br>
+            Correo: <a href="mailto:{{ config_apariencia.email_contacto|default:'iedceis@gmail.com' }}">{{ config_apariencia.email_contacto|default:"iedceis@gmail.com" }}</a><br>
+            {{ config_apariencia.direccion_contacto|default:"Carrera 10 No. 1-31, Sopó, Cundinamarca" }}
           </p>
         </div>
         <div>
           <h4>Atención presencial</h4>
           <p class="small">
             Secretaría académica:<br>
-            Martes, miércoles y jueves<br>
-            de 8:00 a.m. a 12:00 m.
+            {{ config_apariencia.horario_atencion|default:"Martes, miércoles y jueves de 8:00 a.m. a 12:00 m." }}
           </p>
         </div>
       </div>
-      <div class="copy">&copy; 2026 I.E.D. Complejo Educativo Integral Sopó (CEIS). Todos los derechos reservados.</div>
+      <div class="copy">&copy; 2026 {{ config_apariencia.titulo_hero|default:"I.E.D. Complejo Educativo Integral Sopó (CEIS)" }}. Todos los derechos reservados.</div>
     </div>
   </footer>
 
@@ -335,9 +374,10 @@
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
   </button>
 
+  {% if config_apariencia.athena_activo %}
   <!-- Botón Flotante Athena -->
-  <button id="athena-bot-trigger" class="athena-bot-trigger" onclick="alternarAthenaChat()" title="Asistente Institucional Athena" aria-label="Abrir asistente institucional Athena">
-    <img src="{% static 'logos/athena_personaje_transparente.svg' %}" alt="Athena">
+  <button id="athena-bot-trigger" class="athena-bot-trigger" onclick="alternarAthenaChat()" title="{{ config_apariencia.athena_nombre_visible|default:'Athena' }} · Asistente Institucional" aria-label="Abrir asistente institucional {{ config_apariencia.athena_nombre_visible|default:'Athena' }}">
+    <img src="{% static 'logos/athena_personaje_transparente.svg' %}" alt="{{ config_apariencia.athena_nombre_visible|default:'Athena' }}">
     <span class="athena-bot-badge"></span>
   </button>
 
@@ -346,10 +386,10 @@
     <div class="athena-header">
       <div class="athena-header-info">
         <div class="athena-header-avatar">
-          <img src="{% static 'logos/athena_personaje_transparente.svg' %}" alt="Athena">
+          <img src="{% static 'logos/athena_personaje_transparente.svg' %}" alt="{{ config_apariencia.athena_nombre_visible|default:'Athena' }}">
         </div>
         <div>
-          <div id="athena-title" class="athena-header-title">Athena</div>
+          <div id="athena-title" class="athena-header-title">{{ config_apariencia.athena_nombre_visible|default:"Athena" }}</div>
           <div class="athena-header-status">Asistente Institucional</div>
         </div>
       </div>
@@ -359,7 +399,7 @@
     </div>
     <div id="athena-messages" class="athena-messages">
       <div class="athena-msg athena-msg-bot">
-        Saludos. Soy <strong>Athena</strong>, asistente institucional de la I.E.D. CEIS Sopó. ¿En qué información puedo colaborarte hoy?
+        {{ config_apariencia.athena_mensaje_bienvenida|linebreaksbr|default:"Saludos. Soy <strong>Athena</strong>, asistente institucional de la I.E.D. CEIS Sopó. ¿En qué información puedo colaborarte hoy?" }}
         <div class="athena-quick-actions">
           <button class="athena-quick-btn" onclick="athenaPregunta('guias')">Guías de Estudio</button>
           <button class="athena-quick-btn" onclick="athenaPregunta('matricula')">Pre-Matrícula 2026</button>
@@ -376,6 +416,7 @@
       </button>
     </form>
   </div>
+  {% endif %}
 
   <script>
     // Atajo Ctrl+K / Cmd+K para abrir buscador

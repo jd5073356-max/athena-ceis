@@ -274,7 +274,8 @@ class Documento(models.Model):
 
 
 class ConfiguracionApariencia(models.Model):
-    """Personalización dinámica de colores, tipografía y escala de fuente de la web pública (gestión desde el admin)."""
+    """Personalización dinámica integral del portal escolar: marca, paleta, tipografía,
+    tokens de diseño, anuncios y datos oficiales de contacto (gestión desde el admin)."""
 
     class TipografiaPrincipal(models.TextChoices):
         PLUS_JAKARTA = "plus_jakarta_sans", "Plus Jakarta Sans (Moderna y geométrica — Predeterminada)"
@@ -300,8 +301,70 @@ class ConfiguracionApariencia(models.Model):
         GRANDE = "grande", "Grande (+16% — alta visibilidad y accesibilidad)"
         MUY_GRANDE = "muy_grande", "Extra Grande (+25% — máxima legibilidad)"
 
+    class RadioBordes(models.TextChoices):
+        RECTO = "recto", "Sobrio / Recto (4px)"
+        EQUILIBRADO = "equilibrado", "Equilibrado (12px — Predeterminado)"
+        REDONDEADO = "redondeado", "Redondeado / Moderno (20px)"
+
+    class IntensidadSombras(models.TextChoices):
+        PLANO = "plano", "Plano / Minimalista (Sin sombras)"
+        SUTIL = "sutil", "Sutil (Predeterminado — Elevación suave)"
+        PROFUNDO = "profundo", "Profundo (Sombras con relieve marcado)"
+
+    class EstiloMenu(models.TextChoices):
+        SOLIDO = "solido", "Color Sólido Institucional (Predeterminado)"
+        CRISTAL = "cristal", "Cristal / Glassmorphism traslúcido"
+        CLARO = "claro", "Fondo Blanco / Claro"
+
+    class AvisoTipo(models.TextChoices):
+        INFORMATIVO = "informativo", "Informativo (Azul institucional / Teal)"
+        ALERTA = "alerta", "Alerta / Atención (Dorado ámbar)"
+        URGENTE = "urgente", "Urgente / Importante (Rojo institucional)"
+
+    # Identidad y Marca
+    logo_institucional = models.FileField(
+        "Escudo / Logo Principal",
+        upload_to="branding/",
+        blank=True,
+        null=True,
+        help_text="Imagen del escudo o logo oficial (PNG, SVG, JPG, WebP). Si se deja vacío se usa el escudo por defecto."
+    )
+    favicon_institucional = models.FileField(
+        "Favicon Institucional",
+        upload_to="branding/",
+        blank=True,
+        null=True,
+        help_text="Icono pequeño para la pestaña del navegador (PNG, ICO). Si se deja vacío se usa el escudo por defecto."
+    )
+    portada_hero = models.FileField(
+        "Imagen de Portada Principal (Hero)",
+        upload_to="branding/",
+        blank=True,
+        null=True,
+        help_text="Fotografía destacada para el banner principal. Si se deja vacío se usa la fotografía por defecto."
+    )
+    lema_institucional = models.CharField(
+        "Lema Institucional",
+        max_length=160,
+        default="Paz, Educación y Progreso",
+        help_text="Lema oficial que aparece debajo del nombre en cabecera y pie de página."
+    )
+    titulo_hero = models.CharField(
+        "Título Principal del Hero",
+        max_length=160,
+        default="I.E.D. CEIS Sopó",
+        help_text="Título principal visible en el banner de bienvenida."
+    )
+    subtitulo_hero = models.CharField(
+        "Subtítulo del Hero",
+        max_length=255,
+        default="Complejo Educativo Integral Sopó · Formando líderes con calidad y sentido humano.",
+        help_text="Texto descriptivo visible en el banner principal."
+    )
+
+    # Paleta de Colores
     color_principal = models.CharField("Color Principal (Cabecera/Títulos)", max_length=18, default="#0a1931",
-                                       help_text="Color hex para la barra superior, botones y títulos principales. Ej: #0a1931")
+                                        help_text="Color hex para la barra superior, botones y títulos principales. Ej: #0a1931")
     color_secundario = models.CharField("Color Secundario (Menú Principal)", max_length=18, default="#15305b",
                                         help_text="Color hex para la barra del menú principal. Ej: #15305b")
     color_acento = models.CharField("Color de Acento (Bordes/Destacados)", max_length=18, default="#c5a880",
@@ -336,13 +399,121 @@ class ConfiguracionApariencia(models.Model):
         help_text="Escala proporcional de fuentes de todo el portal público."
     )
 
+    # Tokens de Diseño
+    radio_bordes = models.CharField(
+        "Estilo de Bordes y Esquinas",
+        max_length=20,
+        choices=RadioBordes.choices,
+        default=RadioBordes.EQUILIBRADO,
+        help_text="Curvatura de esquinas en botones, tarjetas y acordeones."
+    )
+    intensidad_sombras = models.CharField(
+        "Intensidad de Sombras y Relieve",
+        max_length=20,
+        choices=IntensidadSombras.choices,
+        default=IntensidadSombras.SUTIL,
+        help_text="Profundidad de sombreado en tarjetas y contenedores elevados."
+    )
+    estilo_menu = models.CharField(
+        "Estilo de la Barra de Navegación",
+        max_length=20,
+        choices=EstiloMenu.choices,
+        default=EstiloMenu.SOLIDO,
+        help_text="Tratamiento visual de la barra de menú superior."
+    )
+
+    # Barra de Avisos
+    aviso_activo = models.BooleanField(
+        "Activar Barra de Aviso Superior",
+        default=False,
+        help_text="Muestra una franja destacada de anuncio en la parte superior del portal."
+    )
+    aviso_texto = models.CharField(
+        "Texto del Aviso",
+        max_length=255,
+        blank=True,
+        help_text="Mensaje del anuncio. Ej: Inscripciones abiertas para el año escolar 2026."
+    )
+    aviso_tipo = models.CharField(
+        "Tipo de Aviso",
+        max_length=20,
+        choices=AvisoTipo.choices,
+        default=AvisoTipo.INFORMATIVO,
+        help_text="Estilo visual y color de la franja de anuncio."
+    )
+    aviso_enlace = models.CharField(
+        "Enlace del Aviso (Opcional)",
+        max_length=255,
+        blank=True,
+        help_text="Ruta interna o enlace web hacia donde redirige el aviso."
+    )
+    aviso_texto_enlace = models.CharField(
+        "Texto del Botón/Enlace (Opcional)",
+        max_length=60,
+        blank=True,
+        default="Más información",
+        help_text="Etiqueta visible del botón de enlace del aviso."
+    )
+
+    # Contacto y Canales Oficiales
+    telefono_contacto = models.CharField(
+        "Teléfono Institucional",
+        max_length=40,
+        default="310 871 0141",
+        help_text="Teléfono visible en pie de página y datos de contacto."
+    )
+    whatsapp_contacto = models.CharField(
+        "Número de WhatsApp",
+        max_length=40,
+        default="310 871 0141",
+        help_text="Número para enlace directo de WhatsApp institucional."
+    )
+    email_contacto = models.EmailField(
+        "Correo Electrónico Oficial",
+        default="iedceis@gmail.com",
+        help_text="Correo de secretaría académica y atención a la comunidad."
+    )
+    direccion_contacto = models.CharField(
+        "Dirección Física",
+        max_length=160,
+        default="Carrera 10 No. 1-31, Sopó, Cundinamarca",
+        help_text="Dirección de la sede principal."
+    )
+    horario_atencion = models.CharField(
+        "Horario de Atención",
+        max_length=120,
+        default="Martes, miércoles y jueves de 8:00 a.m. a 12:00 m.",
+        help_text="Horario presencial de secretaría académica."
+    )
+    red_facebook = models.URLField("Enlace a Facebook Oficial", blank=True, help_text="Página de Facebook institucional.")
+    red_youtube = models.URLField("Canal de YouTube Oficial", blank=True, help_text="Canal de YouTube del colegio.")
+    red_instagram = models.URLField("Enlace a Instagram Oficial", blank=True, help_text="Perfil de Instagram institucional.")
+
+    # Asistente Virtual Athena
+    athena_activo = models.BooleanField(
+        "Habilitar Asistente Athena en Web Pública",
+        default=True,
+        help_text="Muestra u oculta la asesora virtual interactiva en la web pública."
+    )
+    athena_nombre_visible = models.CharField(
+        "Nombre Visible de la Asesora",
+        max_length=60,
+        default="Athena",
+        help_text="Nombre que se muestra en la cabecera del diálogo de chat."
+    )
+    athena_mensaje_bienvenida = models.TextField(
+        "Mensaje de Bienvenida Inicial",
+        default="Saludos. Soy Athena, la asesora institucional del I.E.D. CEIS. ¿En qué puedo orientarte hoy?",
+        help_text="Primer mensaje que visualiza el usuario al desplegar el chat."
+    )
+
     class Meta:
         db_table = "CONFIGURACION_APARIENCIA"
-        verbose_name = "Apariencia, Tipografía y Colores"
-        verbose_name_plural = "Apariencia, Tipografía y Colores"
+        verbose_name = "Configuración Institucional y Apariencia"
+        verbose_name_plural = "Configuración Institucional y Apariencia"
 
     def __str__(self):
-        return "Configuración de Apariencia de la Web"
+        return "Configuración Institucional del Portal"
 
     def save(self, *args, **kwargs):
         self.pk = 1
@@ -394,4 +565,65 @@ class ConfiguracionApariencia(models.Model):
             "muy_grande": "20px",
         }
         return tamanos.get(self.tamano_letra, "16px")
+
+    @property
+    def css_radius_sm(self) -> str:
+        return {"recto": "2px", "equilibrado": "8px", "redondeado": "12px"}.get(self.radio_bordes, "8px")
+
+    @property
+    def css_radius_md(self) -> str:
+        return {"recto": "4px", "equilibrado": "12px", "redondeado": "20px"}.get(self.radio_bordes, "12px")
+
+    @property
+    def css_radius_lg(self) -> str:
+        return {"recto": "6px", "equilibrado": "16px", "redondeado": "28px"}.get(self.radio_bordes, "16px")
+
+    @property
+    def css_sombra_sm(self) -> str:
+        return {
+            "plano": "none",
+            "sutil": "0 2px 8px rgba(10,25,49,0.04)",
+            "profundo": "0 4px 14px rgba(10,25,49,0.09)",
+        }.get(self.intensidad_sombras, "0 2px 8px rgba(10,25,49,0.04)")
+
+    @property
+    def css_sombra_md(self) -> str:
+        return {
+            "plano": "none",
+            "sutil": "0 10px 25px -5px rgba(10,25,49,0.08), 0 8px 10px -6px rgba(10,25,49,0.04)",
+            "profundo": "0 16px 36px -4px rgba(10,25,49,0.16), 0 10px 16px -4px rgba(10,25,49,0.08)",
+        }.get(self.intensidad_sombras, "0 10px 25px -5px rgba(10,25,49,0.08)")
+
+    @property
+    def css_sombra_lg(self) -> str:
+        return {
+            "plano": "none",
+            "sutil": "0 20px 35px -10px rgba(10,25,49,0.15)",
+            "profundo": "0 28px 50px -8px rgba(10,25,49,0.26)",
+        }.get(self.intensidad_sombras, "0 20px 35px -10px rgba(10,25,49,0.15)")
+
+    @property
+    def css_menu_bg(self) -> str:
+        return {
+            "solido": "var(--azul-claro)",
+            "cristal": "rgba(21, 48, 91, 0.88)",
+            "claro": "#ffffff",
+        }.get(self.estilo_menu, "var(--azul-claro)")
+
+    @property
+    def css_menu_texto(self) -> str:
+        return {
+            "solido": "#f1f5f9",
+            "cristal": "#ffffff",
+            "claro": "var(--azul)",
+        }.get(self.estilo_menu, "#f1f5f9")
+
+    @property
+    def css_menu_backdrop(self) -> str:
+        return {
+            "solido": "none",
+            "cristal": "blur(14px)",
+            "claro": "none",
+        }.get(self.estilo_menu, "none")
+
 

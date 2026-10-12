@@ -31,6 +31,26 @@ class ConfiguracionAparienciaForm(forms.ModelForm):
             "tipografia_principal": forms.Select(attrs={"style": "max-width:480px;font-size:0.95rem;padding:8px 12px;"}),
             "tipografia_titulos": forms.Select(attrs={"style": "max-width:480px;font-size:0.95rem;padding:8px 12px;"}),
             "tamano_letra": forms.Select(attrs={"style": "max-width:480px;font-size:0.95rem;padding:8px 12px;"}),
+            "radio_bordes": forms.Select(attrs={"style": "max-width:480px;font-size:0.95rem;padding:8px 12px;"}),
+            "intensidad_sombras": forms.Select(attrs={"style": "max-width:480px;font-size:0.95rem;padding:8px 12px;"}),
+            "estilo_menu": forms.Select(attrs={"style": "max-width:480px;font-size:0.95rem;padding:8px 12px;"}),
+            "aviso_tipo": forms.Select(attrs={"style": "max-width:480px;font-size:0.95rem;padding:8px 12px;"}),
+            "lema_institucional": forms.TextInput(attrs={"style": "max-width:540px;"}),
+            "titulo_hero": forms.TextInput(attrs={"style": "max-width:540px;"}),
+            "subtitulo_hero": forms.TextInput(attrs={"style": "max-width:680px;"}),
+            "aviso_texto": forms.TextInput(attrs={"style": "max-width:680px;"}),
+            "aviso_enlace": forms.TextInput(attrs={"style": "max-width:540px;", "placeholder": "/documentos/ o https://..."}),
+            "aviso_texto_enlace": forms.TextInput(attrs={"style": "max-width:280px;"}),
+            "telefono_contacto": forms.TextInput(attrs={"style": "max-width:320px;"}),
+            "whatsapp_contacto": forms.TextInput(attrs={"style": "max-width:320px;"}),
+            "email_contacto": forms.EmailInput(attrs={"style": "max-width:400px;"}),
+            "direccion_contacto": forms.TextInput(attrs={"style": "max-width:540px;"}),
+            "horario_atencion": forms.TextInput(attrs={"style": "max-width:540px;"}),
+            "red_facebook": forms.URLInput(attrs={"style": "max-width:500px;", "placeholder": "https://facebook.com/..."}),
+            "red_youtube": forms.URLInput(attrs={"style": "max-width:500px;", "placeholder": "https://youtube.com/..."}),
+            "red_instagram": forms.URLInput(attrs={"style": "max-width:500px;", "placeholder": "https://instagram.com/..."}),
+            "athena_nombre_visible": forms.TextInput(attrs={"style": "max-width:280px;"}),
+            "athena_mensaje_bienvenida": forms.Textarea(attrs={"rows": 3, "style": "max-width:680px;"}),
         }
 
 
@@ -42,11 +62,24 @@ class ConfiguracionAparienciaAdmin(admin.ModelAdmin):
         "tipografia_principal",
         "tipografia_titulos",
         "tamano_letra",
-        "color_principal",
-        "color_secundario",
-        "color_acento",
+        "radio_bordes",
+        "intensidad_sombras",
+        "aviso_activo",
+        "athena_activo",
     )
     fieldsets = (
+        (
+            "Identidad Visual y Marca",
+            {
+                "description": "Carga el escudo institucional, favicon para la pestaña del navegador y personaliza los textos del lema y portada de bienvenida.",
+                "fields": (
+                    ("logo_institucional", "favicon_institucional"),
+                    "portada_hero",
+                    ("lema_institucional", "titulo_hero"),
+                    "subtitulo_hero",
+                ),
+            },
+        ),
         (
             "Paleta de Colores Institucional",
             {
@@ -70,6 +103,49 @@ class ConfiguracionAparienciaAdmin(admin.ModelAdmin):
             {
                 "description": "Ajusta la escala proporcional de tamaño de letra de todo el portal público para optimizar la legibilidad.",
                 "fields": ("tamano_letra",),
+            },
+        ),
+        (
+            "Estilo de Componentes (Diseño y Bordes)",
+            {
+                "description": "Ajusta el radio de redondeo de las esquinas, la profundidad de sombras y el comportamiento visual del menú principal.",
+                "fields": (
+                    ("radio_bordes", "intensidad_sombras"),
+                    "estilo_menu",
+                ),
+            },
+        ),
+        (
+            "Barra de Avisos y Anuncios de Urgencia",
+            {
+                "description": "Activa una franja de notificación en la parte superior del portal para fechas críticas, jornadas o alertas de rectoría.",
+                "fields": (
+                    ("aviso_activo", "aviso_tipo"),
+                    "aviso_texto",
+                    ("aviso_enlace", "aviso_texto_enlace"),
+                ),
+            },
+        ),
+        (
+            "Información de Contacto y Canales Oficiales",
+            {
+                "description": "Actualiza los teléfonos de atención, correo electrónico, dirección física y redes sociales oficiales del colegio.",
+                "fields": (
+                    ("telefono_contacto", "whatsapp_contacto"),
+                    ("email_contacto", "direccion_contacto"),
+                    "horario_atencion",
+                    ("red_facebook", "red_youtube", "red_instagram"),
+                ),
+            },
+        ),
+        (
+            "Asistente Virtual Institucional (Athena)",
+            {
+                "description": "Configura la visibilidad de la asesora virtual en la web pública, su nombre visible y el mensaje de saludo inicial.",
+                "fields": (
+                    ("athena_activo", "athena_nombre_visible"),
+                    "athena_mensaje_bienvenida",
+                ),
             },
         ),
     )
