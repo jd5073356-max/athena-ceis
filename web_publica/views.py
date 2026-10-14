@@ -191,11 +191,16 @@ def pagina_detalle(request, clave):
         return redirect(pagina.enlace_externo)
     if not pagina.contenido or not pagina.contenido.strip():
         raise Http404("Esta sección aún no tiene contenido publicado.")
-    return render(request, "web_publica/pagina_detalle.html", {
+    contexto = {
         "secciones": _secciones(),
         "pagina": pagina,
         "imagenes_seccion": _imagenes_seccion(clave),
-    })
+    }
+    if clave == "inclusion":
+        contexto["plataformas_inclusion"] = Seccion.objects.filter(
+            clave__in=["bdei", "eco-inclusivo"]
+        ).order_by("orden")
+    return render(request, "web_publica/pagina_detalle.html", contexto)
 
 
 # --- Circulares, Cronograma y Guías: documentos gestionados desde el admin --
