@@ -176,6 +176,7 @@ class Seccion(models.Model):
         HOME = "home", "Inicio (identidad)"      # no se lista; alimenta la home
         COLEGIO = "colegio", "El Colegio"        # página institucional
         PROYECTO = "proyecto", "Proyectos"       # proyecto transversal
+        SOFTWARE = "software", "Software Institucional"  # plataformas y sistemas de software
 
     clave = models.SlugField("Clave", max_length=60, unique=True,
                              help_text="Identificador interno. Ej.: mision, vision, prae.")

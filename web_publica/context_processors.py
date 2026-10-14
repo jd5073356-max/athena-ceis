@@ -28,6 +28,7 @@ def menu_publico(request):
     return {
         "menu_nosotros": [s for s in secciones_activas if s.categoria == "colegio"],
         "menu_proyectos": [s for s in secciones_activas if s.categoria == "proyecto"],
+        "menu_software": [s for s in secciones_activas if s.categoria == "software"],
         "config_apariencia": config_apariencia,
     }
 

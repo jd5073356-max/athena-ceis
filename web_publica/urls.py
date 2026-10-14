@@ -22,6 +22,7 @@ urlpatterns = [
     # Páginas institucionales y proyectos
     path("colegio/", views.colegio, name="colegio"),
     path("proyectos/", views.proyectos, name="proyectos"),
+    path("software/", views.software, name="software"),
     path("p/<slug:clave>/", views.pagina_detalle, name="pagina_detalle"),
 
     # Contenido independiente

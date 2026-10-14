@@ -8,7 +8,8 @@
 <section class="seccion">
   <p class="breadcrumb">
     <a href="{% url 'web_publica:home' %}">Inicio</a> &rsaquo;
-    {% if pagina.categoria == 'proyecto' %}<a href="{% url 'web_publica:proyectos' %}">Nuestros Proyectos</a> &rsaquo;
+    {% if pagina.categoria == 'software' %}<a href="{% url 'web_publica:software' %}">Software SENA</a> &rsaquo;
+    {% elif pagina.categoria == 'proyecto' %}<a href="{% url 'web_publica:proyectos' %}">Nuestros Proyectos</a> &rsaquo;
     {% elif pagina.categoria == 'colegio' %}<a href="{% url 'web_publica:colegio' %}">Nosotros</a> &rsaquo;{% endif %}
     {{ pagina.titulo }}
   </p>

@@ -167,6 +167,20 @@ def proyectos(request):
     })
 
 
+def software(request):
+    """Listado del apartado 'Software SENA' (plataformas y sistemas desarrollados)."""
+    paginas_activas = [
+        s for s in Seccion.objects.filter(categoria=Seccion.Categoria.SOFTWARE)
+        if s.contenido and s.contenido.strip() and s.clave not in SECCIONES_OCULTAS
+    ]
+    paginas_activas.sort(key=lambda s: (bool(s.grupo), s.grupo, s.orden))
+    return render(request, "web_publica/paginas_lista.html", {
+        "secciones": _secciones(),
+        "encabezado": "Software SENA",
+        "paginas": _con_thumb(paginas_activas),
+    })
+
+
 def pagina_detalle(request, clave):
     """Detalle de una sección (Nosotros, Proyectos, Pre-Matrícula).
     Oculta secciones vacías o provisionales levantando 404 hasta que tengan contenido."""
@@ -472,6 +486,7 @@ def sitemap_xml(request):
         {"loc": f"{base_url}/", "changefreq": "daily", "priority": "1.0"},
         {"loc": f"{base_url}/colegio/", "changefreq": "weekly", "priority": "0.8"},
         {"loc": f"{base_url}/proyectos/", "changefreq": "weekly", "priority": "0.8"},
+        {"loc": f"{base_url}/software/", "changefreq": "weekly", "priority": "0.8"},
         {"loc": f"{base_url}/documentos/", "changefreq": "weekly", "priority": "0.9"},
         {"loc": f"{base_url}/noticias/", "changefreq": "daily", "priority": "0.8"},
         {"loc": f"{base_url}/galeria/", "changefreq": "monthly", "priority": "0.7"},
@@ -479,7 +494,7 @@ def sitemap_xml(request):
     ]
 
     # Secciones institucionales activas con texto
-    for s in Seccion.objects.filter(categoria__in=[Seccion.Categoria.COLEGIO, Seccion.Categoria.PROYECTO]):
+    for s in Seccion.objects.filter(categoria__in=[Seccion.Categoria.COLEGIO, Seccion.Categoria.PROYECTO, Seccion.Categoria.SOFTWARE]):
         if s.contenido and s.contenido.strip() and s.clave not in SECCIONES_OCULTAS and s.clave not in IDENTIDAD and s.clave != "pre_matricula_2026":
             urls.append({
                 "loc": f"{base_url}/p/{s.clave}/",
