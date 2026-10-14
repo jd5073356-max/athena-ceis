@@ -29,6 +29,7 @@ def menu_publico(request):
         "menu_nosotros": [s for s in secciones_activas if s.categoria == "colegio"],
         "menu_proyectos": [s for s in secciones_activas if s.categoria == "proyecto"],
         "menu_software": [s for s in secciones_activas if s.categoria == "software"],
+        "menu_inclusion": [s for s in secciones_activas if s.categoria == "software" and s.clave in {"atdie", "bdei", "eco-inclusivo"}],
         "config_apariencia": config_apariencia,
     }
 

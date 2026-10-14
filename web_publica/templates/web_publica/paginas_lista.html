@@ -13,7 +13,7 @@
   {% if bloque.grouper %}<h3 class="titulo-seccion" style="font-size:1.25rem;margin:34px 0 14px">{{ bloque.grouper }}</h3>{% endif %}
   <div class="tarjetas">
     {% for p in bloque.list %}
-    <a class="tarjeta" href="{% url 'web_publica:pagina_detalle' p.clave %}">
+    <a class="tarjeta" href="{% if p.enlace_externo %}{{ p.enlace_externo }}{% else %}{% url 'web_publica:pagina_detalle' p.clave %}{% endif %}" {% if p.enlace_externo %}target="_blank" rel="noopener"{% endif %}>
       {% if p.thumb %}<div class="tj-img" style="background-image:url('{{ p.thumb }}')"></div>{% endif %}
       <div class="tj-body">
         <h3>{{ p.titulo }}</h3>

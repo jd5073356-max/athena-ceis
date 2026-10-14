@@ -297,11 +297,13 @@
       </div>
 
       <div class="menu-item">
-        <a class="menu-top" href="{% url 'web_publica:software' %}" tabindex="0">Software SENA <span class="caret">&#9660;</span></a>
+        <a class="menu-top" href="{% url 'web_publica:software' %}" tabindex="0">Inclusión <span class="caret">&#9660;</span></a>
         <div class="submenu">
-          {% for s in menu_software %}<a href="{% url 'web_publica:pagina_detalle' s.clave %}">{{ s.titulo }}</a>{% endfor %}
+          {% for s in menu_inclusion %}<a href="{{ s.enlace_externo }}" target="_blank" rel="noopener">{{ s.titulo }}</a>{% endfor %}
         </div>
       </div>
+
+      <a class="menu-link" href="https://senaedupassceis.netlify.app" target="_blank" rel="noopener">EduPass</a>
 
       <a class="menu-link" href="{% url 'web_publica:pagina_detalle' 'pre_matricula_2026' %}">Pre-Matrícula 2026</a>
     </div>

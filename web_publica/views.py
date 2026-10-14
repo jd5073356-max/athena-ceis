@@ -10,7 +10,7 @@ import re
 
 from django.conf import settings
 from django.http import Http404, HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from core.models import (
     Anio, Curso, Documento, Guia, Imagen, Materia, Noticia, Periodo, Seccion, Video,
@@ -168,7 +168,7 @@ def proyectos(request):
 
 
 def software(request):
-    """Listado del apartado 'Software SENA' (plataformas y sistemas desarrollados)."""
+    """Listado del apartado 'Inclusión' y plataformas de software."""
     paginas_activas = [
         s for s in Seccion.objects.filter(categoria=Seccion.Categoria.SOFTWARE)
         if s.contenido and s.contenido.strip() and s.clave not in SECCIONES_OCULTAS
@@ -176,17 +176,19 @@ def software(request):
     paginas_activas.sort(key=lambda s: (bool(s.grupo), s.grupo, s.orden))
     return render(request, "web_publica/paginas_lista.html", {
         "secciones": _secciones(),
-        "encabezado": "Software SENA",
+        "encabezado": "Inclusión",
         "paginas": _con_thumb(paginas_activas),
     })
 
 
 def pagina_detalle(request, clave):
     """Detalle de una sección (Nosotros, Proyectos, Pre-Matrícula).
-    Oculta secciones vacías o provisionales levantando 404 hasta que tengan contenido."""
+    Si tiene enlace externo (plataformas de software), redirige inmediatamente."""
     if clave in IDENTIDAD or clave in SECCIONES_OCULTAS:
         raise Http404("Sección no disponible")
     pagina = get_object_or_404(Seccion, clave=clave)
+    if pagina.enlace_externo:
+        return redirect(pagina.enlace_externo)
     if not pagina.contenido or not pagina.contenido.strip():
         raise Http404("Esta sección aún no tiene contenido publicado.")
     return render(request, "web_publica/pagina_detalle.html", {
