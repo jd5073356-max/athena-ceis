@@ -18,8 +18,8 @@ from core.models import (
 
 # Secciones que son solo identidad de la home (no tienen página propia).
 IDENTIDAD = {"nombre_sitio", "lema", "mision", "vision", "contacto"}
-# Secciones vacías o provisionales ocultadas hasta que se agregue texto
-SECCIONES_OCULTAS = {"jornada_unica", "autoevaluacion", "familia_calidad", "circulares_padres"}
+# Secciones vacías o provisionales ocultadas hasta que se agregue texto (y atdie provisionalmente)
+SECCIONES_OCULTAS = {"jornada_unica", "autoevaluacion", "familia_calidad", "circulares_padres", "atdie"}
 _EXTS_IMG = (".jpg", ".jpeg", ".png", ".webp", ".gif")
 
 
@@ -168,10 +168,10 @@ def proyectos(request):
 
 
 def software(request):
-    """Listado del apartado 'Inclusión' y plataformas de software."""
+    """Listado del apartado 'Inclusión' y plataformas de software adaptativo."""
     paginas_activas = [
         s for s in Seccion.objects.filter(categoria=Seccion.Categoria.SOFTWARE)
-        if s.contenido and s.contenido.strip() and s.clave not in SECCIONES_OCULTAS
+        if s.contenido and s.contenido.strip() and s.clave not in SECCIONES_OCULTAS and s.clave in {"bdei", "eco-inclusivo"}
     ]
     paginas_activas.sort(key=lambda s: (bool(s.grupo), s.grupo, s.orden))
     return render(request, "web_publica/paginas_lista.html", {

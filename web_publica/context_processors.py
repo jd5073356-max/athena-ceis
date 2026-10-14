@@ -18,18 +18,18 @@ def menu_publico(request):
         config_apariencia = ConfiguracionApariencia.objects.first()
     except Exception:
         config_apariencia = None
-    # Ocultar secciones vacias o provisionales sin texto
+    # Ocultar secciones vacias o provisionales sin texto (y atdie provisionalmente)
     secciones_activas = [
         s for s in secciones
         if s.contenido and s.contenido.strip() and s.clave not in {
-            "jornada_unica", "autoevaluacion", "familia_calidad", "circulares_padres"
+            "jornada_unica", "autoevaluacion", "familia_calidad", "circulares_padres", "atdie"
         }
     ]
     return {
         "menu_nosotros": [s for s in secciones_activas if s.categoria == "colegio"],
         "menu_proyectos": [s for s in secciones_activas if s.categoria == "proyecto"],
         "menu_software": [s for s in secciones_activas if s.categoria == "software"],
-        "menu_inclusion": [s for s in secciones_activas if s.categoria == "software" and s.clave in {"atdie", "bdei", "eco-inclusivo"}],
+        "menu_inclusion": [s for s in secciones_activas if s.categoria == "software" and s.clave in {"bdei", "eco-inclusivo"}],
         "config_apariencia": config_apariencia,
     }
 
