@@ -159,6 +159,7 @@ def proyectos(request):
         s for s in Seccion.objects.filter(categoria=Seccion.Categoria.PROYECTO)
         if s.contenido and s.contenido.strip() and s.clave not in SECCIONES_OCULTAS
     ]
+    paginas_activas.sort(key=lambda s: (bool(s.grupo), s.grupo, s.orden))
     return render(request, "web_publica/paginas_lista.html", {
         "secciones": _secciones(),
         "encabezado": "Nuestros Proyectos",
@@ -289,7 +290,7 @@ def _fallback_respuesta(q: str) -> str:
     elif any(w in q for w in ["contacto", "telefono", "teléfono", "whatsapp", "correo", "email", "celular"]):
         return "Canales de atención oficial de la I.E.D. CEIS:<br>• Celular / WhatsApp: <a class='athena-msg-link' href='https://wa.me/573108710141' target='_blank' rel='noopener'>310 871 0141</a><br>• Correo institucional: <a class='athena-msg-link' href='mailto:iedceis@gmail.com'>iedceis@gmail.com</a>"
     elif any(w in q for w in ["proyecto", "serc", "prae", "pileo", "ceisopolis"]):
-        return "La institución cuenta con proyectos formativos activos como el Sistema Educativo Relacional (SERC), PRAE ambiental, PILEO y Ceisópolis: <br><a class='athena-msg-link' href='/proyectos/'>Ver Proyectos Institucionales</a>"
+        return "La institución cuenta con proyectos formativos activos como el Sistema Educativo Relacional (SERC), PRAE ambiental, PILEO y Ceisópolis, además de software propio: B.A.D.E.I y Eco Inclusivo (inclusión), EduPass y ATDIE (gestión escolar): <br><a class='athena-msg-link' href='/proyectos/'>Ver Proyectos Institucionales</a>"
     elif any(w in q for w in ["rector", "colegio", "mision", "misión", "vision", "visión", "nosotros"]):
         return "La I.E.D. Complejo Educativo Integral Sopó (CEIS) es dirigida por el Lic. Juan Carlos Aguirre Nieto bajo el lema Paz, Educación y Progreso: <br><a class='athena-msg-link' href='/colegio/'>Conocer más sobre el colegio</a>"
     return "Para brindarte información precisa sobre esa solicitud particular o trámites de constancias, por favor contacta a secretaría académica al celular <strong>310 871 0141</strong> o al correo <a class='athena-msg-link' href='mailto:iedceis@gmail.com'>iedceis@gmail.com</a>."
@@ -412,7 +413,7 @@ def athena_chat_api(request):
             "- Horario de atención presencial: Martes, miércoles y jueves de 8:00 a.m. a 12:00 m.\n"
             "- Pre-Matrícula 2026: Formulario y requisitos disponibles en /p/pre_matricula_2026/.\n"
             "- Guías escolares y circulares: Repositorio por año, grado y materia disponible en /documentos/.\n"
-            "- Proyectos institucionales: SERC (Sistema Educativo Relacional), PRAE, PILEO, Ceisópolis (en /proyectos/).\n"
+            "- Proyectos institucionales: SERC (Sistema Educativo Relacional), PRAE, PILEO, Ceisópolis y software: B.A.D.E.I, Eco Inclusivo, EduPass, ATDIE (en /proyectos/).\n"
             "Reglas de Estilo:\n"
             "1. Responde en tono formal, conciso, respetuoso y claro (máximo 1 o 2 párrafos cortos).\n"
             "2. NUNCA uses emojis ni símbolos informales.\n"

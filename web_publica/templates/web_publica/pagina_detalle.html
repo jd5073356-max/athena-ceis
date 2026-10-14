@@ -20,6 +20,9 @@
     <p class="vacio">Esta sección aún no tiene contenido publicado.</p>
   {% endif %}
 
+  {% if pagina.enlace_externo %}
+  <p style="margin-top:26px"><a class="btn btn-primario" href="{{ pagina.enlace_externo }}" target="_blank" rel="noopener" style="display:inline-block;padding:12px 26px;border-radius:8px;background:var(--color-acento,#c5a880);color:#0a1931;font-weight:700;text-decoration:none">Abrir plataforma</a></p>
+  {% endif %}
   {% if imagenes_seccion %}
   <div class="galeria-grid" style="margin-top:34px">
     {% for img in imagenes_seccion %}

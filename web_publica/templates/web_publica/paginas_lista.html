@@ -8,8 +8,11 @@
   <p class="breadcrumb"><a href="{% url 'web_publica:home' %}">Inicio</a> &rsaquo; {{ encabezado }}</p>
   <h2 class="titulo-seccion">{{ encabezado }}</h2>
   {% if paginas %}
+  {% regroup paginas by grupo as bloques %}
+  {% for bloque in bloques %}
+  {% if bloque.grouper %}<h3 class="titulo-seccion" style="font-size:1.25rem;margin:34px 0 14px">{{ bloque.grouper }}</h3>{% endif %}
   <div class="tarjetas">
-    {% for p in paginas %}
+    {% for p in bloque.list %}
     <a class="tarjeta" href="{% url 'web_publica:pagina_detalle' p.clave %}">
       {% if p.thumb %}<div class="tj-img" style="background-image:url('{{ p.thumb }}')"></div>{% endif %}
       <div class="tj-body">
@@ -19,6 +22,7 @@
     </a>
     {% endfor %}
   </div>
+  {% endfor %}
   {% else %}
   <p class="vacio">Aún no hay contenido en esta sección.</p>
   {% endif %}

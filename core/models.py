@@ -185,6 +185,10 @@ class Seccion(models.Model):
                                  choices=Categoria.choices, default=Categoria.HOME)
     orden = models.PositiveIntegerField("Orden", default=0,
                                         help_text="Orden dentro de su categoría.")
+    enlace_externo = models.URLField("Enlace a la plataforma", blank=True,
+                                     help_text="Si se llena, la página muestra el botón 'Abrir plataforma'.")
+    grupo = models.CharField("Grupo", max_length=80, blank=True,
+                             help_text="Opcional. Agrupa proyectos en el listado. Ej.: Software de Inclusión.")
 
     class Meta:
         db_table = "SECCIONES"

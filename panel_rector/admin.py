@@ -267,8 +267,8 @@ class ImagenInline(admin.TabularInline):
 
 @admin.register(Seccion)
 class SeccionAdmin(admin.ModelAdmin):
-    list_display = ("titulo", "clave", "categoria", "orden")
-    list_filter = ("categoria",)
+    list_display = ("titulo", "clave", "categoria", "grupo", "orden")
+    list_filter = ("categoria", "grupo")
     list_editable = ("orden",)
     search_fields = ("clave", "titulo", "contenido")
     prepopulated_fields = {"clave": ("titulo",)}
