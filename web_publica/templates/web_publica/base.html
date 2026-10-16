@@ -116,9 +116,9 @@
 
     /* Menú principal dinámico */
     nav.menu{background:var(--menu-bg);position:sticky;top:0;z-index:60;box-shadow:var(--sombra-md);backdrop-filter:var(--menu-backdrop)}
-    .menu-inner{max-width:1160px;margin:0 auto;display:flex;align-items:stretch;flex-wrap:wrap}
-    nav.menu a{color:var(--menu-texto);font-weight:700;font-size:.83rem;letter-spacing:.03em;text-transform:uppercase;text-decoration:none}
-    .menu-link,.menu-top{display:flex;align-items:center;padding:15px 14px;border-bottom:3px solid transparent;transition:all .2s ease;position:relative}
+    .menu-inner{max-width:1200px;margin:0 auto;display:flex;align-items:stretch;flex-wrap:wrap}
+    nav.menu a{color:var(--menu-texto);font-weight:700;font-size:.81rem;letter-spacing:.02em;text-transform:uppercase;text-decoration:none}
+    .menu-link,.menu-top{display:flex;align-items:center;padding:15px 10px;border-bottom:3px solid transparent;transition:all .2s ease;position:relative}
     .menu-link:hover,.menu-top:hover,.menu-item:hover .menu-top{background:var(--azul-medio);border-bottom-color:var(--dorado);color:#fff;text-decoration:none}
     .menu-item{position:relative}
     .menu-item .caret{margin-left:7px;font-size:.65rem;opacity:.8;transition:transform .2s ease}
@@ -299,6 +299,8 @@
       <a class="menu-link" href="https://senaedupassceis.netlify.app" target="_blank" rel="noopener">EduPass</a>
 
       <a class="menu-link" href="https://technoaliementaria.netlify.app/" target="_blank" rel="noopener">TecnoAlimentaria</a>
+
+      <a class="menu-link" href="https://biblioteca-proyecto-d64cb.web.app/buscar.html" target="_blank" rel="noopener">THYLI</a>
 
       <a class="menu-link" href="{% url 'web_publica:pagina_detalle' 'pre_matricula_2026' %}">Pre-Matrícula 2026</a>
     </div>

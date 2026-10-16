@@ -200,6 +200,10 @@ def pagina_detalle(request, clave):
         contexto["plataformas_inclusion"] = Seccion.objects.filter(
             clave__in=["bdei", "eco-inclusivo"]
         ).order_by("orden")
+    elif clave == "pileo":
+        contexto["plataforma_biblioteca"] = Seccion.objects.filter(
+            clave="thyli"
+        ).first()
     return render(request, "web_publica/pagina_detalle.html", contexto)
 
 

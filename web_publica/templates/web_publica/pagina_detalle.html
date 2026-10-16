@@ -61,6 +61,31 @@
   </div>
   {% endif %}
 
+  {% if plataforma_biblioteca %}
+  <div style="margin:42px 0 36px;background:#fff;border:1px solid var(--borde);border-top:4px solid var(--dorado);border-radius:var(--radius-md);padding:24px;box-shadow:var(--sombra-md);display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <span style="font-size:.75rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--dorado);background:rgba(197,168,128,0.14);padding:4px 10px;border-radius:20px">
+        {{ plataforma_biblioteca.grupo|default:"Sistema de Gestión Bibliotecaria Escolar" }}
+      </span>
+      <span style="font-size:.75rem;color:#10b981;font-weight:700;display:flex;align-items:center;gap:4px">
+        <span style="width:7px;height:7px;background:#10b981;border-radius:50%;display:inline-block"></span> En línea
+      </span>
+    </div>
+    <h3 style="font-size:1.35rem;color:var(--azul);margin:0;font-weight:700">{{ plataforma_biblioteca.titulo }}</h3>
+    <div style="color:var(--texto);font-size:.94rem;line-height:1.6">
+      {{ plataforma_biblioteca.contenido|linebreaks }}
+    </div>
+    {% if plataforma_biblioteca.enlace_externo %}
+    <div>
+      <a href="{{ plataforma_biblioteca.enlace_externo }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:8px;background:var(--azul);color:#fff;font-weight:700;font-size:.88rem;text-transform:uppercase;letter-spacing:.04em;text-decoration:none;transition:all .2s ease" onmouseover="this.style.background='var(--azul-medio)';this.style.color='var(--dorado)'" onmouseout="this.style.background='var(--azul)';this.style.color='#fff'">
+        <span>Abrir Catálogo Virtual THYLI</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+      </a>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
   {% if pagina.enlace_externo %}
   <p style="margin-top:26px"><a class="btn btn-primario" href="{{ pagina.enlace_externo }}" target="_blank" rel="noopener" style="display:inline-block;padding:12px 26px;border-radius:8px;background:var(--color-acento,#c5a880);color:#0a1931;font-weight:700;text-decoration:none">Abrir plataforma</a></p>
   {% endif %}
