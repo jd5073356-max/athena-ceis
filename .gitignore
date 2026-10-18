@@ -31,3 +31,4 @@ wallet/
 documentos_prod/
 .vercel
 .env*
+capturas_exposicion/

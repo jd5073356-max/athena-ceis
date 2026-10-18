@@ -34,6 +34,10 @@ urlpatterns = [
     # Asistente Virtual Athena (IA)
     path("api/chat/", views.athena_chat_api, name="athena_chat_api"),
 
+    # Portal de Calificaciones y Boletines Oficiales SERC
+    path("consulta-notas/", views.consulta_notas, name="consulta_notas"),
+    path("boletin/<str:documento>/", views.boletin_imprimir, name="boletin_imprimir"),
+
     # Indexación y SEO Técnico
     path("robots.txt", views.robots_txt, name="robots_txt"),
     path("sitemap.xml", views.sitemap_xml, name="sitemap_xml"),

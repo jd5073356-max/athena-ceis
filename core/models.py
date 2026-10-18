@@ -632,3 +632,63 @@ class ConfiguracionApariencia(models.Model):
         }.get(self.estilo_menu, "none")
 
 
+# ===========================================================================
+#  Sistema de Seguimiento Académico y Boletines SERC
+# ===========================================================================
+class Estudiante(models.Model):
+    """Estudiante matriculado en la institución."""
+    documento = models.CharField("Número de documento", max_length=20, unique=True, db_index=True,
+                                 help_text="Número de T.I. o documento de identidad.")
+    tipo_documento = models.CharField("Tipo de documento", max_length=40, default="Tarjeta de Identidad")
+    nombres = models.CharField("Nombres", max_length=100)
+    apellidos = models.CharField("Apellidos", max_length=100)
+    grado = models.CharField("Grado", max_length=30, default="UNDECIMO", help_text="Ej: SEXTO, DECIMO, UNDECIMO")
+    curso = models.CharField("Curso", max_length=10, db_index=True, help_text="Ej: 601, 702, 1101")
+    acudiente = models.CharField("Acudiente", max_length=150, blank=True)
+    telefono_acudiente = models.CharField("Teléfono acudiente", max_length=30, blank=True)
+    director_grupo = models.CharField("Director(a) de Grupo", max_length=150, default="ROJAS GUTIERREZ LILIANA ASTRID")
+    activo = models.BooleanField("Activo", default=True)
+
+    class Meta:
+        db_table = "ESTUDIANTES"
+        verbose_name = "Estudiante"
+        verbose_name_plural = "Estudiantes"
+        ordering = ["curso", "apellidos", "nombres"]
+
+    def __str__(self):
+        return f"{self.apellidos} {self.nombres} ({self.curso})"
+
+    @property
+    def nombre_completo(self) -> str:
+        return f"{self.apellidos} {self.nombres}".strip()
+
+
+class InformeValorativo(models.Model):
+    """Boletín oficial de evaluación SERC (Sistema Educativo Relacional Cundinamarca)."""
+    estudiante = models.ForeignKey(Estudiante, on_delete=models.CASCADE, related_name="informes",
+                                   verbose_name="Estudiante")
+    anio_lectivo = models.PositiveIntegerField("Año lectivo", default=2026)
+    periodo_actual = models.PositiveSmallIntegerField("Período actual", default=3,
+                                                      choices=[(1, "I"), (2, "II"), (3, "III"), (4, "IV")])
+    datos_academicos = models.JSONField("Datos Académicos SERC", default=dict,
+                                        help_text="Estructura JSON con áreas, asignaturas, etapas SERC y notas.")
+    datos_convivencia = models.JSONField("Datos de Convivencia", default=dict,
+                                         help_text="Fallas, retardos, uniforme y valoración de convivencia.")
+    observaciones_academicas = models.TextField("Observaciones Académicas", blank=True,
+                                                default="El estudiante debe presentar el desarrollo completo de las guías no alcanzadas en el menor tiempo posible.\nA la fecha, el aprendiz SENA ha cumplido con la entrega de las evidencias propuestas.")
+    observaciones_convivenciales = models.TextField("Observaciones Convivenciales", blank=True,
+                                                    default="La institución agradece su colaboración en las campañas de mejora .\nFelicitaciones por su aporte a la convivencia institucional.")
+    tecnico_sena = models.CharField("Técnico SENA", max_length=20, default="A",
+                                    help_text="Valoración SENA: A (Aprobado), BS (Básico), etc.")
+    fecha_emision = models.DateField("Fecha de emisión", auto_now=True)
+
+    class Meta:
+        db_table = "INFORMES_VALORATIVOS"
+        verbose_name = "Informe Valorativo SERC"
+        verbose_name_plural = "Informes Valorativos SERC"
+        unique_together = ("estudiante", "anio_lectivo")
+
+    def __str__(self):
+        return f"Informe {self.anio_lectivo} - {self.estudiante.nombre_completo} ({self.estudiante.curso})"
+
+

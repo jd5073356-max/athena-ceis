@@ -13,7 +13,7 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from core.models import (
-    Anio, Curso, Documento, Guia, Imagen, Materia, Noticia, Periodo, Seccion, Video,
+    Anio, Curso, Documento, Estudiante, Guia, Imagen, InformeValorativo, Materia, Noticia, Periodo, Seccion, Video,
 )
 
 # Secciones que son solo identidad de la home (no tienen página propia).
@@ -534,4 +534,49 @@ def sitemap_xml(request):
     xml_lines.append("</urlset>")
 
     return HttpResponse("\n".join(xml_lines), content_type="application/xml; charset=utf-8")
+
+
+# --- Portal de Calificaciones y Boletines SERC Oficiales -------------------
+def consulta_notas(request):
+    """Portal de consulta de calificaciones para padres y estudiantes en tiempo real."""
+    query_doc = request.GET.get("doc", "").strip()
+    estudiante = None
+    informe = None
+    mensaje_error = None
+
+    if query_doc:
+        # Búsqueda por documento exacto o por curso/nombres
+        estudiante = Estudiante.objects.filter(documento=query_doc, activo=True).first()
+        if not estudiante:
+            estudiante = Estudiante.objects.filter(documento__icontains=query_doc, activo=True).first()
+
+        if estudiante:
+            informe = estudiante.informes.filter(anio_lectivo=2026).first()
+            if not informe:
+                informe = estudiante.informes.first()
+        else:
+            mensaje_error = f"No se encontró ningún estudiante registrado con el documento '{query_doc}'. Verifique el número e intente de nuevo."
+
+    return render(request, "web_publica/consulta_notas.html", {
+        "secciones": _secciones(),
+        "query_doc": query_doc,
+        "estudiante": estudiante,
+        "informe": informe,
+        "mensaje_error": mensaje_error,
+    })
+
+
+def boletin_imprimir(request, documento):
+    """Vista de impresión directa y limpia del Informe Valorativo SERC oficial."""
+    estudiante = get_object_or_404(Estudiante, documento=documento, activo=True)
+    informe = estudiante.informes.filter(anio_lectivo=2026).first()
+    if not informe:
+        informe = estudiante.informes.first()
+    if not informe:
+        raise Http404("Informe valorativo en preparación.")
+
+    return render(request, "web_publica/boletin_serc.html", {
+        "estudiante": estudiante,
+        "informe": informe,
+    })
 

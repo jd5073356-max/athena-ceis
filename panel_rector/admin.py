@@ -13,7 +13,8 @@ from django import forms
 from django.contrib import admin
 
 from core.models import (
-    Anio, ConfiguracionApariencia, Curso, Documento, Guia, Imagen, Materia, Noticia, Periodo, Seccion, Video,
+    Anio, ConfiguracionApariencia, Curso, Documento, Estudiante, Guia, Imagen,
+    InformeValorativo, Materia, Noticia, Periodo, Seccion, Video,
 )
 
 
@@ -301,3 +302,23 @@ class DocumentoAdmin(admin.ModelAdmin):
         }),
         ("Extra", {"fields": ("descripcion", "orden"), "classes": ("collapse",)}),
     )
+
+
+# ===========================================================================
+#  Seguimiento Académico y Boletines SERC
+# ===========================================================================
+@admin.register(Estudiante)
+class EstudianteAdmin(admin.ModelAdmin):
+    list_display = ("documento", "apellidos", "nombres", "curso", "grado", "director_grupo", "activo")
+    list_filter = ("curso", "grado", "activo")
+    search_fields = ("documento", "apellidos", "nombres", "acudiente")
+    ordering = ("curso", "apellidos", "nombres")
+
+
+@admin.register(InformeValorativo)
+class InformeValorativoAdmin(admin.ModelAdmin):
+    list_display = ("estudiante", "anio_lectivo", "periodo_actual", "tecnico_sena", "fecha_emision")
+    list_filter = ("anio_lectivo", "periodo_actual", "estudiante__curso")
+    search_fields = ("estudiante__documento", "estudiante__apellidos", "estudiante__nombres", "estudiante__curso")
+    autocomplete_fields = ("estudiante",)
+

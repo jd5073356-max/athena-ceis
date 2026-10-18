@@ -1,0 +1,102 @@
+{% extends "web_publica/base.html" %}
+{% load static %}
+
+{% block titulo %}Consulta de Notas y Boletines SERC | I.E.D. CEIS Sopó{% endblock %}
+{% block meta_description %}Consulta en tiempo real de calificaciones y boletines valorativos SERC para padres de familia y estudiantes de la I.E.D. CEIS Sopó.{% endblock %}
+
+{% block contenido %}
+<section class="seccion" style="padding: 32px 0 60px;">
+  <p class="breadcrumb">
+    <a href="{% url 'web_publica:home' %}">Inicio</a> &rsaquo;
+    Portal de Familias &rsaquo; Consulta de Calificaciones
+  </p>
+
+  <div style="background: linear-gradient(135deg, var(--azul) 0%, #15305b 100%); color:#fff; border-radius: var(--radius-lg); padding: 36px 32px; box-shadow: var(--sombra-lg); margin-bottom: 36px; border-left: 6px solid var(--dorado);">
+    <div style="max-width: 800px;">
+      <span style="font-size: .8rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; color: var(--dorado); background: rgba(197,168,128,0.18); padding: 4px 12px; border-radius: 20px; display: inline-block; margin-bottom: 12px;">
+        Sistema Educativo Relacional Cundinamarca (SERC)
+      </span>
+      <h1 style="font-size: 2.1rem; color: #fff; margin: 0 0 10px; font-family: var(--fuente-titulos); font-weight: 700; line-height: 1.2;">
+        Portal de Calificaciones y Boletines en Tiempo Real
+      </h1>
+      <p style="font-size: 1.05rem; color: #e2e8f0; margin: 0 0 24px; line-height: 1.6;">
+        Consulte el informe valorativo oficial, seguimiento por etapas SERC, asistencia y convivencia escolar de su acudido digitando su número de documento de identidad.
+      </p>
+
+      <form method="GET" action="{% url 'web_publica:consulta_notas' %}" style="display: flex; gap: 10px; flex-wrap: wrap; max-width: 620px;">
+        <input type="text" name="doc" value="{{ query_doc|default:'' }}" placeholder="Número de Documento (T.I. o R.C.)..." required
+               style="flex: 1; min-width: 260px; padding: 14px 18px; border-radius: 8px; border: 2px solid rgba(255,255,255,0.3); background: #fff; color: var(--texto); font-size: 1.05rem; font-weight: 600; outline: none; transition: border-color .2s;">
+        <button type="submit" style="padding: 14px 28px; border-radius: 8px; background: var(--dorado); color: var(--azul); font-weight: 800; border: none; font-size: 1rem; cursor: pointer; text-transform: uppercase; letter-spacing: .04em; transition: all .2s; box-shadow: 0 4px 14px rgba(0,0,0,0.2);">
+          Consultar
+        </button>
+      </form>
+
+      <!-- Accesos Rápidos de Ejemplo -->
+      <div style="margin-top: 18px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: .84rem; color: #cbd5e1;">
+        <span>Consultas demo:</span>
+        <a href="?doc=1075876349" style="background: rgba(255,255,255,0.12); color: #fff; padding: 4px 10px; border-radius: 6px; text-decoration: none; border: 1px solid rgba(255,255,255,0.2); font-weight: 600;">
+          1101 &bull; Juan Sebastian Quiroga (1075876349)
+        </a>
+        <a href="?doc=1076745451" style="background: rgba(255,255,255,0.12); color: #fff; padding: 4px 10px; border-radius: 6px; text-decoration: none; border: 1px solid rgba(255,255,255,0.2); font-weight: 600;">
+          601 &bull; Itan Andrey Alarcón (1076745451)
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {% if mensaje_error %}
+  <div style="background: #fef2f2; border: 1px solid #fecaca; border-left: 5px solid #ef4444; padding: 18px 24px; border-radius: 8px; color: #991b1b; margin-bottom: 30px;">
+    <h3 style="margin: 0 0 6px; font-size: 1.05rem; font-weight: 700;">Documento no encontrado</h3>
+    <p style="margin: 0; font-size: .95rem;">{{ mensaje_error }}</p>
+  </div>
+  {% endif %}
+
+  {% if estudiante and informe %}
+  <!-- Tarjeta Resumen del Estudiante -->
+  <div style="background: #fff; border: 1px solid var(--borde); border-radius: var(--radius-md); padding: 24px; box-shadow: var(--sombra-md); margin-bottom: 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+    <div>
+      <span style="font-size: .78rem; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: .06em; background: #ecfdf5; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 6px;">
+        Matrícula Activa 2026
+      </span>
+      <h2 style="font-size: 1.6rem; color: var(--azul); margin: 0 0 6px; font-weight: 700;">
+        {{ estudiante.nombre_completo }}
+      </h2>
+      <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: .92rem; color: var(--texto-mutado);">
+        <span><strong>Documento:</strong> {{ estudiante.documento }}</span>
+        <span><strong>Grado:</strong> {{ estudiante.grado }}</span>
+        <span><strong>Curso:</strong> {{ estudiante.curso }}</span>
+        <span><strong>Director(a):</strong> {{ estudiante.director_grupo }}</span>
+      </div>
+    </div>
+
+    <div>
+      <a href="{% url 'web_publica:boletin_imprimir' estudiante.documento %}" target="_blank" rel="noopener"
+         style="display: inline-flex; align-items: center; gap: 8px; background: var(--azul); color: #fff; padding: 12px 22px; border-radius: 8px; font-weight: 700; font-size: .95rem; text-decoration: none; box-shadow: var(--sombra-sm); transition: all .2s;"
+         onmouseover="this.style.background='var(--azul-medio)';this.style.color='var(--dorado)'"
+         onmouseout="this.style.background='var(--azul)';this.style.color='#fff'">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        Descargar / Imprimir Boletín Oficial (PDF)
+      </a>
+    </div>
+  </div>
+
+  <!-- Vista Embebida del Boletín Oficial -->
+  <div style="background: #fff; border: 1px solid var(--borde); border-radius: var(--radius-md); padding: 18px; box-shadow: var(--sombra-md); overflow-x: auto;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 2px solid var(--dorado); padding-bottom: 10px;">
+      <h3 style="margin: 0; font-size: 1.2rem; color: var(--azul); font-weight: 700;">
+        Vista Previa del Informe Valorativo Oficial
+      </h3>
+      <span style="font-size: .84rem; color: var(--texto-mutado); font-weight: 600;">
+        Estructura certificada de evaluación SERC
+      </span>
+    </div>
+
+    <!-- Incluir plantilla del boletín -->
+    <div style="background: #f1f5f9; padding: 12px; border-radius: 6px;">
+      {% include "web_publica/boletin_serc.html" %}
+    </div>
+  </div>
+  {% endif %}
+
+</section>
+{% endblock %}
