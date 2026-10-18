@@ -1,0 +1,9 @@
+.venv
+venv
+__pycache__
+*.py[cod]
+capturas_exposicion
+.git
+db.sqlite3
+.DS_Store
+*.log
