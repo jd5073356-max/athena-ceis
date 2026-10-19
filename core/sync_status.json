@@ -1,0 +1,8 @@
+{
+  "ultimo_sync": "2026-10-19T07:56:21.071930",
+  "archivo": "/home/juan/Descargas/sabana_notas_ceis_2026.xlsx",
+  "hash": "34479b5fc53af0b37e73229785eb7b7c",
+  "estudiantes_procesados": 539,
+  "estado": "exitoso",
+  "mensaje": "539 estudiantes y boletines sincronizados correctamente con PostgreSQL / Supabase."
+}

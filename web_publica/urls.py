@@ -33,6 +33,7 @@ urlpatterns = [
 
     # Asistente Virtual Athena (IA)
     path("api/chat/", views.athena_chat_api, name="athena_chat_api"),
+    path("api/sincronizar-sabana/", views.sincronizar_sabana_api, name="sincronizar_sabana_api"),
 
     # Portal de Calificaciones y Boletines Oficiales SERC
     path("consulta-notas/", views.consulta_notas, name="consulta_notas"),
