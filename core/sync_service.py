@@ -5,7 +5,6 @@ import json
 import hashlib
 import random
 import datetime
-import openpyxl
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATUS_FILE = os.path.join(BASE_DIR, "core", "sync_status.json")
@@ -163,6 +162,7 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False):
             "mensaje": "El archivo no ha cambiado desde la última sincronización.",
         }
 
+    import openpyxl
     wb = openpyxl.load_workbook(ruta_archivo, data_only=True)
     estudiantes_objs = []
     datos_por_doc = {}

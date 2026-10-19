@@ -13,3 +13,7 @@ django-storages[s3]>=1.14
 # Estáticos
 whitenoise>=6.0
 gunicorn>=21.0
+
+# Procesamiento de hojas Excel / Sábana de notas
+openpyxl>=3.1
+
