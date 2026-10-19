@@ -7,7 +7,7 @@
   <style>
     @page {
       size: letter portrait;
-      margin: 5mm 6mm 4mm 6mm;
+      margin: 6mm 8mm 6mm 8mm;
     }
     * {
       box-sizing: border-box;
@@ -15,22 +15,23 @@
       print-color-adjust: exact !important;
     }
     body {
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: Calibri, Arial, Helvetica, sans-serif;
       margin: 0;
       padding: 0;
       color: #000;
       font-size: 7pt;
       line-height: 1.15;
-      background: #f8fafc;
+      background: #f1f5f9;
     }
     .hoja-boletin {
       width: 100%;
-      max-width: 820px;
+      max-width: 850px;
       margin: 10px auto;
       background: #fff;
-      padding: 8px 12px;
+      padding: 18px 20px 14px;
       border: 1px solid #cbd5e1;
       box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      color: #000;
     }
     @media print {
       body {
@@ -48,8 +49,8 @@
       }
     }
     .barra-acciones {
-      max-width: 820px;
-      margin: 14px auto 0;
+      max-width: 850px;
+      margin: 12px auto 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -70,10 +71,6 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: background 0.2s;
-    }
-    .btn-imprimir:hover {
-      background: #e5d5be;
     }
     .btn-volver {
       color: #dbeafe;
@@ -81,228 +78,344 @@
       font-size: 0.85rem;
       font-weight: 600;
     }
-    .btn-volver:hover {
-      text-decoration: underline;
-    }
 
-    /* Encabezado */
+    /* Encabezado Oficial */
     .header-boletin {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1.5px solid #000;
-      padding-bottom: 4px;
+      padding: 0 28px;
       margin-bottom: 4px;
     }
-    .header-boletin .logo {
-      height: 52px;
+    .header-boletin .logo-ceis {
+      height: 76px;
+      width: auto;
+      object-fit: contain;
+    }
+    .header-boletin .logo-serc {
+      height: 76px;
       width: auto;
       object-fit: contain;
     }
     .header-boletin .inst-text {
       text-align: center;
       flex: 1;
-      padding: 0 8px;
+      padding: 0 10px;
     }
     .inst-text h1 {
-      font-size: 9pt;
+      font-size: 10.5pt;
       font-weight: 900;
-      margin: 0;
-      letter-spacing: 0.02em;
+      margin: 0 0 2px;
+      color: #000;
+      font-family: Arial, Helvetica, sans-serif;
     }
     .inst-text p {
-      font-size: 5pt;
-      margin: 1px 0 0;
-      color: #222;
+      font-size: 5.8pt;
+      margin: 0;
+      color: #000;
       line-height: 1.25;
+      font-family: Arial, Helvetica, sans-serif;
     }
     .titulo-informe {
       text-align: center;
-      font-size: 8.5pt;
+      font-size: 9.5pt;
       font-weight: 900;
-      letter-spacing: 0.05em;
-      margin: 3px 0 4px;
+      margin: 6px 0 3px;
+      font-family: Calibri, Arial, sans-serif;
+    }
+    .franja-gris-top {
+      height: 11px;
+      background: #efefef;
+      width: 100%;
+      margin-bottom: 3px;
     }
 
-    /* Barra Estudiante */
+    /* Barra Estudiante sin bordes */
     .datos-estudiante {
       display: flex;
-      border: 1px solid #000;
-      font-size: 6.5pt;
-      font-weight: 700;
-      padding: 3px 6px;
+      align-items: center;
+      font-size: 7.2pt;
+      padding: 2px 4px 6px;
       margin-bottom: 4px;
-      background: #fafafa;
     }
-    .datos-estudiante .col {
-      display: flex;
-      gap: 6px;
+    .datos-estudiante .lbl {
+      font-weight: 900;
+      margin-right: 6px;
     }
-    .datos-estudiante .col.nombre {
+    .datos-estudiante .val-nombre {
       flex: 1.8;
+      padding-left: 36px;
+      font-weight: 500;
     }
-    .datos-estudiante .col.grado {
-      flex: 1;
-      justify-content: center;
+    .datos-estudiante .col-grado {
+      flex: 0.9;
+      display: flex;
+      gap: 14px;
     }
-    .datos-estudiante .col.curso {
-      flex: 0.8;
+    .datos-estudiante .col-curso {
+      flex: 0.6;
+      display: flex;
       justify-content: flex-end;
+      gap: 14px;
+      padding-right: 24px;
     }
 
-    /* Tabla de Pensamientos y Asignaturas */
+    /* Tabla Académica SERC */
     table.tabla-serc {
       width: 100%;
       border-collapse: collapse;
-      font-size: 5.6pt;
-      margin-bottom: 3px;
+      font-size: 5.8pt;
+      margin-bottom: 2px;
     }
-    table.tabla-serc th, table.tabla-serc td {
-      border: 0.6px solid #000;
+    table.tabla-serc th,
+    table.tabla-serc td {
+      padding: 1.4px 1.5px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    /* Encabezado gris principal */
+    tr.fila-header-principal th {
+      background: #d9d9d9;
+      font-weight: 900;
+      font-size: 6.5pt;
+      padding: 2.5px 3px;
+    }
+    tr.fila-header-principal th.th-periodo {
+      border: 1px dotted #333;
+    }
+    .th-area {
+      text-align: left !important;
+      width: 11%;
+      border: none !important;
+    }
+    .th-asig {
+      text-align: left !important;
+      width: 15%;
+      border: none !important;
+    }
+
+    /* Fila de Pensamiento (Área) */
+    tr.fila-pensamiento td.td-pensamiento-titulo {
+      text-align: left;
+      font-weight: 900;
+      font-size: 6.2pt;
+      padding: 2px 2px;
+      border: none;
+      white-space: nowrap;
+    }
+    tr.fila-pensamiento td.stage-hdr {
+      font-weight: 800;
+      font-size: 5.3pt;
+      border: 1px dotted #444;
+      background: #fff;
+    }
+    tr.fila-pensamiento td.guia-hdr {
+      font-weight: 900;
+      font-size: 6pt;
+      border: 1px dotted #444;
+      background: #fff;
+    }
+    tr.fila-pensamiento td.sep-periodo {
+      border-left: 1px dotted #444;
+      border-right: 1px dotted #444;
+      height: 11px;
+    }
+
+    /* Filas de Asignaturas */
+    tr.fila-asignatura td.td-vacio-area {
+      border: none;
+    }
+    tr.fila-asignatura td.td-nombre-asig {
+      text-align: left;
+      font-weight: 400;
+      font-size: 6pt;
+      padding-left: 2px;
+      border: none;
+      white-space: nowrap;
+    }
+    /* Celdas rosadas de etapas P, R, D, R, A, P */
+    td.celda-etapa {
+      background: #f2dcdb;
+      border: 1px dotted #444;
+      width: 1.85%;
+      font-size: 5.3pt;
+      color: #000;
+    }
+    td.celda-guia {
+      border: 1px dotted #444;
+      width: 7.4%;
+      font-weight: 700;
+      font-size: 6.2pt;
+    }
+
+    /* Colores exactos del PDF original */
+    .des-S, .des-A, .des-BS {
+      background: #00ff00 !important;
+      color: #000 !important;
+      font-weight: 700;
+    }
+    .des-BJ {
+      background: #ff0000 !important;
+      color: #000 !important;
+      font-weight: 700;
+    }
+    .des-vacio {
+      background: #f2dcdb !important;
+      color: transparent !important;
+    }
+
+    /* Promedio Actitudinal y Técnico SENA */
+    tr.fila-pa td.lbl-pa {
+      text-align: left;
+      font-weight: 900;
+      font-size: 5.4pt;
+      border: none;
+      padding-left: 2px;
+    }
+    tr.fila-pa td.val-pa {
+      border: 1px dotted #444;
+      font-size: 5.2pt;
+      background: #fff;
+    }
+    tr.fila-sena td.lbl-sena {
+      text-align: left;
+      font-weight: 900;
+      font-size: 6.2pt;
+      border: none;
+    }
+    tr.fila-sena td.vacio-sena {
+      border: 1px dotted #444;
+      background: #fff;
+    }
+
+    /* Observaciones Académicas y Convivenciales */
+    .titulo-obs {
+      text-align: center;
+      font-weight: 900;
+      font-size: 6.5pt;
+      margin: 2px 0 2px;
+      text-transform: uppercase;
+    }
+    .caja-obs {
+      border: 1.8px solid #000;
+      background: #efefef;
+      padding: 5px 10px;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .caja-obs p {
+      margin: 3px 0;
+      font-size: 5.8pt;
+      color: #000;
+    }
+
+    /* Tabla de Convivencia Escolar */
+    table.tabla-conv {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 5.8pt;
+      margin-bottom: 2px;
+    }
+    table.tabla-conv td,
+    table.tabla-conv th {
       padding: 1.5px 2px;
       text-align: center;
       vertical-align: middle;
     }
-    table.tabla-serc th {
-      background: #f1f5f9;
-      font-weight: 800;
-    }
-    .th-area {
+    .conv-left-hdr {
       text-align: left !important;
-      padding-left: 4px !important;
-      width: 15%;
-    }
-    .th-asig {
-      text-align: left !important;
-      padding-left: 6px !important;
-      width: 19%;
-    }
-    .td-area-title {
-      text-align: left;
-      font-weight: 800;
-      background: #f8fafc;
-      padding-left: 4px;
-      font-size: 5.8pt;
-    }
-    .td-asig-name {
-      text-align: left;
-      padding-left: 8px !important;
-      font-weight: 700;
-      font-size: 5.8pt;
-    }
-    .stage-header {
-      font-size: 4.8pt;
-      font-weight: 700;
-      background: #f1f5f9;
-    }
-
-    /* Colores oficiales de desempeño SERC */
-    .des-S {
-      background: #00e676 !important;
-      font-weight: 900;
-      color: #000;
-    }
-    .des-A {
-      background: #76ff03 !important;
-      font-weight: 900;
-      color: #000;
-    }
-    .des-BS {
-      background: #c8e6c9 !important;
-      font-weight: 900;
-      color: #000;
-    }
-    .des-BJ {
-      background: #ff1744 !important;
-      font-weight: 900;
-      color: #fff;
-    }
-
-    /* Fila de Promedio y SENA */
-    .fila-especial td {
-      font-weight: 800;
-      background: #fdfdfd;
-    }
-
-    /* Bloques de Observaciones y Convivencia */
-    .seccion-cajas {
-      border: 1px solid #000;
-      padding: 3px 5px;
-      margin-bottom: 3px;
-    }
-    .caja-titulo {
       font-weight: 900;
       font-size: 6.2pt;
-      text-align: center;
-      margin-bottom: 2px;
-      text-transform: uppercase;
+      width: 26%;
+      border: none !important;
     }
-    .caja-subtitulo {
-      font-size: 5.5pt;
-      font-style: italic;
-      text-align: center;
-      margin-bottom: 2px;
-      color: #333;
+    .conv-left-item {
+      text-align: left !important;
+      padding-left: 34px !important;
+      font-weight: 400;
+      font-size: 5.8pt;
+      border: none !important;
     }
-    .caja-texto {
-      font-size: 5.5pt;
-      text-align: center;
-      line-height: 1.3;
-      margin: 0;
+    .conv-borde {
+      border: 1px dotted #444;
     }
-
-    /* Tabla Convivencia */
-    table.tabla-conv {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 5.4pt;
-      margin-bottom: 3px;
+    .pc-amarillo {
+      background: #ffff00 !important;
     }
-    table.tabla-conv th, table.tabla-conv td {
-      border: 0.6px solid #000;
-      padding: 1.5px 2px;
-      text-align: center;
+    .pc-naranja {
+      background: #ffc000 !important;
     }
-    table.tabla-conv th {
-      background: #f1f5f9;
-      font-weight: 800;
+    .pc-verde {
+      background: #92d050 !important;
     }
 
-    /* Firmas y convenciones */
+    /* Firmas Institucionales */
     .bloque-firmas {
       display: flex;
       justify-content: space-between;
-      margin: 10px 10px 4px 10px;
+      align-items: flex-end;
+      margin: 8px 18px 8px;
       text-align: center;
-      font-size: 5.6pt;
     }
-    .firma-item {
+    .firma-col {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: flex-end;
     }
-    .firma-linea {
-      width: 140px;
-      border-top: 0.8px solid #000;
-      margin-bottom: 2px;
+    .firma-img-rector {
+      height: 46px;
+      width: auto;
+      object-fit: contain;
+      margin-bottom: 1px;
     }
-    .firma-img {
-      height: 32px;
-      margin-bottom: -4px;
+    .firma-img-sec {
+      height: 50px;
+      width: auto;
+      object-fit: contain;
+      margin-bottom: 1px;
+    }
+    .firma-nombre {
+      font-size: 6.2pt;
+      font-weight: 400;
+      color: #000;
+    }
+    .firma-nombre-dir {
+      font-size: 6.8pt;
+      font-weight: 400;
+      color: #000;
+      margin-bottom: 3px;
+    }
+    .firma-cargo {
+      font-size: 6.8pt;
+      font-weight: 900;
+      color: #000;
+      margin-top: 1px;
     }
 
-    .convenciones {
-      border: 0.6px solid #000;
-      font-size: 4.6pt;
-      padding: 2px 4px;
-      background: #fafafa;
-      line-height: 1.35;
+    /* Tabla de Convenciones Inferior */
+    table.tabla-convenciones {
+      width: 100%;
+      border-collapse: collapse;
+      border: 2px solid #000;
+      background: #d9d9d9;
+      font-size: 5.4pt;
+      font-weight: 900;
     }
-    .conv-line {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
+    table.tabla-convenciones td {
+      padding: 2.5px 4px;
+    }
+    table.tabla-convenciones td.td-conv-titulo {
+      width: 15%;
+      text-align: center;
+      font-size: 6.8pt;
+      font-weight: 900;
+      border-right: 1.5px solid #000;
+      vertical-align: middle;
+    }
+    table.tabla-convenciones tr.fila-conv-borde td {
+      border-bottom: 1px solid #000;
     }
   </style>
 </head>
@@ -314,254 +427,337 @@
       <span style="margin: 0 10px; opacity: 0.4;">|</span>
       <strong>{{ estudiante.nombre_completo }}</strong> ({{ estudiante.curso }})
     </div>
+    {% if '/consulta-notas' in request.path %}
+    <a href="{% url 'web_publica:boletin_imprimir' estudiante.documento %}?print=1" target="_blank" rel="noopener" class="btn-imprimir" style="text-decoration:none;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+      Imprimir / Guardar PDF Oficial
+    </a>
+    {% else %}
     <button onclick="window.print()" class="btn-imprimir">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
       Imprimir / Guardar PDF Oficial
     </button>
+    <script>
+      if (new URLSearchParams(window.location.search).get('print') === '1') {
+        window.addEventListener('load', function() { setTimeout(function() { window.print(); }, 350); });
+      }
+    </script>
+    {% endif %}
   </div>
 
   <div class="hoja-boletin">
-    <!-- Encabezado Oficial -->
+    <!-- Encabezado Oficial con Escudo CEIS y Logo SERC -->
     <div class="header-boletin">
-      <img src="{% static 'boletin/logo_ceis.png' %}" alt="CEIS" class="logo">
+      <img src="{% static 'boletin/logo_ceis.png' %}" alt="Escudo I.E.D. CEIS" class="logo-ceis">
       <div class="inst-text">
         <h1>I.E.D. COMPLEJO EDUCATIVO INTEGRAL SOPO</h1>
         <p>
-          Resolución de Aprobación Educación Preescolar, Básica Primaria y Básica Secundaria No 003889 del 27 de agosto de 2004<br>
-          Media Académica Resolución 003803 del 9 de julio de 2009 &bull; DANE: 125758000215 NIT 900042200-1<br>
+          Resolución de Aprobación Educación Preescolar, Básica Primaria y Básica Secundaria No.003069 del 27 de agosto de 2004<br>
+          Media Académica Resolución 003803 del 5 de julio de 2006.<br>
+          DANE 125758002915 NIT 900042296-1<br>
           Certificado de Gestión de Calidad ISO 9001:2015
         </p>
       </div>
-      <img src="{% static 'boletin/logo_serc.png' %}" alt="SERC" class="logo">
+      <img src="{% static 'boletin/logo_serc.png' %}" alt="Logo SERC" class="logo-serc">
     </div>
 
     <div class="titulo-informe">INFORME VALORATIVO {{ informe.anio_lectivo|default:2026 }}</div>
+    <div class="franja-gris-top"></div>
 
-    <!-- Barra de Datos del Estudiante -->
+    <!-- Datos del Estudiante -->
     <div class="datos-estudiante">
-      <div class="col nombre">
-        <span>ESTUDIANTE:</span>
-        <span>{{ estudiante.nombre_completo }}</span>
-      </div>
-      <div class="col grado">
-        <span>GRADO:</span>
+      <span class="lbl">ESTUDIANTE:</span>
+      <span class="val-nombre">{{ estudiante.nombre_completo }}</span>
+      <div class="col-grado">
+        <span class="lbl">GRADO:</span>
         <span>{{ estudiante.grado }}</span>
       </div>
-      <div class="col curso">
-        <span>CURSO:</span>
+      <div class="col-curso">
+        <span class="lbl">CURSO:</span>
         <span>{{ estudiante.curso }}</span>
       </div>
     </div>
 
-    <!-- Tabla SERC Completa -->
+    <!-- Tabla SERC Oficial -->
     <table class="tabla-serc">
       <thead>
-        <tr>
-          <th rowspan="2" class="th-area">AREA</th>
-          <th rowspan="2" class="th-asig">ASIGNATURA</th>
-          <th colspan="7">PERIODO I</th>
-          <th colspan="7">PERIODO II</th>
-          <th colspan="7">PERIODO III</th>
-          <th colspan="7">PERIODO IV</th>
-        </tr>
-        <tr class="stage-header">
-          <!-- P1 -->
-          <th>P</th><th>RD</th><th>R</th><th>A</th><th>P</th><th>TOT</th><th>GUIA 1</th>
-          <!-- P2 -->
-          <th>P</th><th>RD</th><th>R</th><th>A</th><th>P</th><th>TOT</th><th>GUIA 2</th>
-          <!-- P3 -->
-          <th>P</th><th>RD</th><th>R</th><th>A</th><th>P</th><th>TOT</th><th>GUIA 3</th>
-          <!-- P4 -->
-          <th>P</th><th>RD</th><th>R</th><th>A</th><th>P</th><th>TOT</th><th>GUIA 4</th>
+        <tr class="fila-header-principal">
+          <th class="th-area">AREA</th>
+          <th class="th-asig">ASIGNATURA</th>
+          <th colspan="7" class="th-periodo">PERIODO I</th>
+          <th colspan="7" class="th-periodo">PERIODO II</th>
+          <th colspan="7" class="th-periodo">PERIODO III</th>
+          <th colspan="7" class="th-periodo">PERIODO IV</th>
         </tr>
       </thead>
       <tbody>
         {% for area in informe.datos_academicos.areas %}
-          {% for asig in area.asignaturas %}
-          <tr>
+          <!-- Fila de título del Pensamiento -->
+          <tr class="fila-pensamiento">
+            <td colspan="2" class="td-pensamiento-titulo">{{ area.nombre }}</td>
             {% if forloop.first %}
-            <td rowspan="{{ area.asignaturas|length }}" class="td-area-title">{{ area.nombre }}</td>
+              <!-- P1 -->
+              <td class="stage-hdr">P</td><td class="stage-hdr">R</td><td class="stage-hdr">D</td><td class="stage-hdr">R</td><td class="stage-hdr">A</td><td class="stage-hdr">P</td><td class="guia-hdr">GUIA 1</td>
+              <!-- P2 -->
+              <td class="stage-hdr">P</td><td class="stage-hdr">R</td><td class="stage-hdr">D</td><td class="stage-hdr">R</td><td class="stage-hdr">A</td><td class="stage-hdr">P</td><td class="guia-hdr">GUIA 2</td>
+              <!-- P3 -->
+              <td class="stage-hdr">P</td><td class="stage-hdr">R</td><td class="stage-hdr">D</td><td class="stage-hdr">R</td><td class="stage-hdr">A</td><td class="stage-hdr">P</td><td class="guia-hdr">GUIA 3</td>
+              <!-- P4 -->
+              <td class="stage-hdr">P</td><td class="stage-hdr">R</td><td class="stage-hdr">D</td><td class="stage-hdr">R</td><td class="stage-hdr">A</td><td class="stage-hdr">P</td><td class="guia-hdr">GUIA 4</td>
+            {% else %}
+              <td colspan="7" class="sep-periodo"></td>
+              <td colspan="7" class="sep-periodo"></td>
+              <td colspan="7" class="sep-periodo"></td>
+              <td colspan="7" class="sep-periodo"></td>
             {% endif %}
-            <td class="td-asig-name">{{ asig.nombre }}</td>
-            
-            <!-- P1 -->
-            <td>{{ asig.p1.p|default:"-" }}</td>
-            <td>{{ asig.p1.rd|default:"-" }}</td>
-            <td>{{ asig.p1.r|default:"-" }}</td>
-            <td>{{ asig.p1.a|default:"-" }}</td>
-            <td>{{ asig.p1.pt|default:"-" }}</td>
-            <td style="font-weight:700">{{ asig.p1.total|default:"0" }}</td>
-            <td class="des-{{ asig.p1.des }}">{{ asig.p1.des|default:"-" }}</td>
+          </tr>
 
-            <!-- P2 -->
-            <td>{{ asig.p2.p|default:"-" }}</td>
-            <td>{{ asig.p2.rd|default:"-" }}</td>
-            <td>{{ asig.p2.r|default:"-" }}</td>
-            <td>{{ asig.p2.a|default:"-" }}</td>
-            <td>{{ asig.p2.pt|default:"-" }}</td>
-            <td style="font-weight:700">{{ asig.p2.total|default:"0" }}</td>
-            <td class="des-{{ asig.p2.des }}">{{ asig.p2.des|default:"-" }}</td>
+          {% for asig in area.asignaturas %}
+          <tr class="fila-asignatura">
+            <td class="td-vacio-area"></td>
+            <td class="td-nombre-asig">{{ asig.nombre }}</td>
 
-            <!-- P3 -->
-            <td>{{ asig.p3.p|default:"-" }}</td>
-            <td>{{ asig.p3.rd|default:"-" }}</td>
-            <td>{{ asig.p3.r|default:"-" }}</td>
-            <td>{{ asig.p3.a|default:"-" }}</td>
-            <td>{{ asig.p3.pt|default:"-" }}</td>
-            <td style="font-weight:700">{{ asig.p3.total|default:"0" }}</td>
-            <td class="des-{{ asig.p3.des }}">{{ asig.p3.des|default:"-" }}</td>
+            <!-- PERIODO I -->
+            <td class="celda-etapa">{% if asig.p1.p != "-" %}{{ asig.p1.p }}{% endif %}</td>
+            <td class="celda-etapa">{% if asig.p1.rd != "-" %}{{ asig.p1.rd }}{% endif %}</td>
+            <td class="celda-etapa">{% if asig.p1.r != "-" %}{{ asig.p1.r }}{% endif %}</td>
+            <td class="celda-etapa">{% if asig.p1.a != "-" %}{{ asig.p1.a }}{% endif %}</td>
+            <td class="celda-etapa">{% if asig.p1.pt != "-" %}{{ asig.p1.pt }}{% endif %}</td>
+            <td class="celda-etapa">{{ asig.p1.total|default:"0" }}</td>
+            <td class="celda-guia {% if asig.p1.des == '-' or not asig.p1.des %}des-vacio{% else %}des-{{ asig.p1.des }}{% endif %}">
+              {% if asig.p1.des != "-" %}{{ asig.p1.des }}{% endif %}
+            </td>
 
-            <!-- P4 -->
-            <td>{{ asig.p4.p|default:"-" }}</td>
-            <td>{{ asig.p4.rd|default:"-" }}</td>
-            <td>{{ asig.p4.r|default:"-" }}</td>
-            <td>{{ asig.p4.a|default:"-" }}</td>
-            <td>{{ asig.p4.pt|default:"-" }}</td>
-            <td style="font-weight:700">{{ asig.p4.total|default:"0" }}</td>
-            <td class="des-{{ asig.p4.des }}">{{ asig.p4.des|default:"-" }}</td>
+            <!-- PERIODO II -->
+            <td class="celda-etapa">{% if asig.p2.p != "-" %}{{ asig.p2.p }}{% endif %}</td>
+            <td class="celda-etapa">{% if asig.p2.rd != "-" %}{{ asig.p2.rd }}{% endif %}</td>
+            <td class="celda-etapa">{% if asig.p2.r != "-" %}{{ asig.p2.r }}{% endif %}</td>
+            <td class="celda-etapa">{% if asig.p2.a != "-" %}{{ asig.p2.a }}{% endif %}</td>
+            <td class="celda-etapa">{% if asig.p2.pt != "-" %}{{ asig.p2.pt }}{% endif %}</td>
+            <td class="celda-etapa">{{ asig.p2.total|default:"0" }}</td>
+            <td class="celda-guia {% if asig.p2.des == '-' or not asig.p2.des %}des-vacio{% else %}des-{{ asig.p2.des }}{% endif %}">
+              {% if asig.p2.des != "-" %}{{ asig.p2.des }}{% endif %}
+            </td>
+
+            <!-- PERIODO III -->
+            <td class="celda-etapa">{% if asig.p3.p != "-" %}{{ asig.p3.p }}{% endif %}</td>
+            <td class="celda-etapa">{% if asig.p3.rd != "-" %}{{ asig.p3.rd }}{% endif %}</td>
+            <td class="celda-etapa">{% if asig.p3.r != "-" %}{{ asig.p3.r }}{% endif %}</td>
+            <td class="celda-etapa">{% if asig.p3.a != "-" %}{{ asig.p3.a }}{% endif %}</td>
+            <td class="celda-etapa">{% if asig.p3.pt != "-" %}{{ asig.p3.pt }}{% endif %}</td>
+            <td class="celda-etapa">{{ asig.p3.total|default:"0" }}</td>
+            <td class="celda-guia {% if asig.p3.des == '-' or not asig.p3.des %}des-vacio{% else %}des-{{ asig.p3.des }}{% endif %}">
+              {% if asig.p3.des != "-" %}{{ asig.p3.des }}{% endif %}
+            </td>
+
+            <!-- PERIODO IV -->
+            <td class="celda-etapa">{% if asig.p4.p != "-" %}{{ asig.p4.p }}{% endif %}</td>
+            <td class="celda-etapa">{% if asig.p4.rd != "-" %}{{ asig.p4.rd }}{% endif %}</td>
+            <td class="celda-etapa">{% if asig.p4.r != "-" %}{{ asig.p4.r }}{% endif %}</td>
+            <td class="celda-etapa">{% if asig.p4.a != "-" %}{{ asig.p4.a }}{% endif %}</td>
+            <td class="celda-etapa">{% if asig.p4.pt != "-" %}{{ asig.p4.pt }}{% endif %}</td>
+            <td class="celda-etapa">{{ asig.p4.total|default:"0" }}</td>
+            <td class="celda-guia {% if asig.p4.des == '-' or not asig.p4.des %}des-vacio{% else %}des-{{ asig.p4.des }}{% endif %}">
+              {% if asig.p4.des != "-" %}{{ asig.p4.des }}{% endif %}
+            </td>
           </tr>
           {% endfor %}
         {% endfor %}
 
         <!-- Promedio Actitudinal -->
-        <tr class="fila-especial">
-          <td colspan="2" style="text-align:left;padding-left:8px">PROMEDIO ACTITUDINAL (PA)</td>
-          <td colspan="7">{{ informe.datos_academicos.promedio_actitudinal.p1|default:"8,15" }}</td>
-          <td colspan="7">{{ informe.datos_academicos.promedio_actitudinal.p2|default:"7,92" }}</td>
-          <td colspan="7">{{ informe.datos_academicos.promedio_actitudinal.p3|default:"8,76" }}</td>
-          <td colspan="7">{{ informe.datos_academicos.promedio_actitudinal.p4|default:"0,00" }}</td>
+        <tr class="fila-pa">
+          <td style="border:none;"></td>
+          <td class="lbl-pa">PROMEDIO ACTITUDINAL (PA)</td>
+          <td colspan="7" class="val-pa">{{ informe.datos_academicos.promedio_actitudinal.p1|default:"8,15" }}</td>
+          <td colspan="7" class="val-pa">{{ informe.datos_academicos.promedio_actitudinal.p2|default:"7,92" }}</td>
+          <td colspan="7" class="val-pa">{{ informe.datos_academicos.promedio_actitudinal.p3|default:"8,76" }}</td>
+          <td colspan="7" class="val-pa">0</td>
         </tr>
 
         <!-- Técnico SENA -->
-        <tr class="fila-especial">
-          <td colspan="2" style="text-align:left;padding-left:8px">TÉCNICO SENA</td>
-          <td colspan="7" class="des-{{ informe.datos_academicos.tecnico_sena.p1|default:'A' }}">{{ informe.datos_academicos.tecnico_sena.p1|default:"A" }}</td>
-          <td colspan="7" class="des-{{ informe.datos_academicos.tecnico_sena.p2|default:'BS' }}">{{ informe.datos_academicos.tecnico_sena.p2|default:"BS" }}</td>
-          <td colspan="7" class="des-{{ informe.datos_academicos.tecnico_sena.p3|default:'A' }}">{{ informe.datos_academicos.tecnico_sena.p3|default:"A" }}</td>
-          <td colspan="7">{{ informe.datos_academicos.tecnico_sena.p4|default:"-" }}</td>
+        <tr class="fila-sena">
+          <td colspan="2" class="lbl-sena">TÉCNICO SENA</td>
+          <td colspan="6" class="vacio-sena"></td>
+          <td class="celda-guia des-{{ informe.datos_academicos.tecnico_sena.p1|default:'A' }}">{{ informe.datos_academicos.tecnico_sena.p1|default:"A" }}</td>
+          <td colspan="6" class="vacio-sena"></td>
+          <td class="celda-guia des-{{ informe.datos_academicos.tecnico_sena.p2|default:'BS' }}">{{ informe.datos_academicos.tecnico_sena.p2|default:"BS" }}</td>
+          <td colspan="6" class="vacio-sena"></td>
+          <td class="celda-guia des-{{ informe.datos_academicos.tecnico_sena.p3|default:'A' }}">{{ informe.datos_academicos.tecnico_sena.p3|default:"A" }}</td>
+          <td colspan="6" class="vacio-sena"></td>
+          <td class="vacio-sena"></td>
         </tr>
       </tbody>
     </table>
 
     <!-- Observaciones Académicas SERC -->
-    <div class="seccion-cajas">
-      <div class="caja-titulo">OBSERVACIONES ACADEMICAS SERC</div>
-      <div class="caja-subtitulo">Firma compromiso académico</div>
-      <p class="caja-texto">
-        El estudiante debe presentar el desarrollo completo de las guías no alcanzadas en el menor tiempo posible.<br>
-        A la fecha, el aprendiz SENA ha cumplido con la entrega de las evidencias propuestas.
-      </p>
+    <div class="titulo-obs">OBSERVACIONES &nbsp; ACADEMICAS SERC</div>
+    <div class="caja-obs">
+      <p>Firma compromiso acádemico</p>
+      <p>El estudiante debe presentar el desarrollo completo de las guías no alcanzadas en el menor tiempo posible.</p>
+      <p>A la fecha, el aprendiz SENA ha cumplido con la entrega de las evidencias propuestas.</p>
     </div>
 
     <!-- Convivencia Escolar -->
     <table class="tabla-conv">
-      <thead>
-        <tr>
-          <th rowspan="2" style="width:25%;text-align:left;padding-left:6px">CONVIVENCIA ESCOLAR</th>
-          <th colspan="4">PERIODO I</th>
-          <th colspan="4">PERIODO II</th>
-          <th colspan="4">PERIODO III</th>
-          <th colspan="4">PERIODO IV</th>
-        </tr>
-        <tr>
-          <th>PA</th><th>VC</th><th>PC</th><th>VAL</th>
-          <th>PA</th><th>VC</th><th>PC</th><th>VAL</th>
-          <th>PA</th><th>VC</th><th>PC</th><th>VAL</th>
-          <th>PA</th><th>VC</th><th>PC</th><th>VAL</th>
-        </tr>
-      </thead>
       <tbody>
         <tr>
-          <td style="text-align:left;padding-left:8px;font-weight:700">CONVIVENCIA</td>
-          <td>{{ informe.datos_convivencia.convivencia.p1.pa }}</td>
-          <td>{{ informe.datos_convivencia.convivencia.p1.vc }}</td>
-          <td>{{ informe.datos_convivencia.convivencia.p1.pc }}</td>
-          <td class="des-{{ informe.datos_convivencia.convivencia.p1.des }}">{{ informe.datos_convivencia.convivencia.p1.des }}</td>
-
-          <td>{{ informe.datos_convivencia.convivencia.p2.pa }}</td>
-          <td>{{ informe.datos_convivencia.convivencia.p2.vc }}</td>
-          <td>{{ informe.datos_convivencia.convivencia.p2.pc }}</td>
-          <td class="des-{{ informe.datos_convivencia.convivencia.p2.des }}">{{ informe.datos_convivencia.convivencia.p2.des }}</td>
-
-          <td>{{ informe.datos_convivencia.convivencia.p3.pa }}</td>
-          <td>{{ informe.datos_convivencia.convivencia.p3.vc }}</td>
-          <td>{{ informe.datos_convivencia.convivencia.p3.pc }}</td>
-          <td class="des-{{ informe.datos_convivencia.convivencia.p3.des }}">{{ informe.datos_convivencia.convivencia.p3.des }}</td>
-
-          <td>{{ informe.datos_convivencia.convivencia.p4.pa|default:"0,0" }}</td>
-          <td>-</td>
-          <td>{{ informe.datos_convivencia.convivencia.p4.pc|default:"0,0" }}</td>
-          <td>-</td>
+          <td class="conv-left-hdr">CONVIVENCIA ESCOLAR</td>
+          <!-- P1 -->
+          <td class="conv-borde" style="font-weight:900;width:3.2%;">PA</td>
+          <td class="conv-borde" style="font-weight:900;width:3.2%;">VC</td>
+          <td class="conv-borde" style="font-weight:900;width:3.6%;">PC</td>
+          <td colspan="4" class="conv-borde" style="font-weight:900;width:8.5%;">PERIODO I</td>
+          <!-- P2 -->
+          <td class="conv-borde" style="font-weight:900;width:3.2%;">PA</td>
+          <td class="conv-borde" style="font-weight:900;width:3.2%;">VC</td>
+          <td class="conv-borde" style="font-weight:900;width:3.6%;">PC</td>
+          <td colspan="4" class="conv-borde" style="font-weight:900;width:8.5%;">PERIODO II</td>
+          <!-- P3 -->
+          <td class="conv-borde" style="font-weight:900;width:3.2%;">PA</td>
+          <td class="conv-borde" style="font-weight:900;width:3.2%;">VC</td>
+          <td class="conv-borde" style="font-weight:900;width:3.6%;">PC</td>
+          <td colspan="4" class="conv-borde" style="font-weight:900;width:8.5%;">PERIODO III</td>
+          <!-- P4 -->
+          <td class="conv-borde" style="font-weight:900;width:3.2%;">PA</td>
+          <td class="conv-borde" style="font-weight:900;width:3.2%;">VC</td>
+          <td class="conv-borde" style="font-weight:900;width:3.6%;">PC</td>
+          <td colspan="4" class="conv-borde" style="font-weight:900;width:8.5%;">PERIODO IV</td>
         </tr>
         <tr>
-          <td style="text-align:left;padding-left:8px;font-weight:700">AMBITO FAMILIAR</td>
-          <td colspan="4" class="des-{{ informe.datos_convivencia.ambito_familiar.p1|default:'S' }}">{{ informe.datos_convivencia.ambito_familiar.p1|default:"S" }}</td>
-          <td colspan="4" class="des-{{ informe.datos_convivencia.ambito_familiar.p2|default:'S' }}">{{ informe.datos_convivencia.ambito_familiar.p2|default:"S" }}</td>
-          <td colspan="4" class="des-{{ informe.datos_convivencia.ambito_familiar.p3|default:'S' }}">{{ informe.datos_convivencia.ambito_familiar.p3|default:"S" }}</td>
-          <td colspan="4">-</td>
+          <td class="conv-left-item">CONVIVENCIA</td>
+          <!-- P1 -->
+          <td class="conv-borde">{{ informe.datos_convivencia.convivencia.p1.pa }}</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.convivencia.p1.vc }}</td>
+          <td class="conv-borde pc-amarillo">{{ informe.datos_convivencia.convivencia.p1.pc }}</td>
+          <td colspan="4" class="conv-borde des-{{ informe.datos_convivencia.convivencia.p1.des }}">{{ informe.datos_convivencia.convivencia.p1.des }}</td>
+          <!-- P2 -->
+          <td class="conv-borde">{{ informe.datos_convivencia.convivencia.p2.pa }}</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.convivencia.p2.vc }}</td>
+          <td class="conv-borde pc-naranja">{{ informe.datos_convivencia.convivencia.p2.pc }}</td>
+          <td colspan="4" class="conv-borde des-{{ informe.datos_convivencia.convivencia.p2.des }}">{{ informe.datos_convivencia.convivencia.p2.des }}</td>
+          <!-- P3 -->
+          <td class="conv-borde">{{ informe.datos_convivencia.convivencia.p3.pa }}</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.convivencia.p3.vc }}</td>
+          <td class="conv-borde pc-verde">{{ informe.datos_convivencia.convivencia.p3.pc }}</td>
+          <td colspan="4" class="conv-borde des-{{ informe.datos_convivencia.convivencia.p3.des }}">{{ informe.datos_convivencia.convivencia.p3.des }}</td>
+          <!-- P4 -->
+          <td class="conv-borde">0,0</td>
+          <td class="conv-borde"></td>
+          <td class="conv-borde">0,0</td>
+          <td colspan="4" class="conv-borde"></td>
         </tr>
         <tr>
-          <td style="text-align:left;padding-left:8px">ACUMULADO SEMESTRAL FALLAS (F)- RETARDOS (R) EVASION (E) Y UNIFORME (U)</td>
-          <td colspan="4">F: {{ informe.datos_convivencia.fallas_retardos.p1.f }} &bull; R: {{ informe.datos_convivencia.fallas_retardos.p1.r }} &bull; E: {{ informe.datos_convivencia.fallas_retardos.p1.e }} &bull; U: {{ informe.datos_convivencia.fallas_retardos.p1.u }}</td>
-          <td colspan="4">F: {{ informe.datos_convivencia.fallas_retardos.p2.f }} &bull; R: {{ informe.datos_convivencia.fallas_retardos.p2.r }} &bull; E: {{ informe.datos_convivencia.fallas_retardos.p2.e }} &bull; U: {{ informe.datos_convivencia.fallas_retardos.p2.u }}</td>
-          <td colspan="4">F: {{ informe.datos_convivencia.fallas_retardos.p3.f }} &bull; R: {{ informe.datos_convivencia.fallas_retardos.p3.r }} &bull; E: {{ informe.datos_convivencia.fallas_retardos.p3.e }} &bull; U: {{ informe.datos_convivencia.fallas_retardos.p3.u }}</td>
-          <td colspan="4">F: {{ informe.datos_convivencia.fallas_retardos.p4.f|default:0 }} &bull; R: {{ informe.datos_convivencia.fallas_retardos.p4.r|default:3 }} &bull; E: 0 &bull; U: 0</td>
+          <td class="conv-left-item">AMBITO FAMILIAR</td>
+          <!-- P1 -->
+          <td class="conv-borde"></td><td class="conv-borde"></td><td class="conv-borde"></td>
+          <td colspan="4" class="conv-borde des-S">{{ informe.datos_convivencia.ambito_familiar.p1|default:"S" }}</td>
+          <!-- P2 -->
+          <td class="conv-borde"></td><td class="conv-borde"></td><td class="conv-borde"></td>
+          <td colspan="4" class="conv-borde des-S">{{ informe.datos_convivencia.ambito_familiar.p2|default:"S" }}</td>
+          <!-- P3 -->
+          <td class="conv-borde"></td><td class="conv-borde"></td><td class="conv-borde"></td>
+          <td colspan="4" class="conv-borde"></td>
+          <!-- P4 -->
+          <td class="conv-borde"></td><td class="conv-borde"></td><td class="conv-borde"></td>
+          <td colspan="4" class="conv-borde"></td>
+        </tr>
+        <tr>
+          <td rowspan="2" class="conv-left-item" style="line-height:1.25;">
+            ACUMULADO SEMESTRAL FALLAS (F)-<br>
+            RETARDOS (R) EVASION (E) Y UNIFORME (U)
+          </td>
+          <!-- P1 -->
+          <td colspan="3" style="border:none;"></td>
+          <td class="conv-borde">F</td><td class="conv-borde">R</td><td class="conv-borde">E</td><td class="conv-borde">U</td>
+          <!-- P2 -->
+          <td colspan="3" style="border:none;"></td>
+          <td class="conv-borde">F</td><td class="conv-borde">R</td><td class="conv-borde">E</td><td class="conv-borde">U</td>
+          <!-- P3 -->
+          <td colspan="3" style="border:none;"></td>
+          <td class="conv-borde">F</td><td class="conv-borde">R</td><td class="conv-borde">E</td><td class="conv-borde">U</td>
+          <!-- P4 -->
+          <td colspan="3" style="border:none;"></td>
+          <td class="conv-borde">F</td><td class="conv-borde">R</td><td class="conv-borde">E</td><td class="conv-borde">U</td>
+        </tr>
+        <tr>
+          <!-- P1 -->
+          <td colspan="3" style="border:none;"></td>
+          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p1.f|default:0 }}</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p1.r|default:5 }}</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p1.e|default:0 }}</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p1.u|default:0 }}</td>
+          <!-- P2 -->
+          <td colspan="3" style="border:none;"></td>
+          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p2.f|default:7 }}</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p2.r|default:4 }}</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p2.e|default:0 }}</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p2.u|default:4 }}</td>
+          <!-- P3 -->
+          <td colspan="3" style="border:none;"></td>
+          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p3.f|default:0 }}</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p3.r|default:1 }}</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p3.e|default:0 }}</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p3.u|default:0 }}</td>
+          <!-- P4 -->
+          <td colspan="3" style="border:none;"></td>
+          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p4.f|default:0 }}</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p4.r|default:3 }}</td>
+          <td class="conv-borde">0</td>
+          <td class="conv-borde">0</td>
         </tr>
       </tbody>
     </table>
 
     <!-- Observaciones Convivenciales -->
-    <div class="seccion-cajas">
-      <div class="caja-titulo">OBSERVACIONES CONVIVENCIALES</div>
-      <p class="caja-texto">
-        La institución agradece su colaboración en las campañas de mejora .<br>
-        Felicitaciones por su aporte a la convivencia institucional.
-      </p>
+    <div class="titulo-obs">OBSERVACIONES CONVIVENCIALES</div>
+    <div class="caja-obs">
+      <p>La institución agradece su colaboración en las campañas de mejora .</p>
+      <p>Felicitaciones por su aporte a la convivencia institucional.</p>
     </div>
 
-    <!-- Firmas Institucionales Oficiales -->
+    <!-- Firmas Oficiales con Rúbricas Reales -->
     <div class="bloque-firmas">
-      <div class="firma-item">
-        <div style="height:28px"></div>
-        <div class="firma-linea"></div>
-        <strong>Lic. Juan Carlos Aguirre Nieto</strong>
-        <span>Rector</span>
+      <div class="firma-col">
+        <img src="{% static 'boletin/firma_rector.png' %}" alt="Firma Rector" class="firma-img-rector">
+        <span class="firma-nombre">Lic. Juan Carlos Aguirre Nieto</span>
+        <span class="firma-cargo">Rector</span>
       </div>
-      <div class="firma-item">
-        <div style="height:28px"></div>
-        <div class="firma-linea"></div>
-        <strong>Eider Uriel Páez Córdoba</strong>
-        <span>Secretario Académico</span>
+      <div class="firma-col">
+        <img src="{% static 'boletin/firma_secretario.png' %}" alt="Firma Secretario Académico" class="firma-img-sec">
+        <span class="firma-nombre">Elder Uriel Páez Córdoba</span>
+        <span class="firma-cargo">Secretario Académico</span>
       </div>
-      <div class="firma-item">
-        <div style="height:28px"></div>
-        <div class="firma-linea"></div>
-        <strong>{{ estudiante.director_grupo|default:"ROJAS GUTIERREZ LILIANA ASTRID" }}</strong>
-        <span>Director de Grupo</span>
+      <div class="firma-col" style="padding-bottom: 2px;">
+        <span class="firma-nombre-dir">{{ estudiante.director_grupo|default:"ROJAS GUTIERREZ LILIANA ASTRID" }}</span>
+        <span class="firma-cargo">Director de Grupo</span>
       </div>
     </div>
 
     <!-- Convenciones Oficiales -->
-    <div class="convenciones">
-      <div class="conv-line">
-        <span><strong>CONVENCIONES:</strong></span>
-        <span><strong>P:</strong> PUNTO DE PARTIDA</span>
-        <span><strong>RD:</strong> RECOLECCIÓN DE INFORMACIÓN</span>
-        <span><strong>D:</strong> DESARROLLO DE HABILIDAD</span>
-        <span><strong>R:</strong> RELACIÓN</span>
-        <span><strong>A:</strong> ACTITUDINAL</span>
-        <span><strong>P:</strong> PUNTAJE</span>
-      </div>
-      <div class="conv-line" style="margin-top:2px">
-        <span><strong>PA:</strong> PROMEDIO ACTITUDINAL</span>
-        <span><strong>VC:</strong> VALORACIÓN DE CONVIVENCIA</span>
-        <span><strong>PC:</strong> PROMEDIO DE CONVIVENCIA</span>
-        <span style="background:#ff1744;color:#fff;padding:0 3px;font-weight:900">BJ: BAJO</span>
-        <span style="background:#c8e6c9;padding:0 3px;font-weight:900">BS: BÁSICO</span>
-        <span style="background:#76ff03;padding:0 3px;font-weight:900">A: ALTO</span>
-        <span style="background:#00e676;padding:0 3px;font-weight:900">S: SUPERIOR</span>
-      </div>
-    </div>
+    <table class="tabla-convenciones">
+      <tbody>
+        <tr class="fila-conv-borde">
+          <td rowspan="3" class="td-conv-titulo">CONVENCIONES:</td>
+          <td style="text-align:left;">P: PUNTO DE PARTIDA</td>
+          <td style="text-align:left;">R : RECOLECCIÓN DE INFORMACIÓN</td>
+          <td style="text-align:left;">D: DESARROLLO DE HABILIADAD</td>
+          <td style="text-align:left;">R: RELACIÓN</td>
+          <td style="text-align:left;">A: ACTITUDINAL</td>
+          <td style="text-align:left;">P: PUNTAJE</td>
+        </tr>
+        <tr class="fila-conv-borde">
+          <td colspan="2" style="text-align:left;">PA: PROMEDIO ACTITUDINAL</td>
+          <td colspan="2" style="text-align:center;">VC: VALORACIÓN DE CONVIVENCIA</td>
+          <td colspan="2" style="text-align:right;padding-right:16px;">PC: PROMEDIO DE CONVIVENCIA</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="text-align:center;">BJ: BAJO</td>
+          <td colspan="2" style="text-align:center;">BS: BÁSICO</td>
+          <td style="text-align:center;">A: ALTO</td>
+          <td style="text-align:center;">S: SUPERIOR</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
 </body>

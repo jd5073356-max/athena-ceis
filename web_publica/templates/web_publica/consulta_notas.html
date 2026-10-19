@@ -70,7 +70,7 @@
     </div>
 
     <div>
-      <a href="{% url 'web_publica:boletin_imprimir' estudiante.documento %}" target="_blank" rel="noopener"
+      <a href="{% url 'web_publica:boletin_imprimir' estudiante.documento %}?print=1" target="_blank" rel="noopener"
          style="display: inline-flex; align-items: center; gap: 8px; background: var(--azul); color: #fff; padding: 12px 22px; border-radius: 8px; font-weight: 700; font-size: .95rem; text-decoration: none; box-shadow: var(--sombra-sm); transition: all .2s;"
          onmouseover="this.style.background='var(--azul-medio)';this.style.color='var(--dorado)'"
          onmouseout="this.style.background='var(--azul)';this.style.color='#fff'">
