@@ -653,12 +653,17 @@ def _fallback_respuesta(q: str) -> str:
 
 def _fallback_admin_respuesta(q: str) -> str:
     q = q.lower()
-    if any(w in q for w in ["guia", "guías", "taller", "material"]):
+    if any(w in q for w in ["masiv", "lote", "50", "todas las guias", "muchas guias", "subir muchas", "varias guias"]):
+        return (
+            "Para subir decenas de guías de golpe sin diligenciarlas una por una:<br>"
+            "Ingresa a la <a class='athena-msg-link' href='/admin/core/documento/carga-masiva/'>Carga Masiva Inteligente de Guías</a>.<br>"
+            "Solo arrastra tus archivos PDF; el sistema deduce automáticamente el año, nivel, grado, período y área a partir del nombre y las publica en un solo clic."
+        )
+    elif any(w in q for w in ["guia", "guías", "taller", "material"]):
         return (
             "Para gestionar o subir guías de estudio pedagógicas:<br>"
-            "1. Ve a <a class='athena-msg-link' href='/admin/core/guia/add/'>Nueva Guía</a> en el panel.<br>"
-            "2. Asigna la materia, curso, período y adjunta el PDF correspondiente.<br>"
-            "Consulta el listado completo en el <a class='athena-msg-link' href='/admin/core/guia/'>Repositorio de Guías</a>."
+            "• Para subir decenas de archivos a la vez: usa la <a class='athena-msg-link' href='/admin/core/documento/carga-masiva/'>Carga Masiva Inteligente</a>.<br>"
+            "• Para subir una guía individual: ve a <a class='athena-msg-link' href='/admin/core/documento/add/'>Agregar Documento</a>."
         )
     elif any(w in q for w in ["circular", "documento", "cronograma", "horario", "formato", "manual"]):
         return (
@@ -746,8 +751,8 @@ def athena_chat_api(request):
             "Tu misión es asesorar al rector, directivos y administradores en la operación del CMS institucional "
             "y en la gestión escolar directiva (redacción de circulares, directrices académicas, comités, normativa MEN).\n\n"
             "Módulos y Enlaces Directos del Panel de Administración:\n"
-            "- Guías Pedagógicas: /admin/core/guia/ (Subir nueva: /admin/core/guia/add/). Permite cargar PDFs didácticos organizados por año, período, curso y materia.\n"
-            "- Documentos Institucionales y Circulares: /admin/core/documento/ (Cargar nuevo: /admin/core/documento/add/). Circulares oficiales, cronogramas, formatos de secretaría y manual escolar.\n"
+            "- Carga Masiva Inteligente de Guías: /admin/core/documento/carga-masiva/. Permite arrastrar decenas de archivos PDF de guías a la vez (10, 50 o más). El sistema analiza el nombre de cada archivo y deduce automáticamente el año, nivel, grado, período y área del SERC sin digitación manual.\n"
+            "- Guías Pedagógicas y Documentos: /admin/core/documento/ (Subir individual: /admin/core/documento/add/). Circulares oficiales, cronogramas, formatos de secretaría y manual escolar.\n"
             "- Noticias Institucionales: /admin/core/noticia/ (Nueva noticia: /admin/core/noticia/add/). Publicación con título, fecha, contenido e imagen destacada.\n"
             "- Galería de Imágenes: /admin/core/imagen/ (Subir imagen: /admin/core/imagen/add/). Carga de fotografías por sección (Colegio, Proyectos, Eventos).\n"
             "- Videos Institucionales: /admin/core/video/ (Nuevo video: /admin/core/video/add/). Vinculación de videos mediante enlace o ID de YouTube.\n"

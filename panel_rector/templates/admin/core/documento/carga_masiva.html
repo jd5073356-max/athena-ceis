@@ -1,0 +1,592 @@
+{% extends "admin/base_site.html" %}
+{% load static i18n admin_urls %}
+
+{% block title %}Carga Masiva Inteligente de Guías | Athena · Panel del Rector{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<style>
+  .ath-cm-wrap {
+    max-width: 1200px;
+    margin: 20px auto 40px;
+    padding: 0 16px;
+  }
+  .ath-cm-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .ath-cm-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--body-loud-color, #fff);
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .ath-cm-title .material-symbols-outlined {
+    color: #10b981;
+    font-size: 2rem;
+  }
+  .ath-cm-desc {
+    color: var(--body-quiet-color, #94a3b8);
+    font-size: 0.95rem;
+    margin: 0;
+    max-width: 780px;
+    line-height: 1.5;
+  }
+  .ath-cm-card {
+    background: var(--module-bg, #1d2024);
+    border: 1px solid var(--border-color, #2a2e33);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+  .ath-cm-grid-opts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .ath-cm-field label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--body-quiet-color, #c2c7cd);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .ath-cm-field select, .ath-cm-field input {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--darkened-bg, #191c20);
+    border: 1px solid var(--border-color, #2a2e33);
+    border-radius: 8px;
+    color: var(--body-fg, #e1e2e8);
+    font-size: 0.9rem;
+    outline: none;
+    box-sizing: border-box;
+  }
+  .ath-cm-dropzone {
+    border: 2px dashed #4a6e86;
+    border-radius: 12px;
+    padding: 44px 20px;
+    text-align: center;
+    background: rgba(74, 110, 134, 0.05);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .ath-cm-dropzone:hover, .ath-cm-dropzone.dragover {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.08);
+  }
+  .ath-cm-dropzone-icon {
+    font-size: 3.5rem;
+    color: #4a6e86;
+    margin-bottom: 12px;
+    display: block;
+    transition: color 0.2s;
+  }
+  .ath-cm-dropzone:hover .ath-cm-dropzone-icon,
+  .ath-cm-dropzone.dragover .ath-cm-dropzone-icon {
+    color: #10b981;
+  }
+  .ath-cm-dropzone-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #0b6d71;
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.92rem;
+    margin-top: 12px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(11,109,113,0.3);
+  }
+  .ath-cm-dropzone-btn:hover {
+    background: #0e8489;
+  }
+  /* Tabla de vista previa */
+  .ath-cm-preview {
+    margin-top: 28px;
+    display: none;
+  }
+  .ath-cm-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin-top: 14px;
+  }
+  .ath-cm-table th {
+    background: #191c20;
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: #a6cbe6;
+    border-bottom: 2px solid var(--border-color, #2a2e33);
+  }
+  .ath-cm-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-color, #2a2e33);
+    color: var(--body-fg, #e1e2e8);
+    vertical-align: middle;
+  }
+  .ath-cm-table tr:hover {
+    background: rgba(255,255,255,0.03);
+  }
+  .badge-nivel {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: capitalize;
+  }
+  .badge-bach { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+  .badge-prim { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
+  .badge-pree { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.3); }
+  .badge-per {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: rgba(245, 158, 11, 0.2);
+    color: #fcd34d;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+  /* Barra de progreso */
+  .ath-cm-progress-bar {
+    width: 100%;
+    height: 12px;
+    background: #191c20;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 18px 0;
+    display: none;
+    border: 1px solid #2a2e33;
+  }
+  .ath-cm-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #0b6d71, #10b981);
+    transition: width 0.3s ease;
+  }
+  /* Exito modal */
+  .ath-cm-success {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 12px;
+    margin-top: 24px;
+  }
+  .ath-cm-success .material-symbols-outlined {
+    font-size: 4rem;
+    color: #10b981;
+    margin-bottom: 12px;
+  }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Inicio</a>
+  &rsaquo; <a href="{% url 'admin:core_documento_changelist' %}">Documentos (guías, circulares…)</a>
+  &rsaquo; Carga Masiva Inteligente
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="ath-cm-wrap">
+  <div class="ath-cm-head">
+    <div>
+      <h1 class="ath-cm-title">
+        <span class="material-symbols-outlined">auto_awesome</span>
+        Carga Masiva Inteligente de Guías
+      </h1>
+      <p class="ath-cm-desc">
+        Selecciona o arrastra decenas de guías PDF a la vez (10, 50 o más). El motor analiza automáticamente el nombre de cada archivo para deducir de inmediato su <strong>Año, Nivel, Grado, Período y Área del SERC</strong>, cargándolas en Cloudflare R2 y publicándolas en la web oficial en un solo clic.
+      </p>
+    </div>
+    <a href="{% url 'admin:core_documento_changelist' %}" class="button" style="background:#2a2e33;color:#e1e2e8;border:none;">
+      &larr; Volver al Listado
+    </a>
+  </div>
+
+  <div class="ath-cm-card">
+    <div class="ath-cm-grid-opts">
+      <div class="ath-cm-field">
+        <label>Año Académico</label>
+        <select id="opt-anio">
+          <option value="2026" selected>2026 (Año en curso)</option>
+          <option value="2025">2025</option>
+          <option value="2027">2027</option>
+        </select>
+      </div>
+      <div class="ath-cm-field">
+        <label>Período (Opcional)</label>
+        <select id="opt-periodo">
+          <option value="" selected>Auto-detectar del nombre del archivo</option>
+          <option value="I">Forzar Período I</option>
+          <option value="II">Forzar Período II</option>
+          <option value="III">Forzar Período III</option>
+          <option value="IV">Forzar Período IV</option>
+        </select>
+      </div>
+      <div class="ath-cm-field">
+        <label>Categoría</label>
+        <select id="opt-categoria">
+          <option value="guia" selected>Guía Pedagógica SERC</option>
+          <option value="circular">Circular Oficial</option>
+          <option value="formato">Formato / Secretaría</option>
+          <option value="horario">Horario de Clases</option>
+          <option value="otro">Otro Documento</option>
+        </select>
+      </div>
+    </div>
+
+    <input type="file" id="input-archivos" multiple accept=".pdf" style="display:none;">
+
+    <div class="ath-cm-dropzone" id="dropzone">
+      <span class="material-symbols-outlined ath-cm-dropzone-icon">cloud_upload</span>
+      <h3 style="margin:0 0 6px;color:#fff;font-size:1.2rem;">Arrastra aquí tus archivos PDF de guías</h3>
+      <p style="margin:0;color:#94a3b8;font-size:0.9rem;">o haz clic en el botón para seleccionarlos desde tu equipo</p>
+      <button type="button" class="ath-cm-dropzone-btn" onclick="document.getElementById('input-archivos').click()">
+        <span class="material-symbols-outlined">folder_open</span> Seleccionar Archivos PDF
+      </button>
+    </div>
+
+    <!-- Barra de progreso -->
+    <div class="ath-cm-progress-bar" id="progress-bar">
+      <div class="ath-cm-progress-fill" id="progress-fill"></div>
+    </div>
+    <div id="progress-text" style="display:none;text-align:center;font-size:0.9rem;color:#a6cbe6;margin-top:6px;font-weight:600;"></div>
+
+    <!-- Mensaje de éxito -->
+    <div class="ath-cm-success" id="success-box">
+      <span class="material-symbols-outlined">verified</span>
+      <h2 style="color:#fff;margin:0 0 8px;font-size:1.5rem;" id="success-title">¡Carga Masiva Completada con Éxito!</h2>
+      <p style="color:#94a3b8;margin:0 0 20px;font-size:1rem;" id="success-desc"></p>
+      <div style="display:flex;justify-content:center;gap:12px;">
+        <a href="{% url 'admin:core_documento_changelist' %}" class="button" style="background:#0b6d71;color:#fff;">
+          Ver Documentos en Admin
+        </a>
+        <a href="/documentos/" target="_blank" class="button" style="background:#2a2e33;color:#e1e2e8;">
+          Abrir Web Pública de Guías
+        </a>
+        <button type="button" class="button" onclick="reiniciarCarga()" style="background:#1d2024;border:1px solid #4a6e86;color:#a6cbe6;">
+          Subir Otro Lote
+        </button>
+      </div>
+    </div>
+
+    <!-- Previsualización -->
+    <div class="ath-cm-preview" id="preview-section">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h3 style="margin:0;color:#fff;font-size:1.15rem;display:flex;align-items:center;gap:8px;">
+          <span class="material-symbols-outlined" style="color:#10b981;">task_alt</span>
+          Archivos detectados automáticamente (<span id="count-files">0</span>)
+        </h3>
+        <button type="button" class="ath-cm-dropzone-btn" id="btn-submit" onclick="enviarLote()" style="margin:0;background:#10b981;">
+          <span class="material-symbols-outlined">publish</span> Subir y Publicar Todas
+        </button>
+      </div>
+
+      <div style="max-height: 480px; overflow-y: auto; border: 1px solid #2a2e33; border-radius: 8px;">
+        <table class="ath-cm-table">
+          <thead>
+            <tr>
+              <th style="width:40px;">#</th>
+              <th>Archivo</th>
+              <th>Título Dedicado</th>
+              <th>Nivel</th>
+              <th>Grado</th>
+              <th>Período</th>
+              <th>Área SERC</th>
+            </tr>
+          </thead>
+          <tbody id="preview-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const dropzone = document.getElementById('dropzone');
+  const inputArchivos = document.getElementById('input-archivos');
+  const previewSection = document.getElementById('preview-section');
+  const previewTbody = document.getElementById('preview-tbody');
+  const countFiles = document.getElementById('count-files');
+  const btnSubmit = document.getElementById('btn-submit');
+  const progressBar = document.getElementById('progress-bar');
+  const progressFill = document.getElementById('progress-fill');
+  const progressText = document.getElementById('progress-text');
+  const successBox = document.getElementById('success-box');
+
+  let archivosSeleccionados = [];
+
+  // Reglas de normalización de áreas en JavaScript
+  const REGLAS_AREA = [
+    ["cultura fisica", "Cultura Física y Deportiva"],
+    ["fisica y deport", "Cultura Física y Deportiva"],
+    ["ed fisica", "Cultura Física y Deportiva"],
+    ["ed. fisica", "Cultura Física y Deportiva"],
+    ["deportiv", "Cultura Física y Deportiva"],
+    ["cominucacion", "Comunicaciones"],
+    ["cuminicacion", "Comunicaciones"],
+    ["comunicacion", "Comunicaciones"],
+    ["castellano", "Comunicaciones"],
+    ["lengua", "Comunicaciones"],
+    ["ingl", "Inglés"],
+    ["geometr", "Pensamiento Matemático"],
+    ["estadist", "Pensamiento Matemático"],
+    ["trigonometr", "Pensamiento Matemático"],
+    ["calculo", "Pensamiento Matemático"],
+    ["matemat", "Pensamiento Matemático"],
+    ["quimic", "Pensamiento Científico"],
+    ["biolog", "Pensamiento Científico"],
+    ["ciencias natural", "Pensamiento Científico"],
+    ["natural", "Pensamiento Científico"],
+    ["cientific", "Pensamiento Científico"],
+    ["fisica", "Pensamiento Científico"],
+    ["artistic", "Pensamiento Artístico"],
+    ["tecnolog", "Pensamiento Tecnológico"],
+    ["informatic", "Pensamiento Tecnológico"],
+    ["politic", "Pensamiento Social"],
+    ["economic", "Pensamiento Social"],
+    ["social", "Pensamiento Social"],
+    ["filosof", "Pensamiento Ético y Ciudadano"],
+    ["religios", "Pensamiento Ético y Ciudadano"],
+    ["etic", "Pensamiento Ético y Ciudadano"],
+    ["ciudadan", "Pensamiento Ético y Ciudadano"],
+    ["moral", "Pensamiento Ético y Ciudadano"],
+  ];
+
+  function sinAcentos(s) {
+    return (s || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+
+  function parsearCliente(nombre, optPeriodo) {
+    const stem = nombre.replace(/\.[^/.]+$/, "").trim();
+    const u = sinAcentos(stem).toUpperCase();
+
+    // 1. Período
+    let periodo = optPeriodo;
+    if (!periodo) {
+      const mPer = u.match(/\b(IV|III|II|I)\s*(?:PERIODO|PERÍODO|PER)?\b/);
+      if (mPer) {
+        periodo = mPer[1];
+      } else {
+        const mG = u.match(/\bGU[IÍ]A\s*([1-4])\b/);
+        if (mG) {
+          const map = {'1':'I', '2':'II', '3':'III', '4':'IV'};
+          periodo = map[mG[1]] || 'I';
+        } else {
+          periodo = 'I';
+        }
+      }
+    }
+
+    // 2. Nivel y Grado
+    let nivel = 'bachillerato';
+    let grado = '';
+
+    if (/transici|jard|prejard|infantil/i.test(u)) {
+      nivel = 'preescolar';
+      if (/PREJARD/.test(u)) grado = 'Prejardín';
+      else if (/JARD/.test(u)) grado = 'Jardín';
+      else grado = 'Transición';
+    } else {
+      const mBach = u.match(/\b(1[0-1]|[6-9])\s*[°º]/) || u.match(/\bGRADO\s*(1[0-1]|[6-9])\b/);
+      const mPrim = u.match(/\b([1-5])\s*[°º]/) || u.match(/\bGRADO\s*([1-5])\b/);
+
+      if (mBach) {
+        nivel = 'bachillerato';
+        grado = mBach[1] + '°';
+      } else if (mPrim) {
+        nivel = 'primaria';
+        grado = mPrim[1] + 'º';
+      } else if (/PRIMARIA/.test(u)) {
+        nivel = 'primaria';
+      } else if (/BACHILLER/.test(u)) {
+        nivel = 'bachillerato';
+      } else {
+        const mMedia = u.match(/\b(1[0-1])\b/);
+        if (mMedia) {
+          nivel = 'bachillerato';
+          grado = mMedia[1] + '°';
+        } else {
+          nivel = 'bachillerato';
+          grado = '';
+        }
+      }
+    }
+
+    // 3. Área
+    const t = sinAcentos(stem).toLowerCase();
+    let area = 'General';
+    for (const [clave, val] of REGLAS_AREA) {
+      if (t.includes(clave)) {
+        area = val;
+        break;
+      }
+    }
+
+    return { titulo: stem, nivel, grado, periodo, area };
+  }
+
+  function procesarArchivos(archivos) {
+    archivosSeleccionados = Array.from(archivos).filter(f => f.name.toLowerCase().endsWith('.pdf'));
+    if (archivosSeleccionados.length === 0) return;
+
+    const optPeriodo = document.getElementById('opt-periodo').value;
+    countFiles.innerText = archivosSeleccionados.length;
+    previewTbody.innerHTML = '';
+
+    archivosSeleccionados.forEach((f, idx) => {
+      const p = parsearCliente(f.name, optPeriodo);
+      const badgeCls = p.nivel === 'bachillerato' ? 'badge-bach' : (p.nivel === 'primaria' ? 'badge-prim' : 'badge-pree');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="color:#64748b;font-weight:600;">${idx + 1}</td>
+        <td style="font-family:monospace;font-size:0.8rem;color:#cbd5e1;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${f.name}">${f.name}</td>
+        <td><strong style="color:#fff;">${p.titulo}</strong></td>
+        <td><span class="badge-nivel ${badgeCls}">${p.nivel}</span></td>
+        <td><strong style="color:#a6cbe6;">${p.grado || '—'}</strong></td>
+        <td><span class="badge-per">${p.periodo}</span></td>
+        <td style="color:#94a3b8;">${p.area}</td>
+      `;
+      previewTbody.appendChild(tr);
+    });
+
+    previewSection.style.display = 'block';
+    successBox.style.display = 'none';
+  }
+
+  // Drag & Drop
+  ['dragenter', 'dragover'].forEach(name => {
+    dropzone.addEventListener(name, (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+  });
+  ['dragleave', 'drop'].forEach(name => {
+    dropzone.addEventListener(name, (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+    });
+  });
+  dropzone.addEventListener('drop', (e) => {
+    if (e.dataTransfer.files) {
+      procesarArchivos(e.dataTransfer.files);
+    }
+  });
+  inputArchivos.addEventListener('change', (e) => {
+    if (e.target.files) {
+      procesarArchivos(e.target.files);
+    }
+  });
+
+  // Reanalizar al cambiar periodo forzado
+  document.getElementById('opt-periodo').addEventListener('change', () => {
+    if (archivosSeleccionados.length > 0) {
+      procesarArchivos(archivosSeleccionados);
+    }
+  });
+
+  async function enviarLote() {
+    if (archivosSeleccionados.length === 0) return;
+
+    btnSubmit.disabled = true;
+    btnSubmit.style.opacity = '0.5';
+    btnSubmit.innerText = 'Subiendo y procesando...';
+    progressBar.style.display = 'block';
+    progressText.style.display = 'block';
+    progressFill.style.width = '10%';
+    progressText.innerText = 'Preparando transferencia segura a Cloudflare R2...';
+
+    const formData = new FormData();
+    archivosSeleccionados.forEach(f => formData.append('archivos', f));
+    formData.append('default_anio', document.getElementById('opt-anio').value);
+    formData.append('default_periodo', document.getElementById('opt-periodo').value);
+    formData.append('default_categoria', document.getElementById('opt-categoria').value);
+
+    // Cookie CSRF de Django
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    try {
+      progressFill.style.width = '40%';
+      progressText.innerText = `Subiendo ${archivosSeleccionados.length} archivos a Cloudflare R2 y registrando en base de datos...`;
+
+      const response = await fetch(window.location.href, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: formData,
+      });
+
+      const res = await response.json();
+      if (response.ok && res.status === 'ok') {
+        progressFill.style.width = '100%';
+        progressText.innerText = 'Completado al 100%';
+
+        setTimeout(() => {
+          progressBar.style.display = 'none';
+          progressText.style.display = 'none';
+          previewSection.style.display = 'none';
+          successBox.style.display = 'block';
+          document.getElementById('success-title').innerText = `¡${res.total} Guías Publicadas Exitosamente!`;
+          document.getElementById('success-desc').innerText = `Se procesaron ${res.total} archivos PDF (${res.creados} nuevos, ${res.actualizados} actualizados). Todos los documentos ya cuentan con visor embebido activo y descarga directa desde el CDN de Cloudflare R2.`;
+        }, 500);
+      } else {
+        alert('Error en la carga masiva: ' + (res.error || 'Ocurrió un error en el servidor.'));
+        btnSubmit.disabled = false;
+        btnSubmit.style.opacity = '1';
+        btnSubmit.innerText = 'Subir y Publicar Todas';
+      }
+    } catch (err) {
+      alert('Error de conexión al subir los archivos: ' + err.message);
+      btnSubmit.disabled = false;
+      btnSubmit.style.opacity = '1';
+      btnSubmit.innerText = 'Subir y Publicar Todas';
+    }
+  }
+
+  function reiniciarCarga() {
+    archivosSeleccionados = [];
+    inputArchivos.value = '';
+    previewTbody.innerHTML = '';
+    previewSection.style.display = 'none';
+    successBox.style.display = 'none';
+    btnSubmit.disabled = false;
+    btnSubmit.style.opacity = '1';
+    btnSubmit.innerText = 'Subir y Publicar Todas';
+  }
+</script>
+{% endblock %}

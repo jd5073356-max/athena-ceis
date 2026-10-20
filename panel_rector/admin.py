@@ -11,6 +11,7 @@ para navegar rápido.
 """
 from django import forms
 from django.contrib import admin
+from django.urls import path
 
 from core.models import (
     Anio, ConfiguracionApariencia, Curso, Documento, Estudiante, Guia, Imagen,
@@ -288,6 +289,7 @@ class ImagenAdmin(admin.ModelAdmin):
 
 @admin.register(Documento)
 class DocumentoAdmin(admin.ModelAdmin):
+    change_list_template = "admin/core/documento/change_list.html"
     list_display = ("titulo", "categoria", "anio", "nivel", "periodo", "area", "grado", "orden")
     list_filter = ("categoria", "anio", "nivel", "periodo", "area")
     list_editable = ("orden",)
@@ -302,6 +304,135 @@ class DocumentoAdmin(admin.ModelAdmin):
         }),
         ("Extra", {"fields": ("descripcion", "orden"), "classes": ("collapse",)}),
     )
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "carga-masiva/",
+                self.admin_site.admin_view(self.carga_masiva_view),
+                name="core_documento_carga_masiva",
+            ),
+        ]
+        return custom_urls + urls
+
+    def carga_masiva_view(self, request):
+        from django.http import JsonResponse
+        from django.shortcuts import render
+        from django.db import connections
+        from core.parser_guias import parsear_nombre_guia
+
+        if request.method == "POST":
+            archivos = request.FILES.getlist("archivos")
+            default_anio = int(request.POST.get("default_anio", 2026))
+            default_periodo = request.POST.get("default_periodo", "").strip()
+            categoria = request.POST.get("default_categoria", "guia").strip()
+
+            if not archivos:
+                return JsonResponse({"status": "error", "error": "No se enviaron archivos."}, status=400)
+
+            # Sincronizar secuencia en PostgreSQL para evitar errores de clave primaria
+            try:
+                with connections["default"].cursor() as cursor:
+                    cursor.execute("""
+                        SELECT setval(pg_get_serial_sequence('"DOCUMENTOS"', 'id'), coalesce(max(id), 1) + 1, false) FROM "DOCUMENTOS";
+                    """)
+            except Exception:
+                pass
+
+            creados = 0
+            actualizados = 0
+            procesados = []
+
+            for f in archivos:
+                meta = parsear_nombre_guia(
+                    f.name,
+                    default_anio=default_anio,
+                    default_periodo=default_periodo,
+                )
+                doc, created = Documento.objects.update_or_create(
+                    categoria=categoria,
+                    anio=meta["anio"],
+                    titulo=meta["titulo"],
+                    defaults={
+                        "nivel": meta["nivel"],
+                        "grado": meta["grado"],
+                        "periodo": meta["periodo"],
+                        "area": meta["area"],
+                    },
+                )
+                doc.archivo.save(meta["s3_key"], f, save=True)
+
+                if created:
+                    creados += 1
+                else:
+                    actualizados += 1
+
+                procesados.append({
+                    "titulo": meta["titulo"],
+                    "archivo": meta["s3_key"],
+                    "nivel": meta["nivel"],
+                    "grado": meta["grado"],
+                    "periodo": meta["periodo"],
+                    "area": meta["area"],
+                    "estado": "creado" if created else "actualizado",
+                })
+
+            # Replicar en SQLite local si existe
+            try:
+                import sqlite3
+                from pathlib import Path
+                from datetime import date
+                from django.conf import settings
+
+                sqlite_path = Path(settings.BASE_DIR) / "db.sqlite3"
+                if sqlite_path.exists():
+                    conn = sqlite3.connect(sqlite_path)
+                    c = conn.cursor()
+                    hoy = date.today().isoformat()
+                    for p in procesados:
+                        c.execute(
+                            "SELECT id FROM DOCUMENTOS WHERE categoria=? AND anio=? AND titulo=?",
+                            (categoria, default_anio, p["titulo"]),
+                        )
+                        r = c.fetchone()
+                        if r:
+                            c.execute(
+                                """
+                                UPDATE DOCUMENTOS
+                                SET nivel=?, grado=?, periodo=?, area=?, RUTA_ARCHIVO=?
+                                WHERE id=?
+                                """,
+                                (p["nivel"], p["grado"], p["periodo"], p["area"], p["archivo"], r[0]),
+                            )
+                        else:
+                            c.execute(
+                                """
+                                INSERT INTO DOCUMENTOS
+                                (titulo, RUTA_ARCHIVO, categoria, anio, nivel, grado, periodo, area, descripcion, orden, fecha)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, '', 0, ?)
+                                """,
+                                (p["titulo"], p["archivo"], categoria, default_anio, p["nivel"], p["grado"], p["periodo"], p["area"], hoy),
+                            )
+                    conn.commit()
+                    conn.close()
+            except Exception:
+                pass
+
+            return JsonResponse({
+                "status": "ok",
+                "total": len(archivos),
+                "creados": creados,
+                "actualizados": actualizados,
+                "items": procesados,
+            })
+
+        context = {
+            **self.admin_site.each_context(request),
+            "opts": self.model._meta,
+            "has_view_permission": self.has_view_permission(request),
+        }
+        return render(request, "admin/core/documento/carga_masiva.html", context)
 
 
 # ===========================================================================

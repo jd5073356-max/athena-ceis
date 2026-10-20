@@ -20,12 +20,14 @@ class AthenaAdminSite(admin.AdminSite):
         return super().index(request, extra_context)
 
     def _dashboard_context(self):
-        from core.models import Curso, Guia, Imagen, Materia, Noticia, Video
+        from core.models import Curso, Documento, Guia, Imagen, Materia, Noticia, Video
 
         hoy = timezone.localdate()
         inicio_mes = hoy.replace(day=1)
 
         # --- Tarjetas KPI (conteos reales) ---
+        total_guias = Documento.objects.filter(categoria="guia").count()
+        guias_este_mes = Documento.objects.filter(categoria="guia", fecha__gte=inicio_mes).count()
         kpis = [
             {
                 "label": "Cursos", "icon": "school", "tone": "primary",
@@ -35,9 +37,9 @@ class AthenaAdminSite(admin.AdminSite):
             },
             {
                 "label": "Guías de estudio", "icon": "description", "tone": "tertiary",
-                "value": Guia.objects.count(),
+                "value": total_guias,
                 "sub_icon": "trending_up",
-                "sub": f"+{Guia.objects.filter(fecha_publicacion__gte=inicio_mes).count()} este mes",
+                "sub": f"{Documento.objects.filter(anio=2026).count()} guías 2026",
             },
             {
                 "label": "Noticias", "icon": "newspaper", "tone": "primary",
@@ -82,7 +84,9 @@ class AthenaAdminSite(admin.AdminSite):
 
         # --- Acciones rápidas (enlaces reales a los formularios) ---
         acciones = [
-            {"label": "Nuevo usuario", "icon": "person_add", "tone": "primary",
+            {"label": "Carga Masiva de Guías", "icon": "auto_awesome", "tone": "primary",
+             "url": reverse("admin:core_documento_carga_masiva")},
+            {"label": "Nuevo usuario", "icon": "person_add", "tone": "secondary",
              "url": reverse("admin:auth_user_add")},
             {"label": "Publicar noticia", "icon": "post_add", "tone": "tertiary",
              "url": reverse("admin:core_noticia_add")},
