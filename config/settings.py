@@ -53,9 +53,9 @@ CSRF_TRUSTED_ORIGINS = [o.strip() for o in env("DJANGO_CSRF_TRUSTED_ORIGINS", ""
 
 # --- Aplicaciones ----------------------------------------------------------
 INSTALLED_APPS = [
-    "panel_rector.apps.PanelRectorConfig",  # personalización del Django Admin (rector)
+    "panel_rector.apps.PanelRectorConfig",  # personalización del Django Admin (panel administrativo)
     "panel_rector.apps.AthenaAdminConfig",  # custom admin site
-    "django.contrib.auth",           # login del rector (USUARIOS)
+    "django.contrib.auth",           # login del panel administrativo (USUARIOS)
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",

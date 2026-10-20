@@ -7,7 +7,8 @@
 {{ block.super }}
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&family=Lora:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
-  :root {
+  :root,
+  html[data-theme="dark"] {
     --ath-bg: #111418;
     --ath-card: #191c20;
     --ath-border: #2a2e33;
@@ -17,6 +18,22 @@
     --ath-teal: #0b6d71;
     --ath-gold: #c5a880;
     --ath-wapp: #25d366;
+    --ath-heading: #ffffff;
+    --ath-bar-bg: rgba(25, 28, 32, 0.95);
+  }
+
+  html[data-theme="light"] {
+    --ath-bg: #f8fafc;
+    --ath-card: #ffffff;
+    --ath-border: #e2e8f0;
+    --ath-text: #0f172a;
+    --ath-muted: #64748b;
+    --ath-accent: #0b6d71;
+    --ath-teal: #0b6d71;
+    --ath-gold: #b45309;
+    --ath-wapp: #15803d;
+    --ath-heading: #0f172a;
+    --ath-bar-bg: rgba(255, 255, 255, 0.95);
   }
 
   .ath-doc-wrap {
@@ -28,7 +45,7 @@
 
   /* Sticky Control Bar */
   .ath-control-bar {
-    background: rgba(25, 28, 32, 0.95);
+    background: var(--ath-bar-bg);
     backdrop-filter: blur(8px);
     border: 1px solid var(--ath-border);
     border-radius: 12px;

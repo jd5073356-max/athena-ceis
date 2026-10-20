@@ -7,7 +7,7 @@ from django.utils import timezone
 
 
 class AthenaAdminSite(admin.AdminSite):
-    site_header = "Athena · Panel del Rector"
+    site_header = "Athena · Panel Administrativo"
     site_title = "Athena"
     index_title = "Gestión del sitio del colegio"
 

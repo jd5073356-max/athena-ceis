@@ -1,4 +1,4 @@
-"""Helpers de plantilla para los listados del Panel del Rector (estilo Stitch).
+"""Helpers de plantilla para los listados del Panel Administrativo (estilo Stitch).
 
 Todo sale de datos REALES del modelo; no se inventa nada.
 """

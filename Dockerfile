@@ -1,4 +1,4 @@
-# Athena — imagen de producción (web pública + Panel del Rector, un solo proceso Django).
+# Athena — imagen de producción (web pública + Panel Administrativo, un solo proceso Django).
 FROM python:3.12-slim
 
 ENV PYTHONUNBUFFERED=1 \

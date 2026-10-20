@@ -1,7 +1,7 @@
 {% extends "admin/base.html" %}
 {% load static %}
 
-{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | Athena · Panel del Rector{% endblock %}
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | Athena · Panel Administrativo{% endblock %}
 
 {% block extrastyle %}{{ block.super }}
   <link rel="icon" type="image/png" href="{% static 'logos/ceis.png' %}">
@@ -15,7 +15,7 @@
 <div id="site-name">
   <a href="{% url 'admin:index' %}">
     <img src="{% static 'logos/ceis.png' %}" alt="ATHENA" style="height:28px;width:auto;border-radius:6px;margin-right:10px;vertical-align:middle;">
-    <strong>ATHENA</strong> <span>· Panel del Rector</span>
+    <strong>ATHENA</strong> <span>· Panel Administrativo</span>
   </a>
 </div>
 {% if user.is_anonymous %}{% include "admin/color_theme_toggle.html" %}{% endif %}

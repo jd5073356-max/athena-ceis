@@ -76,5 +76,5 @@ echo
 echo "============================================================"
 echo "  LISTO. Athena está en la web:"
 gcloud run services describe athena --region "$REGION" --format='value(status.url)'
-echo "  Panel del Rector:  <esa URL>/admin/"
+echo "  Panel Administrativo:  <esa URL>/admin/"
 echo "============================================================"

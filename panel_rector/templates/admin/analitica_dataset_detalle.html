@@ -8,7 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  :root {
+  :root,
+  html[data-theme="dark"] {
     --ath-bg: #111418;
     --ath-card: #191c20;
     --ath-card-hover: #20242a;
@@ -23,6 +24,25 @@
     --ath-yellow: #f59e0b;
     --ath-green: #10b981;
     --ath-blue: #3b82f6;
+    --ath-heading: #ffffff;
+  }
+
+  html[data-theme="light"] {
+    --ath-bg: #f8fafc;
+    --ath-card: #ffffff;
+    --ath-card-hover: #f1f5f9;
+    --ath-border: #e2e8f0;
+    --ath-border-subtle: #f1f5f9;
+    --ath-text: #0f172a;
+    --ath-muted: #64748b;
+    --ath-accent: #0b6d71;
+    --ath-teal: #0b6d71;
+    --ath-gold: #b45309;
+    --ath-red: #dc2626;
+    --ath-yellow: #d97706;
+    --ath-green: #059669;
+    --ath-blue: #2563eb;
+    --ath-heading: #0f172a;
   }
 
   .ath-det-wrap {
@@ -65,7 +85,7 @@
     font-family: 'Hanken Grotesk', sans-serif;
     font-size: 1.75rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--ath-heading, #fff);
     margin: 0 0 0.35rem 0;
     display: flex;
     align-items: center;

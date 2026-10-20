@@ -182,7 +182,7 @@ erDiagram
 | Cuenta | Rol | Propósito | Estado |
 |---|---|---|---|
 | `ADMIN` | Administrador ADB | Usuario principal de la aplicación | **CAÍDO** — ADB detenida (ORA-12514, 2026-07-21) |
-| `rector` (Django) | Superusuario app | Login al Panel del Rector | Activo en SQLite local |
+| `rector` (Django) | Superusuario app | Login al Panel Administrativo | Activo en SQLite local |
 
 ### 4.3 Cuentas de Servicios Cloud
 

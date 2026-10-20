@@ -1,13 +1,14 @@
 {% extends "admin/base_site.html" %}
 {% load static %}
 
-{% block title %}Analizador de Datasets y Pruebas Externas | Athena · Panel del Rector{% endblock %}
+{% block title %}Analizador de Datasets y Pruebas Externas | Athena · Panel Administrativo{% endblock %}
 
 {% block extrastyle %}
 {{ block.super }}
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
 <style>
-  :root {
+  :root,
+  html[data-theme="dark"] {
     --ath-bg: #111418;
     --ath-card: #191c20;
     --ath-card-hover: #20242a;
@@ -22,6 +23,27 @@
     --ath-yellow: #f59e0b;
     --ath-green: #10b981;
     --ath-blue: #3b82f6;
+    --ath-heading: #ffffff;
+    --ath-dropzone-bg: rgba(14, 17, 21, 0.6);
+  }
+
+  html[data-theme="light"] {
+    --ath-bg: #f8fafc;
+    --ath-card: #ffffff;
+    --ath-card-hover: #f1f5f9;
+    --ath-border: #e2e8f0;
+    --ath-border-subtle: #f1f5f9;
+    --ath-text: #0f172a;
+    --ath-muted: #64748b;
+    --ath-accent: #0b6d71;
+    --ath-teal: #0b6d71;
+    --ath-gold: #b45309;
+    --ath-red: #dc2626;
+    --ath-yellow: #d97706;
+    --ath-green: #059669;
+    --ath-blue: #2563eb;
+    --ath-heading: #0f172a;
+    --ath-dropzone-bg: #f8fafc;
   }
 
   .ath-ds-wrap {
@@ -47,7 +69,7 @@
     font-family: 'Hanken Grotesk', sans-serif;
     font-size: 1.75rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--ath-heading, #fff);
     margin: 0 0 0.35rem 0;
     display: flex;
     align-items: center;
@@ -122,7 +144,7 @@
   .ath-kpi-val {
     font-size: 1.55rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--ath-heading, #fff);
     line-height: 1.1;
     font-family: 'Hanken Grotesk', sans-serif;
   }
@@ -141,7 +163,7 @@
     border-radius: 14px;
     padding: 1.5rem;
     margin-bottom: 2.25rem;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
   }
   .ath-upload-head {
     display: flex;
@@ -155,7 +177,7 @@
     font-family: 'Hanken Grotesk', sans-serif;
     font-size: 1.1rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--ath-heading, #fff);
     margin: 0;
     display: flex;
     align-items: center;
@@ -177,7 +199,7 @@
     border-radius: 12px;
     padding: 2rem 1.5rem;
     text-align: center;
-    background: rgba(14, 17, 21, 0.6);
+    background: var(--ath-dropzone-bg, rgba(14, 17, 21, 0.6));
     cursor: pointer;
     transition: all .2s;
     display: flex;
@@ -197,7 +219,7 @@
   }
   .ath-dropzone-title {
     font-weight: 600;
-    color: #fff;
+    color: var(--ath-heading, #fff);
     font-size: 0.95rem;
     margin-bottom: 4px;
   }
@@ -230,11 +252,11 @@
   }
   .ath-input, .ath-select, .ath-textarea {
     width: 100%;
-    background: #0e1115;
-    border: 1px solid var(--ath-border);
+    background: var(--input-bg, #0e1115);
+    border: 1px solid var(--input-border, var(--ath-border));
     border-radius: 8px;
     padding: 9px 12px;
-    color: #fff;
+    color: var(--input-fg, #fff);
     font-size: 0.88rem;
     font-family: inherit;
     outline: none;
@@ -284,7 +306,7 @@
     font-family: 'Hanken Grotesk', sans-serif;
     font-size: 1.2rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--ath-heading, #fff);
     margin: 0;
   }
 
@@ -307,7 +329,7 @@
   .ath-dataset-card:hover {
     border-color: var(--ath-accent);
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
   }
 
   .ath-card-badge-row {
@@ -327,23 +349,23 @@
   }
   .ath-badge-icfes {
     background: rgba(197, 168, 128, 0.18);
-    color: #e4caa4;
+    color: var(--ath-gold, #e4caa4);
     border: 1px solid rgba(197, 168, 128, 0.35);
   }
   .ath-badge-evaluar_avanzar {
     background: rgba(59, 130, 246, 0.18);
-    color: #93c5fd;
+    color: var(--ath-blue, #93c5fd);
     border: 1px solid rgba(59, 130, 246, 0.35);
   }
   .ath-badge-caracterizacion {
     background: rgba(16, 185, 129, 0.18);
-    color: #6ee7b7;
+    color: var(--ath-green, #6ee7b7);
     border: 1px solid rgba(16, 185, 129, 0.35);
   }
   .ath-badge-general {
-    background: rgba(148, 163, 184, 0.18);
-    color: #cbd5e1;
-    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: var(--darkened-bg);
+    color: var(--ath-muted);
+    border: 1px solid var(--ath-border);
   }
 
   .ath-card-date {
@@ -355,7 +377,7 @@
     font-family: 'Hanken Grotesk', sans-serif;
     font-size: 1.1rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--ath-heading, #fff);
     margin: 0 0 0.5rem 0;
     line-height: 1.3;
   }
@@ -369,7 +391,7 @@
   }
 
   .ath-card-stats {
-    background: rgba(14, 17, 21, 0.5);
+    background: var(--darkened-bg);
     border: 1px solid var(--ath-border-subtle);
     border-radius: 8px;
     padding: 0.75rem;
@@ -384,7 +406,7 @@
   }
   .ath-cstat-val {
     font-weight: 700;
-    color: #fff;
+    color: var(--ath-heading, #fff);
     display: block;
     font-size: 0.88rem;
     margin-top: 2px;

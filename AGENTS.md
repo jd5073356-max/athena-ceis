@@ -15,7 +15,7 @@ Este archivo sirve como el **CLAUDE.md / AGENTS.md** para todas las herramientas
 * **Marca:** Exclusivamente **Código-Beta**. Está terminantemente prohibido utilizar o mencionar "AETHON Industries".
 * **Estilo Visual:**
   * **Web Pública:** Diseño editorial de alta gama. Slider Hero con efecto Ken Burns (transiciones CSS aceleradas por GPU, crossfade sin javascript de terceros), cristal traslúcido (glassmorphism), tipografía premium Serif **Lora** para encabezados institucionales y Sans-Serif **Outfit** para la interfaz.
-  * **Panel del Rector:** Diseñado con el estilo de una aplicación SaaS moderna en modo oscuro, usando una paleta Slate y Teal, barra lateral de navegación izquierda de alta gama, y tipografías Outfit y Lora.
+  * **Panel Administrativo:** Diseñado con el estilo de una aplicación SaaS moderna con soporte para Tema Oscuro y Tema Claro, usando una paleta Slate y Teal, barra lateral de navegación izquierda de alta gama, y tipografías Outfit y Lora.
 * **Logotipos:** Los archivos SVG originales `athena_largo.svg` y `athena_isotipo_limpio.svg` en static han sido modificados programáticamente para eliminar los rectángulos y fondos claros, preservando únicamente la versión azul/dorada oscura optimizada para fondos oscuros.
 
 ---

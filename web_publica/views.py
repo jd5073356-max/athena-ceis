@@ -890,7 +890,7 @@ def athena_chat_api(request):
 
     if es_admin:
         system_prompt = (
-            "Eres Athena, la Asesora Oficial y Copiloto de Gestión del Panel del Rector de la "
+            "Eres Athena, la Asesora Oficial y Copiloto de Gestión del Panel Administrativo de la "
             "Institución Educativa Departamental Complejo Educativo Integral Sopó (I.E.D. CEIS), ubicada en Sopó, Cundinamarca.\n"
             "Tu misión es asesorar al rector, directivos y administradores en la operación del CMS institucional "
             "y en la gestión escolar directiva (redacción de circulares, directrices académicas, comités, normativa MEN).\n\n"

@@ -1,5 +1,5 @@
 """
-Panel del Rector — sobre Django Admin.
+Panel Administrativo — sobre Django Admin.
 
 El rector entra con usuario y contraseña y gestiona TODO con formularios:
 guías (Año→Período→Curso→Materia→Guía), imágenes, noticias, videos y textos.

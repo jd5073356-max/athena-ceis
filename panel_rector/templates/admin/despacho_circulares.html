@@ -7,7 +7,8 @@
 {{ block.super }}
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
 <style>
-  :root {
+  :root,
+  html[data-theme="dark"] {
     --ath-bg: #111418;
     --ath-card: #191c20;
     --ath-card-hover: #20242a;
@@ -20,6 +21,23 @@
     --ath-gold: #c5a880;
     --ath-green: #10b981;
     --ath-wapp: #25d366;
+    --ath-heading: #ffffff;
+  }
+
+  html[data-theme="light"] {
+    --ath-bg: #f8fafc;
+    --ath-card: #ffffff;
+    --ath-card-hover: #f1f5f9;
+    --ath-border: #e2e8f0;
+    --ath-border-subtle: #f1f5f9;
+    --ath-text: #0f172a;
+    --ath-muted: #64748b;
+    --ath-accent: #0b6d71;
+    --ath-teal: #0b6d71;
+    --ath-gold: #b45309;
+    --ath-green: #059669;
+    --ath-wapp: #15803d;
+    --ath-heading: #0f172a;
   }
 
   .ath-desp-wrap {
@@ -45,7 +63,7 @@
     font-family: 'Hanken Grotesk', sans-serif;
     font-size: 1.75rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--ath-heading, #fff);
     margin: 0 0 0.35rem 0;
     display: flex;
     align-items: center;
@@ -136,7 +154,7 @@
   .ath-kpi-val {
     font-size: 1.55rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--ath-heading, #fff);
     line-height: 1.1;
     font-family: 'Hanken Grotesk', sans-serif;
   }
@@ -163,7 +181,7 @@
     text-align: left;
   }
   .ath-desp-table th {
-    background: rgba(14, 17, 21, 0.8);
+    background: var(--darkened-bg);
     color: var(--ath-muted);
     font-weight: 600;
     padding: 11px 16px;
@@ -175,10 +193,10 @@
   .ath-desp-table td {
     padding: 12px 16px;
     border-bottom: 1px solid var(--ath-border-subtle);
-    color: #e1e2e8;
+    color: var(--ath-text, #e1e2e8);
   }
   .ath-desp-table tr:hover td {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--sidebar-link-hover-bg, rgba(255, 255, 255, 0.02));
   }
 
   .ath-rad-badge {

@@ -40,7 +40,7 @@ class Command(BaseCommand):
     def handle(self, *args, **opciones):
         # --- Secciones de texto de la home ---------------------------------
         secciones = {
-            "nombre_sitio": ("Nombre del Colegio", "Edita este texto desde el panel del rector."),
+            "nombre_sitio": ("Nombre del Colegio", "Edita este texto desde el panel administrativo."),
             "lema": ("Lema", "Bienvenidos a nuestra comunidad educativa."),
             "mision": ("Misión", "Texto de la misión institucional (editable por el rector)."),
             "vision": ("Visión", "Texto de la visión institucional (editable por el rector)."),

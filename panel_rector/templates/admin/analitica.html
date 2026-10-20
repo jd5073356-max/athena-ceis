@@ -1,14 +1,15 @@
 {% extends "admin/base_site.html" %}
 {% load static %}
 
-{% block title %}Analítica y Business Intelligence Escolar | Athena · Panel del Rector{% endblock %}
+{% block title %}Analítica y Business Intelligence Escolar | Athena · Panel Administrativo{% endblock %}
 
 {% block extrastyle %}
 {{ block.super }}
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  :root {
+  :root,
+  html[data-theme="dark"] {
     --ath-bg: #111418;
     --ath-card: #191c20;
     --ath-card-hover: #20242a;
@@ -18,12 +19,32 @@
     --ath-muted: #94a3b8;
     --ath-accent: #4a6e86;
     --ath-accent-glow: rgba(74, 110, 134, 0.25);
+    --ath-heading: #ffffff;
     --ath-teal: #0b6d71;
     --ath-gold: #c5a880;
     --ath-red: #ef4444;
     --ath-yellow: #f59e0b;
     --ath-green: #10b981;
     --ath-blue: #3b82f6;
+  }
+
+  html[data-theme="light"] {
+    --ath-bg: #f8fafc;
+    --ath-card: #ffffff;
+    --ath-card-hover: #f1f5f9;
+    --ath-border: #e2e8f0;
+    --ath-border-subtle: #f1f5f9;
+    --ath-text: #0f172a;
+    --ath-muted: #64748b;
+    --ath-accent: #0b6d71;
+    --ath-accent-glow: rgba(11, 109, 113, 0.15);
+    --ath-heading: #0f172a;
+    --ath-teal: #0b6d71;
+    --ath-gold: #b45309;
+    --ath-red: #dc2626;
+    --ath-yellow: #d97706;
+    --ath-green: #059669;
+    --ath-blue: #2563eb;
   }
 
   .ath-bi-wrap {
@@ -49,7 +70,7 @@
     font-family: 'Hanken Grotesk', sans-serif;
     font-size: 1.75rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--ath-heading, #fff);
     margin: 0 0 0.35rem 0;
     display: flex;
     align-items: center;
@@ -181,7 +202,7 @@
   .ath-ai-title {
     font-weight: 700;
     font-size: 0.98rem;
-    color: #fff;
+    color: var(--ath-heading, #fff);
     margin: 0;
   }
   .ath-ai-subtitle {
@@ -198,18 +219,18 @@
     padding: 4px;
   }
   .ath-ai-close:hover {
-    color: #fff;
+    color: var(--ath-heading, #fff);
   }
   .ath-ai-diagnostic-content {
     font-size: 0.89rem;
     line-height: 1.6;
-    color: #cbd5e1;
+    color: var(--ath-text, #cbd5e1);
   }
   .ath-ai-diagnostic-content p {
     margin: 0 0 0.75rem 0;
   }
   .ath-ai-diagnostic-content strong {
-    color: #fff;
+    color: var(--ath-heading, #fff);
   }
   .ath-ai-loading {
     display: flex;
@@ -261,7 +282,7 @@
   .ath-kpi-val {
     font-size: 1.85rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--ath-heading, #fff);
     line-height: 1.1;
     margin-bottom: 0.35rem;
     font-family: 'Hanken Grotesk', sans-serif;
@@ -315,7 +336,7 @@
   .ath-chart-title {
     font-size: 0.98rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--ath-heading, #fff);
     margin: 0;
   }
   .ath-chart-desc {
@@ -375,10 +396,10 @@
   .ath-crit-table td {
     padding: 10px 12px;
     border-bottom: 1px solid var(--ath-border-subtle);
-    color: #cbd5e1;
+    color: var(--ath-text, #cbd5e1);
   }
   .ath-crit-table tr:hover td {
-    background: rgba(255,255,255,0.02);
+    background: var(--sidebar-link-hover-bg, rgba(255,255,255,0.02));
   }
   .ath-badge-danger {
     background: rgba(239, 68, 68, 0.2);
@@ -669,10 +690,11 @@
 <script>
   const rawData = JSON.parse(document.getElementById('metricas-data').textContent);
 
-  // Paleta de colores para gráficos oscuros
-  Chart.defaults.color = '#94a3b8';
+  // Paleta de colores adaptativa para gráficos según el tema
+  const isLight = document.documentElement.dataset.theme === 'light';
+  Chart.defaults.color = isLight ? '#475569' : '#94a3b8';
   Chart.defaults.font.family = "'Inter', -apple-system, sans-serif";
-  Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.07)';
+  Chart.defaults.borderColor = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.07)';
 
   // 1. Gráfico de Desempeño SERC (Doughnut)
   const ctxDes = document.getElementById('chartDesempeno').getContext('2d');

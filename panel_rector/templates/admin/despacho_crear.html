@@ -7,7 +7,8 @@
 {{ block.super }}
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
 <style>
-  :root {
+  :root,
+  html[data-theme="dark"] {
     --ath-bg: #111418;
     --ath-card: #191c20;
     --ath-card-hover: #20242a;
@@ -20,6 +21,23 @@
     --ath-gold: #c5a880;
     --ath-green: #10b981;
     --ath-wapp: #25d366;
+    --ath-heading: #ffffff;
+  }
+
+  html[data-theme="light"] {
+    --ath-bg: #f8fafc;
+    --ath-card: #ffffff;
+    --ath-card-hover: #f1f5f9;
+    --ath-border: #e2e8f0;
+    --ath-border-subtle: #f1f5f9;
+    --ath-text: #0f172a;
+    --ath-muted: #64748b;
+    --ath-accent: #0b6d71;
+    --ath-teal: #0b6d71;
+    --ath-gold: #b45309;
+    --ath-green: #059669;
+    --ath-wapp: #15803d;
+    --ath-heading: #0f172a;
   }
 
   .ath-crear-wrap {
@@ -45,7 +63,7 @@
     font-family: 'Hanken Grotesk', sans-serif;
     font-size: 1.75rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--ath-heading, #fff);
     margin: 0 0 0.35rem 0;
     display: flex;
     align-items: center;
@@ -69,7 +87,7 @@
     border: 1px solid var(--ath-border);
     border-radius: 14px;
     padding: 1.5rem;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
   }
 
   .ath-card-head {
@@ -84,7 +102,7 @@
     font-family: 'Hanken Grotesk', sans-serif;
     font-size: 1.1rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--ath-heading, #fff);
     margin: 0;
     display: flex;
     align-items: center;
@@ -105,11 +123,11 @@
   }
   .ath-input, .ath-select, .ath-textarea {
     width: 100%;
-    background: #0e1115;
-    border: 1px solid var(--ath-border);
+    background: var(--input-bg, #0e1115);
+    border: 1px solid var(--input-border, var(--ath-border));
     border-radius: 8px;
     padding: 9px 12px;
-    color: #fff;
+    color: var(--input-fg, #fff);
     font-size: 0.88rem;
     font-family: inherit;
     outline: none;

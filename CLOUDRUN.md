@@ -1,6 +1,6 @@
 # Desplegar Athena en Google Cloud Run
 
-Athena va como **un solo servicio** (web pública `/` + Panel del Rector `/admin/`)
+Athena va como **un solo servicio** (web pública `/` + Panel Administrativo `/admin/`)
 contra la Oracle ADB y el bucket OCI que ya tienes. Cloud Run entra en el **free
 tier** (2M peticiones/mes) → para un colegio, gratis.
 
@@ -74,7 +74,7 @@ Al terminar imprime la URL pública. Para obtenerla de nuevo:
 gcloud run services describe athena --region "$REGION" --format='value(status.url)'
 ```
 
-## 6. Acceso al Panel del Rector
+## 6. Acceso al Panel Administrativo
 La BD ya tiene el superusuario `rector`. Si no recuerdas la contraseña, reséteala
 (actualiza la misma ADB que usa producción):
 ```bash

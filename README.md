@@ -28,7 +28,7 @@ Las instituciones educativas manejan una carga documental y académica crítica 
 ## ⚡ ¿Para qué sirve? (Propósito del Sistema)
 
 - **Gestión Académica Centralizada:** Control estructurado de asignaturas y cursos con jerarquía clara por áreas de conocimiento.
-- **Panel de Rectoría:** Interfaz administrativa avanzada (`panel_rector`) para supervisión, métricas de avance y control de publicaciones.
+- **Panel Administrativo:** Interfaz administrativa avanzada (`panel_rector`) para supervisión, analítica, métricas de avance y control de publicaciones.
 - **Integración con la Nube:** Preparado para sincronización en la nube con Google Cloud Storage (GCS) y arquitectura serverless container.
 
 ---
@@ -42,7 +42,7 @@ graph TD
     subgraph Core de la Aplicación
         CloudRun --> WSGI[Gunicorn WSGI Server]
         WSGI --> DjangoCore[Django 5.x Framework]
-        DjangoCore --> AdminPanel[Panel Rector / Django Admin Custom]
+        DjangoCore --> AdminPanel[Panel Administrativo / Django Admin Custom]
         DjangoCore --> PublicWeb[Portal Público / Visor de Guías]
     end
     

@@ -10,7 +10,7 @@ from core.models import ConfiguracionApariencia, Seccion
 
 
 def menu_publico(request):
-    # No gastar consultas en el panel del rector.
+    # No gastar consultas en el panel administrativo.
     if request.path.startswith("/admin"):
         return {}
     secciones = list(Seccion.objects.all())

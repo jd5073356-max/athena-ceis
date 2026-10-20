@@ -1,7 +1,7 @@
 """
 Rutas raíz de Athena.
 
-- /admin/  → Panel del Rector (Django Admin, login obligatorio).
+- /admin/  → Panel Administrativo (Django Admin, login obligatorio).
 - /        → Web pública (padres y estudiantes).
 """
 from django.contrib import admin
@@ -11,7 +11,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path("admin/", include("panel_rector.urls")),
-    path("admin/", admin.site.urls),         # Panel del Rector
+    path("admin/", admin.site.urls),         # Panel Administrativo
     path("", include("web_publica.urls")),   # Web pública
 ]
 
