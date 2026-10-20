@@ -746,8 +746,39 @@ def athena_chat_api(request):
     if archivos:
         if not es_admin:
             return JsonResponse({
-                "respuesta": "La carga y publicación de guías directamente en la conversación está reservada para directivos y docentes autenticados en el panel administrativo."
+                "respuesta": "La carga y análisis de archivos directamente en la conversación está reservada para directivos y docentes autenticados en el panel administrativo."
             })
+
+        archivos_datasets = [f for f in archivos if f.name.lower().endswith((".xlsx", ".xls", ".csv"))]
+        archivos_guias = [f for f in archivos if f.name.lower().endswith(".pdf")]
+
+        if archivos_datasets:
+            from core.models import DatasetAnalisis
+            from core.dataset_parser import procesar_archivo_dataset, generar_diagnostico_dataset_ia
+
+            dataset_respuestas = []
+            for f in archivos_datasets:
+                stem = os.path.splitext(f.name)[0].strip()
+                cat = "icfes" if any(w in stem.lower() for w in ["icfes", "saber"]) else ("evaluar_avanzar" if "avanzar" in stem.lower() else "general")
+                datos_norm = procesar_archivo_dataset(f, f.name)
+                f.seek(0)
+                ds = DatasetAnalisis.objects.create(
+                    titulo=stem,
+                    categoria=cat,
+                    descripcion=mensaje or f"Análisis procesado por Athena IA desde el chat ({f.name})",
+                    datos_normalizados=datos_norm,
+                )
+                ds.archivo.save(f.name, f, save=True)
+                diag = generar_diagnostico_dataset_ia(ds)
+                ds.diagnostico_ia = diag
+                ds.save(update_fields=["diagnostico_ia"])
+
+                dataset_respuestas.append(
+                    f"He procesado y analizado el dataset <strong>{ds.titulo}</strong> ({datos_norm.get('total_filas', 0)} registros analizados):<br>"
+                    f"<a class='athena-msg-link' href='/admin/analitica/datasets/{ds.id}/'>Ver Tablero Comparativo y Gráficos</a><br><br>"
+                    f"<strong>Diagnóstico Cuantitativo Athena IA (Qwen 3.8):</strong><br>{diag}<br>"
+                )
+            return JsonResponse({"respuesta": "".join(dataset_respuestas)})
 
         from django.db import connections
         from core.parser_guias import parsear_nombre_guia
@@ -936,7 +967,7 @@ def athena_chat_api(request):
         system_prompt += datos_est
 
     payload = {
-        "model": "openai/gpt-oss-20b",
+        "model": "qwen/qwen3.8-27b",
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": mensaje[:600]},
@@ -952,7 +983,7 @@ def athena_chat_api(request):
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
-                "User-Agent": "AthenaCEIS/1.0",
+                "User-Agent": "Mozilla/5.0",
             },
         )
         with urllib.request.urlopen(req, timeout=6) as resp:

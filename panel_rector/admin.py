@@ -14,7 +14,7 @@ from django.contrib import admin
 from django.urls import path
 
 from core.models import (
-    Anio, ConfiguracionApariencia, Curso, Documento, Estudiante, Guia, Imagen,
+    Anio, ConfiguracionApariencia, Curso, DatasetAnalisis, Documento, Estudiante, Guia, Imagen,
     InformeValorativo, Materia, Noticia, Periodo, Seccion, Video,
 )
 
@@ -452,4 +452,12 @@ class InformeValorativoAdmin(admin.ModelAdmin):
     list_filter = ("anio_lectivo", "periodo_actual", "estudiante__curso")
     search_fields = ("estudiante__documento", "estudiante__apellidos", "estudiante__nombres", "estudiante__curso")
     autocomplete_fields = ("estudiante",)
+
+
+@admin.register(DatasetAnalisis)
+class DatasetAnalisisAdmin(admin.ModelAdmin):
+    list_display = ("titulo", "categoria", "fecha_creacion", "fecha_actualizacion")
+    list_filter = ("categoria", "fecha_creacion")
+    search_fields = ("titulo", "descripcion")
+
 

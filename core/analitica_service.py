@@ -276,7 +276,7 @@ def generar_diagnostico_ia(tipo: str, periodo: int = 3, metricas: dict = None) -
     api_key = os.getenv("GROQ_API_KEY")
     if api_key:
         payload = {
-            "model": "openai/gpt-oss-20b",
+            "model": "qwen/qwen3.8-27b",
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": usuario_prompt},
@@ -291,9 +291,10 @@ def generar_diagnostico_ia(tipo: str, periodo: int = 3, metricas: dict = None) -
                 headers={
                     "Authorization": f"Bearer {api_key}",
                     "Content-Type": "application/json",
+                    "User-Agent": "Mozilla/5.0",
                 },
             )
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=12) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 texto = data["choices"][0]["message"]["content"].strip()
                 texto = texto.replace("\n", "<br>")

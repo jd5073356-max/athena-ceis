@@ -692,3 +692,35 @@ class InformeValorativo(models.Model):
         return f"Informe {self.anio_lectivo} - {self.estudiante.nombre_completo} ({self.estudiante.curso})"
 
 
+class DatasetAnalisis(models.Model):
+    """Conjunto de datos estructurados externo para análisis (ICFES, Evaluar para Avanzar, caracterización)."""
+    CATEGORIAS = [
+        ("icfes", "Pruebas ICFES / Saber 11°"),
+        ("evaluar_avanzar", "Evaluar para Avanzar"),
+        ("socioeconomico", "Caracterización Socioeconómica / SISBEN"),
+        ("diagnostica", "Pruebas Diagnósticas Internas"),
+        ("convivencia", "Clima Escolar y Convivencia"),
+        ("otro", "Otro Análisis Institucional"),
+    ]
+
+    titulo = models.CharField("Título del Análisis", max_length=180, help_text="Ej: Resultados Históricos Saber 11° (2022-2025)")
+    categoria = models.CharField("Categoría", max_length=40, choices=CATEGORIAS, default="icfes")
+    archivo = models.FileField("Archivo de Datos (Excel o CSV)", upload_to="datasets/", blank=True, null=True)
+    descripcion = models.TextField("Descripción / Contexto", blank=True, help_text="Notas o propósito de la evaluación.")
+    datos_normalizados = models.JSONField("Datos Estructurados", default=dict, blank=True,
+                                         help_text="Matriz JSON con columnas, filas procesadas, resúmenes y deltas anuales.")
+    diagnostico_ia = models.TextField("Diagnóstico Ejecutivo Athena IA", blank=True,
+                                      help_text="Síntesis directiva generada por IA con puntos críticos y recomendaciones.")
+    fecha_creacion = models.DateTimeField("Fecha de creación", auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField("Última actualización", auto_now=True)
+
+    class Meta:
+        db_table = "DATASETS_ANALISIS"
+        verbose_name = "Dataset de Análisis"
+        verbose_name_plural = "Datasets de Análisis"
+        ordering = ["-fecha_creacion"]
+
+    def __str__(self):
+        return f"{self.titulo} ({self.get_categoria_display()})"
+
+

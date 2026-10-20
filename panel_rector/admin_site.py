@@ -16,10 +16,98 @@ class AthenaAdminSite(admin.AdminSite):
         urls = super().get_urls()
         custom_urls = [
             path("analitica/", self.admin_view(self.analitica_view), name="analitica"),
+            path("analitica/datasets/", self.admin_view(self.analitica_datasets_view), name="analitica_datasets"),
+            path("analitica/datasets/<int:dataset_id>/", self.admin_view(self.analitica_dataset_detalle_view), name="analitica_dataset_detalle"),
             path("api/analitica/explicar/", self.admin_view(self.analitica_explicar_api), name="analitica_explicar_api"),
             path("api/analitica/datos/", self.admin_view(self.analitica_datos_api), name="analitica_datos_api"),
+            path("api/analitica/datasets/upload/", self.admin_view(self.analitica_dataset_upload_api), name="analitica_dataset_upload_api"),
+            path("api/analitica/datasets/<int:dataset_id>/explicar/", self.admin_view(self.analitica_dataset_explicar_api), name="analitica_dataset_explicar_api"),
         ]
         return custom_urls + urls
+
+    def analitica_datasets_view(self, request):
+        from django.template.response import TemplateResponse
+        from core.models import DatasetAnalisis
+
+        datasets = DatasetAnalisis.objects.all().order_by("-fecha_creacion")
+        context = {
+            **self.each_context(request),
+            "title": "Analizador de Datasets y Pruebas Externas",
+            "subtitle": "Ingesta de Excels/CSVs (ICFES, Evaluar para Avanzar, caracterización) y diagnóstico con Athena IA (Qwen 3.8)",
+            "datasets": datasets,
+        }
+        return TemplateResponse(request, "admin/analitica_datasets.html", context)
+
+    def analitica_dataset_detalle_view(self, request, dataset_id):
+        import json
+        from django.shortcuts import get_object_or_404
+        from django.template.response import TemplateResponse
+        from core.models import DatasetAnalisis
+
+        dataset = get_object_or_404(DatasetAnalisis, id=dataset_id)
+        datos = dataset.datos_normalizados or {}
+        context = {
+            **self.each_context(request),
+            "title": dataset.titulo,
+            "subtitle": f"{dataset.get_categoria_display()} · Diagnóstico cuantitativo Athena IA (Qwen 3.8)",
+            "dataset": dataset,
+            "datos": datos,
+            "datos_json": json.dumps(datos),
+        }
+        return TemplateResponse(request, "admin/analitica_dataset_detalle.html", context)
+
+    def analitica_dataset_upload_api(self, request):
+        import os
+        from django.shortcuts import redirect
+        from django.contrib import messages
+        from core.models import DatasetAnalisis
+        from core.dataset_parser import procesar_archivo_dataset, generar_diagnostico_dataset_ia
+
+        if request.method != "POST":
+            return redirect("admin:analitica_datasets")
+
+        archivo = request.FILES.get("archivo")
+        if not archivo:
+            messages.error(request, "Debe seleccionar un archivo Excel (.xlsx, .xls) o CSV válido.")
+            return redirect("admin:analitica_datasets")
+
+        titulo = request.POST.get("titulo", "").strip() or os.path.splitext(archivo.name)[0].strip()
+        categoria = request.POST.get("categoria", "icfes").strip()
+        descripcion = request.POST.get("descripcion", "").strip()
+
+        try:
+            datos_norm = procesar_archivo_dataset(archivo, archivo.name)
+            archivo.seek(0)
+            ds = DatasetAnalisis.objects.create(
+                titulo=titulo,
+                categoria=categoria,
+                descripcion=descripcion,
+                datos_normalizados=datos_norm,
+            )
+            ds.archivo.save(archivo.name, archivo, save=True)
+
+            # Generar diagnóstico con Qwen 3.8 27B
+            diag = generar_diagnostico_dataset_ia(ds)
+            ds.diagnostico_ia = diag
+            ds.save()
+
+            messages.success(request, f"Dataset '{ds.titulo}' procesado y analizado con éxito por Athena IA.")
+            return redirect("admin:analitica_dataset_detalle", dataset_id=ds.id)
+        except Exception as e:
+            messages.error(request, f"Error al procesar el archivo: {str(e)}")
+            return redirect("admin:analitica_datasets")
+
+    def analitica_dataset_explicar_api(self, request, dataset_id):
+        from django.http import JsonResponse
+        from django.shortcuts import get_object_or_404
+        from core.models import DatasetAnalisis
+        from core.dataset_parser import generar_diagnostico_dataset_ia
+
+        dataset = get_object_or_404(DatasetAnalisis, id=dataset_id)
+        diag = generar_diagnostico_dataset_ia(dataset)
+        dataset.diagnostico_ia = diag
+        dataset.save(update_fields=["diagnostico_ia"])
+        return JsonResponse({"diagnostico": diag})
 
     def analitica_view(self, request):
         from django.template.response import TemplateResponse
@@ -201,6 +289,7 @@ class AthenaAdminSite(admin.AdminSite):
 
         # Configuración de las secciones requeridas
         analitica_url = reverse("admin:analitica")
+        datasets_url = reverse("admin:analitica_datasets")
         sections_config = [
             {
                 'name': 'BUSINESS INTELLIGENCE & ANALÍTICA',
@@ -209,9 +298,15 @@ class AthenaAdminSite(admin.AdminSite):
                 'has_module_perms': True,
                 'custom_models': [
                     {
-                        'name': 'Tablero de Analítica y Diagnóstico IA',
+                        'name': 'Rendimiento y Semáforo SERC',
                         'object_name': 'Analitica',
                         'admin_url': analitica_url,
+                        'view_only': True,
+                    },
+                    {
+                        'name': 'Analizador de Datasets y Pruebas Externas',
+                        'object_name': 'DatasetsAnalisis',
+                        'admin_url': datasets_url,
                         'view_only': True,
                     }
                 ],
@@ -225,6 +320,7 @@ class AthenaAdminSite(admin.AdminSite):
                 'models_keys': [
                     'core.Estudiante',
                     'core.InformeValorativo',
+                    'core.DatasetAnalisis',
                 ]
             },
             {
