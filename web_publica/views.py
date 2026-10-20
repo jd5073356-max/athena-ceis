@@ -653,7 +653,14 @@ def _fallback_respuesta(q: str) -> str:
 
 def _fallback_admin_respuesta(q: str) -> str:
     q = q.lower()
-    if any(w in q for w in ["masiv", "lote", "50", "todas las guias", "muchas guias", "subir muchas", "varias guias"]):
+    if any(w in q for w in ["subirte", "por el chat", "por este chat", "por aqui", "por aquí", "directamente", "adjuntar", "subir guias por"]):
+        return (
+            "Puedes subirme guías PDF directamente a través de este chat:<br>"
+            "1. Haz clic en el icono del clip o arrastra tus archivos PDF a esta ventana de chat.<br>"
+            "2. Analizaré los nombres de archivo y deduciré de inmediato el año, nivel, grado, período y área.<br>"
+            "3. Las subiré a Cloudflare R2 y quedarán publicadas en la web oficial en segundos."
+        )
+    elif any(w in q for w in ["masiv", "lote", "50", "todas las guias", "muchas guias", "subir muchas", "varias guias"]):
         return (
             "Para subir decenas de guías de golpe sin diligenciarlas una por una:<br>"
             "Ingresa a la <a class='athena-msg-link' href='/admin/core/documento/carga-masiva/'>Carga Masiva Inteligente de Guías</a>.<br>"
@@ -712,17 +719,117 @@ def _fallback_admin_respuesta(q: str) -> str:
 @require_POST
 def athena_chat_api(request):
     """Endpoint de IA para el asistente Athena conectado a Groq con base de datos en tiempo real."""
-    try:
-        data = json.loads(request.body.decode("utf-8"))
-        mensaje = data.get("mensaje", "").strip()
-        contexto = data.get("contexto", "publico").strip().lower()
-    except Exception:
-        return JsonResponse({"error": "Formato inválido"}, status=400)
+    archivos = request.FILES.getlist("archivos")
+    if request.content_type and "multipart/form-data" in request.content_type:
+        mensaje = request.POST.get("mensaje", "").strip()
+        contexto = request.POST.get("contexto", "publico").strip().lower()
+    else:
+        try:
+            data = json.loads(request.body.decode("utf-8"))
+            mensaje = data.get("mensaje", "").strip()
+            contexto = data.get("contexto", "publico").strip().lower()
+        except Exception:
+            return JsonResponse({"error": "Formato inválido"}, status=400)
 
-    if not mensaje:
-        return JsonResponse({"error": "Mensaje requerido"}, status=400)
+    if not mensaje and not archivos:
+        return JsonResponse({"error": "Mensaje o archivos requeridos"}, status=400)
 
     es_admin = (contexto == "admin") or (request.user.is_authenticated and request.user.is_staff)
+
+    # Si se adjuntaron archivos para que Athena los procese y publique:
+    if archivos:
+        if not es_admin:
+            return JsonResponse({
+                "respuesta": "La carga y publicación de guías directamente en la conversación está reservada para directivos y docentes autenticados en el panel administrativo."
+            })
+
+        from django.db import connections
+        from core.parser_guias import parsear_nombre_guia
+
+        try:
+            with connections["default"].cursor() as cursor:
+                cursor.execute("""
+                    SELECT setval(pg_get_serial_sequence('"DOCUMENTOS"', 'id'), coalesce(max(id), 1) + 1, false) FROM "DOCUMENTOS";
+                """)
+        except Exception:
+            pass
+
+        procesados = []
+        for f in archivos:
+            meta = parsear_nombre_guia(f.name)
+            doc, created = Documento.objects.update_or_create(
+                categoria="guia",
+                anio=meta["anio"],
+                titulo=meta["titulo"],
+                defaults={
+                    "nivel": meta["nivel"],
+                    "grado": meta["grado"],
+                    "periodo": meta["periodo"],
+                    "area": meta["area"],
+                },
+            )
+            doc.archivo.save(meta["s3_key"], f, save=True)
+            procesados.append({"meta": meta, "doc": doc, "created": created})
+
+        # Sincronización en SQLite local
+        try:
+            import sqlite3
+            from pathlib import Path
+            from datetime import date
+            from django.conf import settings
+
+            sqlite_path = Path(settings.BASE_DIR) / "db.sqlite3"
+            if sqlite_path.exists():
+                conn = sqlite3.connect(sqlite_path)
+                c = conn.cursor()
+                hoy = date.today().isoformat()
+                for p in procesados:
+                    meta = p["meta"]
+                    c.execute(
+                        "SELECT id FROM DOCUMENTOS WHERE categoria='guia' AND anio=? AND titulo=?",
+                        (meta["anio"], meta["titulo"]),
+                    )
+                    r = c.fetchone()
+                    if r:
+                        c.execute(
+                            """
+                            UPDATE DOCUMENTOS
+                            SET nivel=?, grado=?, periodo=?, area=?, RUTA_ARCHIVO=?
+                            WHERE id=?
+                            """,
+                            (meta["nivel"], meta["grado"], meta["periodo"], meta["area"], meta["s3_key"], r[0]),
+                        )
+                    else:
+                        c.execute(
+                            """
+                            INSERT INTO DOCUMENTOS
+                            (titulo, RUTA_ARCHIVO, categoria, anio, nivel, grado, periodo, area, descripcion, orden, fecha)
+                            VALUES (?, ?, 'guia', ?, ?, ?, ?, ?, '', 0, ?)
+                            """,
+                            (meta["titulo"], meta["s3_key"], meta["anio"], meta["nivel"], meta["grado"], meta["periodo"], meta["area"], hoy),
+                        )
+                conn.commit()
+                conn.close()
+        except Exception:
+            pass
+
+        lineas = [
+            f"He procesado y publicado <strong>{len(procesados)} guía(s)</strong> con éxito en la plataforma oficial y en Cloudflare R2:<br><br>"
+        ]
+        for p in procesados:
+            m = p["meta"]
+            d = p["doc"]
+            grado_txt = f" · Grado {m['grado']}" if m["grado"] else ""
+            estado_txt = "Nueva" if p["created"] else "Actualizada"
+            lineas.append(
+                f"• <strong>{d.titulo}</strong> ({estado_txt})<br>"
+                f"  <span style='opacity:0.8;font-size:0.8rem;'>{m['nivel'].title()}{grado_txt} · Período {m['periodo']} · {m['area']}</span><br>"
+                f"  <a class='athena-msg-link' href='/documentos/{d.id}/' target='_blank'>Ver en visor oficial</a> · "
+                f"<a class='athena-msg-link' href='{d.archivo.url}' target='_blank' download>Descargar PDF</a><br>"
+            )
+
+        return JsonResponse({"respuesta": "".join(lineas)})
+
 
     # Detección de consulta de estudiante en la base de datos
     est_consultado = None
@@ -751,6 +858,7 @@ def athena_chat_api(request):
             "Tu misión es asesorar al rector, directivos y administradores en la operación del CMS institucional "
             "y en la gestión escolar directiva (redacción de circulares, directrices académicas, comités, normativa MEN).\n\n"
             "Módulos y Enlaces Directos del Panel de Administración:\n"
+            "- Carga Directa por Chat: El usuario puede adjuntar archivos PDF directamente a esta conversación mediante el botón de clip o arrastrándolos sobre la ventana de chat. Tú procesas y publicas las guías automáticamente en Cloudflare R2 y en la web oficial, deduciendo año, nivel, grado, período y área del nombre del archivo.\n"
             "- Carga Masiva Inteligente de Guías: /admin/core/documento/carga-masiva/. Permite arrastrar decenas de archivos PDF de guías a la vez (10, 50 o más). El sistema analiza el nombre de cada archivo y deduce automáticamente el año, nivel, grado, período y área del SERC sin digitación manual.\n"
             "- Guías Pedagógicas y Documentos: /admin/core/documento/ (Subir individual: /admin/core/documento/add/). Circulares oficiales, cronogramas, formatos de secretaría y manual escolar.\n"
             "- Noticias Institucionales: /admin/core/noticia/ (Nueva noticia: /admin/core/noticia/add/). Publicación con título, fecha, contenido e imagen destacada.\n"
