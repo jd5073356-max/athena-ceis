@@ -16,6 +16,7 @@ USUARIOS (login del rector) NO se define aquí: lo gestiona el sistema de
 autenticación de Django (django.contrib.auth). El rector es un superusuario.
 """
 import re
+from django.utils import timezone
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -722,5 +723,37 @@ class DatasetAnalisis(models.Model):
 
     def __str__(self):
         return f"{self.titulo} ({self.get_categoria_display()})"
+
+
+class ComunicadoOficial(models.Model):
+    """Circular, resolución o comunicado institucional con membrete oficial y difusión por WhatsApp."""
+    class Tipo(models.TextChoices):
+        CIRCULAR = "circular", "Circular Rectoral Oficial"
+        COMUNICADO = "comunicado", "Comunicado General a Familias"
+        RESOLUCION = "resolucion", "Resolución Rectoral"
+        CITACION = "citacion", "Citación / Convocatoria Institucional"
+
+    tipo = models.CharField("Tipo de Documento", max_length=25, choices=Tipo.choices, default=Tipo.CIRCULAR)
+    numero_radicado = models.CharField("Número de Radicado", max_length=60, help_text="Ej: CIRCULAR No. 014 - 2026")
+    titulo = models.CharField("Título o Encabezado", max_length=200)
+    asunto = models.CharField("Asunto", max_length=220)
+    destinatario = models.CharField("Destinatario(s)", max_length=220, default="Padres de Familia, Acudientes y Comunidad Educativa")
+    cuerpo_html = models.TextField("Contenido Oficial del Documento", help_text="Texto estructurado con membrete, considerandos y puntos resolutivos.")
+    resumen_whatsapp = models.TextField("Mensaje Optimizado para WhatsApp", blank=True, help_text="Texto breve formateado con negritas y enlace directo para difusión instantánea.")
+    fecha_emision = models.DateField("Fecha de Emisión", default=timezone.now)
+    firmado_por = models.CharField("Firmante", max_length=120, default="Lic. Juan Carlos Aguirre Nieto")
+    cargo_firmante = models.CharField("Cargo", max_length=80, default="Rector Institucional")
+    publicado_web = models.BooleanField("Publicar en Web Pública", default=True, help_text="Si está activo, se publica en el repositorio escolar público.")
+    fecha_creacion = models.DateTimeField("Fecha de Creación", auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField("Última Actualización", auto_now=True)
+
+    class Meta:
+        db_table = "COMUNICADOS_OFICIALES"
+        verbose_name = "Comunicado Oficial / Circular"
+        verbose_name_plural = "Despacho Rectoral · Circulares y Resoluciones"
+        ordering = ["-fecha_emision", "-id"]
+
+    def __str__(self):
+        return f"{self.numero_radicado}: {self.titulo}"
 
 

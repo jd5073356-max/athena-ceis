@@ -22,6 +22,11 @@ class AthenaAdminSite(admin.AdminSite):
             path("api/analitica/datos/", self.admin_view(self.analitica_datos_api), name="analitica_datos_api"),
             path("api/analitica/datasets/upload/", self.admin_view(self.analitica_dataset_upload_api), name="analitica_dataset_upload_api"),
             path("api/analitica/datasets/<int:dataset_id>/explicar/", self.admin_view(self.analitica_dataset_explicar_api), name="analitica_dataset_explicar_api"),
+            path("despacho/", self.admin_view(self.despacho_circulares_view), name="despacho_circulares"),
+            path("despacho/crear/", self.admin_view(self.despacho_crear_view), name="despacho_crear"),
+            path("despacho/<int:comunicado_id>/", self.admin_view(self.despacho_detalle_view), name="despacho_detalle"),
+            path("api/despacho/redactar/", self.admin_view(self.despacho_redactar_api), name="despacho_redactar_api"),
+            path("api/despacho/guardar/", self.admin_view(self.despacho_guardar_api), name="despacho_guardar_api"),
         ]
         return custom_urls + urls
 
@@ -108,6 +113,123 @@ class AthenaAdminSite(admin.AdminSite):
         dataset.diagnostico_ia = diag
         dataset.save(update_fields=["diagnostico_ia"])
         return JsonResponse({"diagnostico": diag})
+
+    def despacho_circulares_view(self, request):
+        from django.template.response import TemplateResponse
+        from core.models import ComunicadoOficial
+
+        circulares = ComunicadoOficial.objects.all().order_by("-fecha_emision", "-id")
+        context = {
+            **self.each_context(request),
+            "title": "Despacho Rectoral · Circulares y Resoluciones",
+            "subtitle": "Generación instantánea de actos administrativos y circulares con membrete oficial y difusión por WhatsApp",
+            "comunicados": circulares,
+        }
+        return TemplateResponse(request, "admin/despacho_circulares.html", context)
+
+    def despacho_crear_view(self, request):
+        from django.template.response import TemplateResponse
+        from core.despacho_service import generar_siguiente_radicado
+
+        tipo_default = request.GET.get("tipo", "circular")
+        context = {
+            **self.each_context(request),
+            "title": "Redactor Oficial del Despacho Rectoral",
+            "subtitle": "Generación asistida por Athena IA (Qwen 3.8) con membrete oficial y texto para WhatsApp",
+            "siguiente_radicado": generar_siguiente_radicado(tipo_default),
+            "tipo_default": tipo_default,
+        }
+        return TemplateResponse(request, "admin/despacho_crear.html", context)
+
+    def despacho_detalle_view(self, request, comunicado_id):
+        from django.shortcuts import get_object_or_404
+        from django.template.response import TemplateResponse
+        from core.models import ComunicadoOficial
+
+        comunicado = get_object_or_404(ComunicadoOficial, id=comunicado_id)
+        host = request.get_host()
+        protocol = "https" if request.is_secure() else "http"
+        url_publica = f"{protocol}://{host}/circular/{comunicado.id}/"
+
+        wapp_msg = f"{comunicado.resumen_whatsapp}\n\nConsulte el documento oficial con membrete en: {url_publica}"
+
+        context = {
+            **self.each_context(request),
+            "title": comunicado.numero_radicado,
+            "subtitle": f"{comunicado.get_tipo_display()} · {comunicado.fecha_emision}",
+            "comunicado": comunicado,
+            "url_publica": url_publica,
+            "wapp_msg": wapp_msg,
+        }
+        return TemplateResponse(request, "admin/despacho_detalle.html", context)
+
+    def despacho_redactar_api(self, request):
+        import json
+        from django.http import JsonResponse
+        from core.despacho_service import redactar_comunicado_ia
+
+        if request.method != "POST":
+            return JsonResponse({"error": "Método no permitido"}, status=405)
+
+        try:
+            data = json.loads(request.body.decode("utf-8")) if request.body else {}
+        except Exception:
+            data = request.POST.dict()
+
+        tipo = data.get("tipo", "circular")
+        asunto = data.get("asunto", "").strip()
+        destinatario = data.get("destinatario", "").strip() or "Padres de Familia y Comunidad Educativa"
+        instrucciones = data.get("instrucciones", "").strip()
+        radicado = data.get("radicado", "").strip()
+        fecha = data.get("fecha", "").strip()
+
+        if not asunto:
+            return JsonResponse({"error": "El asunto del documento es obligatorio"}, status=400)
+
+        resultado = redactar_comunicado_ia(
+            tipo=tipo,
+            asunto=asunto,
+            destinatario=destinatario,
+            instrucciones=instrucciones,
+            radicado=radicado,
+            fecha=fecha,
+        )
+        return JsonResponse(resultado)
+
+    def despacho_guardar_api(self, request):
+        from django.shortcuts import redirect
+        from django.contrib import messages
+        from core.models import ComunicadoOficial, Documento
+
+        if request.method != "POST":
+            return redirect("admin:despacho_circulares")
+
+        tipo = request.POST.get("tipo", "circular")
+        radicado = request.POST.get("numero_radicado", "").strip()
+        titulo = request.POST.get("titulo", "").strip()
+        asunto = request.POST.get("asunto", "").strip()
+        destinatario = request.POST.get("destinatario", "").strip()
+        cuerpo_html = request.POST.get("cuerpo_html", "").strip()
+        resumen_whatsapp = request.POST.get("resumen_whatsapp", "").strip()
+        firmado_por = request.POST.get("firmado_por", "Lic. Juan Carlos Aguirre Nieto").strip()
+        cargo_firmante = request.POST.get("cargo_firmante", "Rector Institucional").strip()
+        publicar_web = request.POST.get("publicado_web") == "on"
+
+        comunicado = ComunicadoOficial.objects.create(
+            tipo=tipo,
+            numero_radicado=radicado,
+            titulo=titulo,
+            asunto=asunto,
+            destinatario=destinatario,
+            cuerpo_html=cuerpo_html,
+            resumen_whatsapp=resumen_whatsapp,
+            firmado_por=firmado_por,
+            cargo_firmante=cargo_firmante,
+            publicado_web=publicar_web,
+        )
+
+        messages.success(request, f"Documento oficial '{comunicado.numero_radicado}' guardado con éxito.")
+        return redirect("admin:despacho_detalle", comunicado_id=comunicado.id)
 
     def analitica_view(self, request):
         from django.template.response import TemplateResponse
@@ -290,7 +412,25 @@ class AthenaAdminSite(admin.AdminSite):
         # Configuración de las secciones requeridas
         analitica_url = reverse("admin:analitica")
         datasets_url = reverse("admin:analitica_datasets")
+        despacho_url = reverse("admin:despacho_circulares")
         sections_config = [
+            {
+                'name': 'DESPACHO RECTORAL & CIRCULARES',
+                'app_label': 'despacho_rectoral',
+                'app_url': despacho_url,
+                'has_module_perms': True,
+                'custom_models': [
+                    {
+                        'name': 'Redactor Oficial de Circulares y Resoluciones',
+                        'object_name': 'RedactorCirculares',
+                        'admin_url': despacho_url,
+                        'view_only': True,
+                    }
+                ],
+                'models_keys': [
+                    'core.ComunicadoOficial',
+                ]
+            },
             {
                 'name': 'BUSINESS INTELLIGENCE & ANALÍTICA',
                 'app_label': 'inteligencia_analitica',

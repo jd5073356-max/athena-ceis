@@ -14,7 +14,7 @@ from django.contrib import admin
 from django.urls import path
 
 from core.models import (
-    Anio, ConfiguracionApariencia, Curso, DatasetAnalisis, Documento, Estudiante, Guia, Imagen,
+    Anio, ComunicadoOficial, ConfiguracionApariencia, Curso, DatasetAnalisis, Documento, Estudiante, Guia, Imagen,
     InformeValorativo, Materia, Noticia, Periodo, Seccion, Video,
 )
 
@@ -459,5 +459,14 @@ class DatasetAnalisisAdmin(admin.ModelAdmin):
     list_display = ("titulo", "categoria", "fecha_creacion", "fecha_actualizacion")
     list_filter = ("categoria", "fecha_creacion")
     search_fields = ("titulo", "descripcion")
+
+
+@admin.register(ComunicadoOficial)
+class ComunicadoOficialAdmin(admin.ModelAdmin):
+    list_display = ("numero_radicado", "titulo", "tipo", "fecha_emision", "publicado_web")
+    list_filter = ("tipo", "fecha_emision", "publicado_web")
+    search_fields = ("numero_radicado", "titulo", "asunto", "destinatario")
+    ordering = ("-fecha_emision", "-id")
+
 
 

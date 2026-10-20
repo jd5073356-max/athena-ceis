@@ -1109,3 +1109,21 @@ def boletin_imprimir(request, documento):
     })
 
 
+def circular_publica(request, comunicado_id):
+    """Vista pública con membrete oficial institucional para familias y acudientes que reciben enlaces por WhatsApp."""
+    from core.models import ComunicadoOficial
+
+    comunicado = get_object_or_404(ComunicadoOficial, id=comunicado_id)
+    host = request.get_host()
+    protocol = "https" if request.is_secure() else "http"
+    url_publica = f"{protocol}://{host}/circular/{comunicado.id}/"
+    wapp_msg = f"{comunicado.resumen_whatsapp}\n\nConsulte el documento oficial con membrete en: {url_publica}"
+
+    return render(request, "web_publica/circular_publica.html", {
+        "comunicado": comunicado,
+        "url_publica": url_publica,
+        "wapp_msg": wapp_msg,
+    })
+
+
+

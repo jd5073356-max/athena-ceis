@@ -38,6 +38,7 @@ urlpatterns = [
     # Portal de Calificaciones y Boletines Oficiales SERC
     path("consulta-notas/", views.consulta_notas, name="consulta_notas"),
     path("boletin/<str:documento>/", views.boletin_imprimir, name="boletin_imprimir"),
+    path("circular/<int:comunicado_id>/", views.circular_publica, name="circular_publica"),
 
     # Indexación y SEO Técnico
     path("robots.txt", views.robots_txt, name="robots_txt"),

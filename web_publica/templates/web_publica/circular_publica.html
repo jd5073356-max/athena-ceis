@@ -1,0 +1,383 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ comunicado.numero_radicado }} - I.E.D. CEIS Sopó</title>
+  <link rel="icon" type="image/png" href="{% static 'logos/ceis.png' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700;800&family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+  <style>
+    @page {
+      size: letter portrait;
+      margin: 18mm 20mm;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #0e1115;
+      color: #1a1a1a;
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* Top Floating Bar */
+    .ath-topbar {
+      background: #111418;
+      border-bottom: 1px solid #2a2e33;
+      padding: 10px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .ath-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #fff;
+    }
+    .ath-brand img {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+    }
+    .ath-brand span {
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-weight: 800;
+      font-size: 0.95rem;
+      letter-spacing: -0.01em;
+    }
+
+    .ath-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .ath-btn-wapp {
+      background: #25d366;
+      color: #052e16;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .15s;
+    }
+    .ath-btn-wapp:hover {
+      background: #1da851;
+      color: #fff;
+    }
+    .ath-btn-print {
+      background: #4a6e86;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .ath-btn-link {
+      color: #94a3b8;
+      font-size: 0.8rem;
+      text-decoration: none;
+      padding: 7px 10px;
+    }
+    .ath-btn-link:hover {
+      color: #fff;
+    }
+
+    /* Container */
+    .ath-main-wrap {
+      padding: 2rem 1rem 4rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Paper */
+    .ath-paper {
+      background: #ffffff;
+      color: #1e293b;
+      width: 100%;
+      max-width: 820px;
+      padding: 50px 60px;
+      border-radius: 6px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      font-family: 'Lora', Georgia, serif;
+      font-size: 11pt;
+      line-height: 1.65;
+    }
+    @media (max-width: 680px) {
+      .ath-paper {
+        padding: 24px 20px;
+        font-size: 10pt;
+      }
+    }
+
+    /* Letterhead */
+    .ath-letter-head {
+      display: grid;
+      grid-template-columns: 80px 1fr 80px;
+      align-items: center;
+      gap: 15px;
+      padding-bottom: 18px;
+      border-bottom: 2px solid #0f2c42;
+      margin-bottom: 22px;
+      text-align: center;
+    }
+    @media (max-width: 580px) {
+      .ath-letter-head {
+        grid-template-columns: 55px 1fr 55px;
+        gap: 10px;
+      }
+    }
+    .ath-letter-logo img {
+      width: 70px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    @media (max-width: 580px) {
+      .ath-letter-logo img {
+        width: 50px;
+      }
+    }
+    .ath-letter-inst h2 {
+      font-family: 'Inter', sans-serif;
+      font-size: 7.5pt;
+      font-weight: 700;
+      color: #475569;
+      margin: 0 0 2px 0;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .ath-letter-inst h1 {
+      font-family: 'Lora', serif;
+      font-size: 12.5pt;
+      font-weight: 700;
+      color: #0f2c42;
+      margin: 3px 0 4px 0;
+      line-height: 1.25;
+    }
+    @media (max-width: 580px) {
+      .ath-letter-inst h1 {
+        font-size: 10pt;
+      }
+    }
+    .ath-letter-inst p {
+      font-family: 'Inter', sans-serif;
+      font-size: 7pt;
+      color: #64748b;
+      margin: 0;
+      line-height: 1.35;
+    }
+
+    .ath-letter-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed #cbd5e1;
+      font-family: 'Inter', sans-serif;
+      font-size: 9pt;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .ath-radicado {
+      font-weight: 800;
+      color: #0f2c42;
+      background: #f1f5f9;
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid #cbd5e1;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .ath-date {
+      color: #64748b;
+      font-style: italic;
+    }
+
+    .ath-fields {
+      margin-bottom: 22px;
+      font-family: 'Inter', sans-serif;
+      font-size: 9.5pt;
+      line-height: 1.6;
+    }
+    .ath-fields strong {
+      color: #0f2c42;
+      display: inline-block;
+      min-width: 80px;
+    }
+
+    .ath-body {
+      text-align: justify;
+      color: #1e293b;
+      margin-bottom: 35px;
+    }
+    .ath-body p {
+      margin: 0 0 12px 0;
+    }
+    .ath-body strong {
+      color: #0f2c42;
+    }
+    .ath-body a {
+      color: #0369a1;
+      text-decoration: underline;
+    }
+
+    .ath-sign {
+      margin-top: 40px;
+      padding-top: 10px;
+    }
+    .ath-sign-line {
+      width: 220px;
+      border-top: 1.5px solid #0f2c42;
+      padding-top: 6px;
+    }
+    .ath-sign-name {
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: 9.5pt;
+      color: #0f2c42;
+    }
+    .ath-sign-cargo {
+      font-family: 'Inter', sans-serif;
+      font-size: 8pt;
+      color: #64748b;
+    }
+
+    .ath-foot {
+      margin-top: 40px;
+      padding-top: 10px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 7pt;
+      color: #94a3b8;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    @media print {
+      body {
+        background: #fff !important;
+      }
+      .ath-topbar, .no-print {
+        display: none !important;
+      }
+      .ath-main-wrap {
+        padding: 0 !important;
+      }
+      .ath-paper {
+        box-shadow: none !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Action Bar -->
+  <div class="ath-topbar no-print">
+    <a href="{% url 'web_publica:home' %}" class="ath-brand">
+      <img src="{% static 'logos/ceis.png' %}" alt="CEIS">
+      <span>I.E.D. CEIS SOPÓ</span>
+    </a>
+
+    <div class="ath-actions">
+      <a href="https://api.whatsapp.com/send?text={{ wapp_msg|urlencode }}" target="_blank" class="ath-btn-wapp">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.586 1.761.88 2.79.88 3.181 0 5.767-2.586 5.768-5.766 0-3.18-2.587-5.766-5.767-5.766zm8.814 5.766c0 4.887-3.977 8.864-8.864 8.864-1.543 0-2.986-.4-4.249-1.096l-4.732 1.241 1.264-4.607c-.775-1.325-1.229-2.868-1.229-4.402 0-4.887 3.977-8.864 8.864-8.864 4.887 0 8.864 3.977 8.864 8.864z"/>
+        </svg>
+        Reenviar por WhatsApp
+      </a>
+
+      <button type="button" class="ath-btn-print" onclick="window.print()">
+        <span class="material-symbols-outlined" style="font-size: 1rem;">print</span>
+        Imprimir / Guardar PDF
+      </button>
+
+      <a href="{% url 'web_publica:documentos' %}" class="ath-btn-link">Circulares y Guías</a>
+      <a href="{% url 'web_publica:consulta_notas' %}" class="ath-btn-link">Calificaciones SERC</a>
+    </div>
+  </div>
+
+  <!-- Document Paper Container -->
+  <div class="ath-main-wrap">
+    <div class="ath-paper">
+      <!-- Institutional Header -->
+      <div class="ath-letter-head">
+        <div class="ath-letter-logo">
+          <img src="{% static 'logos/ceis.png' %}" alt="CEIS">
+        </div>
+        <div class="ath-letter-inst">
+          <h2>República de Colombia · Departamento de Cundinamarca</h2>
+          <h1>Institución Educativa Departamental<br>Complejo Educativo Integral Sopó</h1>
+          <p>Reconocimiento Oficial de Estudios según Resolución No. 004512 de la Secretaría de Educación de Cundinamarca</p>
+          <p>DANE: 125758000041 · NIT: 832.001.218-9 · Sopó, Cundinamarca</p>
+        </div>
+        <div class="ath-letter-logo">
+          <img src="{% static 'logos/ceis.png' %}" alt="CEIS" style="opacity: 0.9;">
+        </div>
+      </div>
+
+      <!-- Meta / Radicado -->
+      <div class="ath-letter-meta">
+        <span class="ath-radicado">{{ comunicado.numero_radicado }}</span>
+        <span class="ath-date">Sopó, Cundinamarca, a los {{ comunicado.fecha_emision|date:"d \d\e F \d\e Y" }}</span>
+      </div>
+
+      <!-- Fields -->
+      <div class="ath-fields">
+        <div><strong>PARA:</strong> {{ comunicado.destinatario }}</div>
+        <div><strong>DE:</strong> Despacho Rectoral — {{ comunicado.firmado_por }}</div>
+        <div><strong>ASUNTO:</strong> {{ comunicado.asunto }}</div>
+      </div>
+
+      <!-- Body -->
+      <div class="ath-body">
+        {{ comunicado.cuerpo_html|safe }}
+      </div>
+
+      <!-- Signatures -->
+      <div class="ath-sign">
+        <div class="ath-sign-line">
+          <div class="ath-sign-name">{{ comunicado.firmado_por }}</div>
+          <div class="ath-sign-cargo">{{ comunicado.cargo_firmante }}</div>
+          <div style="font-size: 7.5pt; color: #64748b; margin-top: 2px;">I.E.D. Complejo Educativo Integral Sopó</div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="ath-foot">
+        <div>Documento oficial expedido por el Despacho Rectoral · Verificable en: {{ url_publica }}</div>
+        <div>Athena CEIS · Plataforma Institucional Oficial</div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
