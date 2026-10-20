@@ -1,0 +1,886 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Analítica y Business Intelligence Escolar | Athena · Panel del Rector{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --ath-bg: #111418;
+    --ath-card: #191c20;
+    --ath-card-hover: #20242a;
+    --ath-border: #2a2e33;
+    --ath-border-subtle: #22262b;
+    --ath-text: #e1e2e8;
+    --ath-muted: #94a3b8;
+    --ath-accent: #4a6e86;
+    --ath-accent-glow: rgba(74, 110, 134, 0.25);
+    --ath-teal: #0b6d71;
+    --ath-gold: #c5a880;
+    --ath-red: #ef4444;
+    --ath-yellow: #f59e0b;
+    --ath-green: #10b981;
+    --ath-blue: #3b82f6;
+  }
+
+  .ath-bi-wrap {
+    padding: 1.5rem 2rem 3rem;
+    color: var(--ath-text);
+    max-width: 1560px;
+    margin: 0 auto;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+
+  /* Header Superior */
+  .ath-bi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--ath-border);
+  }
+  .ath-bi-title-box h1 {
+    font-family: 'Hanken Grotesk', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 0.35rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .ath-bi-title-box p {
+    color: var(--ath-muted);
+    font-size: 0.88rem;
+    margin: 0;
+  }
+
+  .ath-bi-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .ath-periodo-tabs {
+    display: flex;
+    background: var(--ath-card);
+    border: 1px solid var(--ath-border);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .ath-periodo-btn {
+    background: transparent;
+    border: none;
+    color: var(--ath-muted);
+    padding: 6px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all .15s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .ath-periodo-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .ath-periodo-btn.active {
+    background: var(--ath-accent);
+    color: #fff;
+  }
+
+  .ath-btn-refresh {
+    background: var(--ath-card);
+    border: 1px solid var(--ath-border);
+    color: var(--ath-muted);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    transition: all .2s;
+  }
+  .ath-btn-refresh:hover {
+    color: #fff;
+    border-color: var(--ath-accent);
+  }
+
+  .ath-btn-global-ai {
+    background: linear-gradient(135deg, #0b6d71, #4a6e86);
+    border: none;
+    color: #fff;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    box-shadow: 0 4px 14px rgba(11, 109, 113, 0.35);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .ath-btn-global-ai:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(11, 109, 113, 0.5);
+  }
+
+  /* Gaveta de Diagnostico Athena IA */
+  .ath-ai-diagnostic-box {
+    display: none;
+    background: linear-gradient(180deg, rgba(14, 21, 29, 0.95), rgba(17, 20, 24, 0.95));
+    border: 1px solid var(--ath-teal);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+    animation: fadeIn .25s ease-out;
+  }
+  .ath-ai-diagnostic-box.active {
+    display: block;
+  }
+  .ath-ai-diagnostic-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.85rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-bottom: 0.75rem;
+  }
+  .ath-ai-diag-identity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .ath-ai-avatar-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(11, 109, 113, 0.2);
+    border: 1.5px solid var(--ath-teal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ath-ai-avatar-badge img {
+    width: 24px;
+    height: 24px;
+  }
+  .ath-ai-title {
+    font-weight: 700;
+    font-size: 0.98rem;
+    color: #fff;
+    margin: 0;
+  }
+  .ath-ai-subtitle {
+    font-size: 0.75rem;
+    color: var(--ath-muted);
+  }
+  .ath-ai-close {
+    background: transparent;
+    border: none;
+    color: var(--ath-muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+  }
+  .ath-ai-close:hover {
+    color: #fff;
+  }
+  .ath-ai-diagnostic-content {
+    font-size: 0.89rem;
+    line-height: 1.6;
+    color: #cbd5e1;
+  }
+  .ath-ai-diagnostic-content p {
+    margin: 0 0 0.75rem 0;
+  }
+  .ath-ai-diagnostic-content strong {
+    color: #fff;
+  }
+  .ath-ai-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ath-muted);
+    font-size: 0.86rem;
+    font-style: italic;
+  }
+
+  /* Grid de Tarjetas KPI */
+  .ath-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .ath-kpi-card {
+    background: var(--ath-card);
+    border: 1px solid var(--ath-border);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform .15s, border-color .15s;
+  }
+  .ath-kpi-card:hover {
+    border-color: var(--ath-accent);
+    transform: translateY(-2px);
+  }
+  .ath-kpi-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  .ath-kpi-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ath-muted);
+  }
+  .ath-kpi-icon {
+    font-size: 1.2rem;
+    color: var(--ath-accent);
+  }
+  .ath-kpi-val {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 0.35rem;
+    font-family: 'Hanken Grotesk', sans-serif;
+  }
+  .ath-kpi-sub {
+    font-size: 0.76rem;
+    color: var(--ath-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .ath-kpi-pill {
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+  .ath-kpi-pill--red { background: rgba(239,68,68,0.2); color: #fca5a5; }
+  .ath-kpi-pill--yellow { background: rgba(245,158,11,0.2); color: #fcd34d; }
+  .ath-kpi-pill--green { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+  .ath-kpi-pill--blue { background: rgba(59,130,246,0.2); color: #93c5fd; }
+
+  /* Grid de Graficos */
+  .ath-charts-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  @media (max-width: 768px) {
+    .ath-charts-row {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .ath-chart-card {
+    background: var(--ath-card);
+    border: 1px solid var(--ath-border);
+    border-radius: 12px;
+    padding: 1.25rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+  }
+  .ath-chart-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 10px;
+  }
+  .ath-chart-title {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+  }
+  .ath-chart-desc {
+    font-size: 0.74rem;
+    color: var(--ath-muted);
+    margin-top: 2px;
+  }
+  .ath-btn-ask-ai {
+    background: transparent;
+    border: 1px solid var(--ath-teal);
+    color: #7dd3fc;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .ath-btn-ask-ai:hover {
+    background: var(--ath-teal);
+    color: #fff;
+  }
+  .ath-canvas-container {
+    position: relative;
+    width: 100%;
+    height: 260px;
+  }
+
+  /* Tabla de Estudiantes en Riesgo */
+  .ath-table-card {
+    background: var(--ath-card);
+    border: 1px solid var(--ath-border);
+    border-radius: 12px;
+    padding: 1.25rem 1.4rem;
+    margin-bottom: 2rem;
+  }
+  .ath-crit-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin-top: 0.75rem;
+  }
+  .ath-crit-table th {
+    text-align: left;
+    padding: 8px 12px;
+    color: var(--ath-muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--ath-border);
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+  }
+  .ath-crit-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--ath-border-subtle);
+    color: #cbd5e1;
+  }
+  .ath-crit-table tr:hover td {
+    background: rgba(255,255,255,0.02);
+  }
+  .ath-badge-danger {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.74rem;
+    display: inline-block;
+  }
+  .ath-link-boletin {
+    color: #7dd3fc;
+    text-decoration: underline;
+    font-weight: 600;
+  }
+  .ath-link-boletin:hover {
+    color: #bae6fd;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .ath-spin {
+    animation: spin 1.2s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin {
+    100% { transform: rotate(360deg); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ath-bi-wrap">
+
+  <!-- Header Superior -->
+  <div class="ath-bi-header">
+    <div class="ath-bi-title-box">
+      <h1>
+        <span class="material-symbols-outlined" style="font-size: 2rem; color: #4a6e86;">analytics</span>
+        Business Intelligence & Analítica Escolar
+      </h1>
+      <p>
+        Monitoreo en tiempo real del modelo SERC (545 estudiantes en 16 cursos), repositorio de 1.443 guías y estado de sincronización continua.
+      </p>
+    </div>
+
+    <div class="ath-bi-controls">
+      <div class="ath-periodo-tabs">
+        <a href="?periodo=1" class="ath-periodo-btn {% if periodo_seleccionado == 1 %}active{% endif %}">Período I</a>
+        <a href="?periodo=2" class="ath-periodo-btn {% if periodo_seleccionado == 2 %}active{% endif %}">Período II</a>
+        <a href="?periodo=3" class="ath-periodo-btn {% if periodo_seleccionado == 3 %}active{% endif %}">Período III</a>
+        <a href="?periodo=4" class="ath-periodo-btn {% if periodo_seleccionado == 4 %}active{% endif %}">Período IV</a>
+      </div>
+
+      <a href="?periodo={{ periodo_seleccionado }}&forzar=1" class="ath-btn-refresh" title="Forzar recálculo inmediato desde base de datos">
+        <span class="material-symbols-outlined" style="font-size: 1.1rem;">sync</span> Refrescar
+      </a>
+
+      <button type="button" class="ath-btn-global-ai" onclick="solicitarDiagnosticoAthena('general')">
+        <span class="material-symbols-outlined" style="font-size: 1.15rem;">auto_awesome</span> Informe Ejecutivo Athena IA
+      </button>
+    </div>
+  </div>
+
+  <!-- Gaveta de Diagnóstico de Athena IA -->
+  <div id="ath-ai-diagnostic-box" class="ath-ai-diagnostic-box">
+    <div class="ath-ai-diagnostic-head">
+      <div class="ath-ai-diag-identity">
+        <div class="ath-ai-avatar-badge">
+          <img src="{% static 'logos/athena_personaje_transparente.svg' %}" alt="Athena">
+        </div>
+        <div>
+          <h2 id="ath-ai-diag-title" class="ath-ai-title">Diagnóstico Directivo Athena IA</h2>
+          <span class="ath-ai-subtitle">Análisis cuantitativo institucional · Período {{ periodo_seleccionado }}</span>
+        </div>
+      </div>
+      <button type="button" class="ath-ai-close" onclick="cerrarDiagnosticoAthena()" aria-label="Cerrar">&times;</button>
+    </div>
+    <div id="ath-ai-diagnostic-body" class="ath-ai-diagnostic-content"></div>
+  </div>
+
+  <!-- Grid de Tarjetas KPI -->
+  <div class="ath-kpi-grid">
+    <div class="ath-kpi-card">
+      <div class="ath-kpi-top">
+        <span class="ath-kpi-label">Matrícula Evaluada</span>
+        <span class="material-symbols-outlined ath-kpi-icon">school</span>
+      </div>
+      <div class="ath-kpi-val">{{ metricas.total_estudiantes }}</div>
+      <div class="ath-kpi-sub">
+        <span class="ath-kpi-pill ath-kpi-pill--blue">16 cursos</span>
+        <span>Grados 601 a 1102</span>
+      </div>
+    </div>
+
+    <div class="ath-kpi-card">
+      <div class="ath-kpi-top">
+        <span class="ath-kpi-label">Aprobación General</span>
+        <span class="material-symbols-outlined ath-kpi-icon" style="color: #10b981;">verified</span>
+      </div>
+      <div class="ath-kpi-val">{{ metricas.riesgo.satisfactorio_pct }}%</div>
+      <div class="ath-kpi-sub">
+        <span class="ath-kpi-pill ath-kpi-pill--green">{{ metricas.riesgo.satisfactorio }} alumnos</span>
+        <span>Sin asignaturas en bajo</span>
+      </div>
+    </div>
+
+    <div class="ath-kpi-card">
+      <div class="ath-kpi-top">
+        <span class="ath-kpi-label">Riesgo Crítico (3+ BJ)</span>
+        <span class="material-symbols-outlined ath-kpi-icon" style="color: #ef4444;">warning</span>
+      </div>
+      <div class="ath-kpi-val" style="color: #f87171;">{{ metricas.riesgo.critico }}</div>
+      <div class="ath-kpi-sub">
+        <span class="ath-kpi-pill ath-kpi-pill--red">{{ metricas.riesgo.critico_pct }}% del total</span>
+        <span>Prioridad Comisión SERC</span>
+      </div>
+    </div>
+
+    <div class="ath-kpi-card">
+      <div class="ath-kpi-top">
+        <span class="ath-kpi-label">Riesgo Moderado (1-2 BJ)</span>
+        <span class="material-symbols-outlined ath-kpi-icon" style="color: #f59e0b;">notifications_active</span>
+      </div>
+      <div class="ath-kpi-val" style="color: #fbbf24;">{{ metricas.riesgo.moderado }}</div>
+      <div class="ath-kpi-sub">
+        <span class="ath-kpi-pill ath-kpi-pill--yellow">{{ metricas.riesgo.moderado_pct }}% del total</span>
+        <span>En Plan de Mejoramiento</span>
+      </div>
+    </div>
+
+    <div class="ath-kpi-card">
+      <div class="ath-kpi-top">
+        <span class="ath-kpi-label">Guías en Cloudflare R2</span>
+        <span class="material-symbols-outlined ath-kpi-icon" style="color: #c5a880;">cloud_done</span>
+      </div>
+      <div class="ath-kpi-val">{{ metricas.plataforma.total_docs }}</div>
+      <div class="ath-kpi-sub">
+        <span class="ath-kpi-pill ath-kpi-pill--blue">{{ metricas.plataforma.docs_2026 }} guías 2026</span>
+        <span>CDN público activo</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fila 1 de Gráficos: Rendimiento SERC y Materias Críticas -->
+  <div class="ath-charts-row">
+    <div class="ath-chart-card">
+      <div class="ath-chart-head">
+        <div>
+          <h3 class="ath-chart-title">Distribución Global de Desempeño SERC</h3>
+          <div class="ath-chart-desc">Proporción de valoraciones en el Período {{ periodo_seleccionado }} (S, A, BS, BJ)</div>
+        </div>
+        <button type="button" class="ath-btn-ask-ai" onclick="solicitarDiagnosticoAthena('general')">
+          <span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span> Explicar con Athena
+        </button>
+      </div>
+      <div class="ath-canvas-container">
+        <canvas id="chartDesempeno"></canvas>
+      </div>
+    </div>
+
+    <div class="ath-chart-card">
+      <div class="ath-chart-head">
+        <div>
+          <h3 class="ath-chart-title">Ranking de Asignaturas Críticas</h3>
+          <div class="ath-chart-desc">Materias con mayor índice de Desempeño Bajo (BJ) que requieren nivelación</div>
+        </div>
+        <button type="button" class="ath-btn-ask-ai" onclick="solicitarDiagnosticoAthena('materias')">
+          <span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span> Explicar con Athena
+        </button>
+      </div>
+      <div class="ath-canvas-container">
+        <canvas id="chartMaterias"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fila 2 de Gráficos: Semáforo por Curso y Convivencia -->
+  <div class="ath-charts-row">
+    <div class="ath-chart-card">
+      <div class="ath-chart-head">
+        <div>
+          <h3 class="ath-chart-title">Semáforo de Riesgo Académico por Curso</h3>
+          <div class="ath-chart-desc">Comparativa de estudiantes en Desempeño Satisfactorio, Moderado y Crítico</div>
+        </div>
+        <button type="button" class="ath-btn-ask-ai" onclick="solicitarDiagnosticoAthena('riesgo')">
+          <span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span> Explicar con Athena
+        </button>
+      </div>
+      <div class="ath-canvas-container">
+        <canvas id="chartRiesgoCursos"></canvas>
+      </div>
+    </div>
+
+    <div class="ath-chart-card">
+      <div class="ath-chart-head">
+        <div>
+          <h3 class="ath-chart-title">Ausentismo y Convivencia por Curso</h3>
+          <div class="ath-chart-desc">Consolidado de inasistencias y retardos registrados en la planilla</div>
+        </div>
+        <button type="button" class="ath-btn-ask-ai" onclick="solicitarDiagnosticoAthena('asistencia')">
+          <span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span> Explicar con Athena
+        </button>
+      </div>
+      <div class="ath-canvas-container">
+        <canvas id="chartAsistencia"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fila 3: Cobertura de Guías y Focalización de Riesgo Crítico -->
+  <div class="ath-charts-row">
+    <div class="ath-chart-card">
+      <div class="ath-chart-head">
+        <div>
+          <h3 class="ath-chart-title">Cobertura de Guías Pedagógicas 2026</h3>
+          <div class="ath-chart-desc">Distribución de las 581 guías oficiales indexadas por área del SERC</div>
+        </div>
+        <button type="button" class="ath-btn-ask-ai" onclick="solicitarDiagnosticoAthena('guias')">
+          <span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span> Explicar con Athena
+        </button>
+      </div>
+      <div class="ath-canvas-container">
+        <canvas id="chartGuiasAreas"></canvas>
+      </div>
+    </div>
+
+    <!-- Tabla Focalizada de Casos Críticos -->
+    <div class="ath-table-card">
+      <div class="ath-chart-head">
+        <div>
+          <h3 class="ath-chart-title">Focalización: Estudiantes en Riesgo Crítico</h3>
+          <div class="ath-chart-desc">Casos con 3 o más asignaturas reprobadas que requieren plan de choque</div>
+        </div>
+        <button type="button" class="ath-btn-ask-ai" onclick="solicitarDiagnosticoAthena('riesgo')">
+          <span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span> Análisis de Choque
+        </button>
+      </div>
+
+      <div style="overflow-x: auto; max-height: 250px;">
+        <table class="ath-crit-table">
+          <thead>
+            <tr>
+              <th>Documento</th>
+              <th>Estudiante</th>
+              <th>Curso</th>
+              <th>Materias Reprobadas</th>
+              <th>Boletín</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in metricas.riesgo.estudiantes_criticos %}
+            <tr>
+              <td><code>{{ c.documento }}</code></td>
+              <td><strong>{{ c.nombre }}</strong></td>
+              <td><span class="ath-kpi-pill ath-kpi-pill--blue">{{ c.curso }}</span></td>
+              <td>
+                <span class="ath-badge-danger">{{ c.cantidad_bajos }} asignaturas</span>
+                <span style="font-size: 0.72rem; color: #94a3b8; display: block; margin-top: 2px;">
+                  {{ c.materias_bajo|join:", " }}
+                </span>
+              </td>
+              <td>
+                <a class="ath-link-boletin" href="/boletin/{{ c.documento }}/" target="_blank">Ver Boletín</a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--ath-muted); padding: 2rem;">
+                No se registran estudiantes en riesgo crítico en este período.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Datos y Scripts de Chart.js -->
+{{ metricas|json_script:"metricas-data" }}
+
+<script>
+  const rawData = JSON.parse(document.getElementById('metricas-data').textContent);
+
+  // Paleta de colores para gráficos oscuros
+  Chart.defaults.color = '#94a3b8';
+  Chart.defaults.font.family = "'Inter', -apple-system, sans-serif";
+  Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.07)';
+
+  // 1. Gráfico de Desempeño SERC (Doughnut)
+  const ctxDes = document.getElementById('chartDesempeno').getContext('2d');
+  new Chart(ctxDes, {
+    type: 'doughnut',
+    data: {
+      labels: [
+        `Superior (${rawData.desempeno_pct.S}%)`,
+        `Alto (${rawData.desempeno_pct.A}%)`,
+        `Básico (${rawData.desempeno_pct.BS}%)`,
+        `Bajo (${rawData.desempeno_pct.BJ}%)`
+      ],
+      datasets: [{
+        data: [
+          rawData.desempeno.S,
+          rawData.desempeno.A,
+          rawData.desempeno.BS,
+          rawData.desempeno.BJ
+        ],
+        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'],
+        borderWidth: 2,
+        borderColor: '#191c20'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } }
+      },
+      cutout: '68%'
+    }
+  });
+
+  // 2. Gráfico de Asignaturas Críticas (Horizontal Bar)
+  const ctxMat = document.getElementById('chartMaterias').getContext('2d');
+  const labelsMat = rawData.ranking_materias.map(m => m.materia.length > 20 ? m.materia.substring(0, 18) + '...' : m.materia);
+  const dataMat = rawData.ranking_materias.map(m => m.total_bj);
+
+  new Chart(ctxMat, {
+    type: 'bar',
+    data: {
+      labels: labelsMat,
+      datasets: [{
+        label: 'Reprobaciones (BJ)',
+        data: dataMat,
+        backgroundColor: '#ef4444',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+
+  // 3. Gráfico de Riesgo Académico por Curso (Stacked Bar)
+  const ctxRiesgo = document.getElementById('chartRiesgoCursos').getContext('2d');
+  const labelsCursos = rawData.riesgo.por_curso.map(c => c.curso);
+  const dataSat = rawData.riesgo.por_curso.map(c => c.satisfactorio);
+  const dataMod = rawData.riesgo.por_curso.map(c => c.moderado);
+  const dataCrit = rawData.riesgo.por_curso.map(c => c.critico);
+
+  new Chart(ctxRiesgo, {
+    type: 'bar',
+    data: {
+      labels: labelsCursos,
+      datasets: [
+        { label: 'Satisfactorio', data: dataSat, backgroundColor: '#10b981', stack: 's1' },
+        { label: 'Moderado (1-2 BJ)', data: dataMod, backgroundColor: '#f59e0b', stack: 's1' },
+        { label: 'Crítico (3+ BJ)', data: dataCrit, backgroundColor: '#ef4444', stack: 's1' }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10 } }
+      },
+      scales: {
+        x: { stacked: true, grid: { display: false } },
+        y: { stacked: true, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
+      }
+    }
+  });
+
+  // 4. Gráfico de Ausentismo y Convivencia por Curso
+  const ctxAsist = document.getElementById('chartAsistencia').getContext('2d');
+  const dataFallas = rawData.asistencia.map(a => a.fallas);
+  const dataRetardos = rawData.asistencia.map(a => a.retardos);
+
+  new Chart(ctxAsist, {
+    type: 'bar',
+    data: {
+      labels: labelsCursos,
+      datasets: [
+        { label: 'Inasistencias', data: dataFallas, backgroundColor: '#3b82f6', borderRadius: 4 },
+        { label: 'Retardos', data: dataRetardos, backgroundColor: '#c5a880', borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10 } }
+      },
+      scales: {
+        x: { grid: { display: false } },
+        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' } }
+      }
+    }
+  });
+
+  // 5. Cobertura de Guías 2026 por Área
+  const ctxGuias = document.getElementById('chartGuiasAreas').getContext('2d');
+  const labelsAreas = rawData.plataforma.por_area.map(a => a.area.length > 18 ? a.area.substring(0, 16) + '...' : a.area);
+  const dataAreas = rawData.plataforma.por_area.map(a => a.total);
+
+  new Chart(ctxGuias, {
+    type: 'bar',
+    data: {
+      labels: labelsAreas,
+      datasets: [{
+        label: 'Guías Publicadas',
+        data: dataAreas,
+        backgroundColor: '#4a6e86',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: { grid: { display: false } },
+        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' } }
+      }
+    }
+  });
+
+  // Función para solicitar diagnóstico a Athena IA
+  async function solicitarDiagnosticoAthena(tipo) {
+    const box = document.getElementById('ath-ai-diagnostic-box');
+    const titleEl = document.getElementById('ath-ai-diag-title');
+    const bodyEl = document.getElementById('ath-ai-diagnostic-body');
+
+    const titulos = {
+      'general': 'Informe Ejecutivo General del Plantel · Athena IA',
+      'riesgo': 'Diagnóstico de Riesgo Académico y Pérdida · Athena IA',
+      'materias': 'Diagnóstico Curricular de Asignaturas Críticas · Athena IA',
+      'asistencia': 'Diagnóstico de Convivencia y Ausentismo · Athena IA',
+      'guias': 'Diagnóstico de Cobertura de Material Pedagógico · Athena IA'
+    };
+
+    titleEl.textContent = titulos[tipo] || 'Diagnóstico Directivo Athena IA';
+    bodyEl.innerHTML = '<div class="ath-ai-loading"><span class="material-symbols-outlined ath-spin">hourglass_empty</span> Analizando datos con Athena IA...</div>';
+    box.classList.add('active');
+
+    box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    try {
+      const res = await fetch('/admin/api/analitica/explicar/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken') || ''
+        },
+        body: JSON.stringify({ tipo: tipo, periodo: {{ periodo_seleccionado }} })
+      });
+      const data = await res.json();
+      if (data && data.diagnostico) {
+        bodyEl.innerHTML = data.diagnostico;
+      } else {
+        bodyEl.innerHTML = '<p>No se pudo generar el diagnóstico en este momento. Intenta de nuevo más tarde.</p>';
+      }
+    } catch (err) {
+      bodyEl.innerHTML = '<p>Error al conectar con Athena IA. Por favor verifica la conexión.</p>';
+    }
+  }
+
+  function cerrarDiagnosticoAthena() {
+    const box = document.getElementById('ath-ai-diagnostic-box');
+    box.classList.remove('active');
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+</script>
+{% endblock %}

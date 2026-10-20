@@ -660,6 +660,12 @@ def _fallback_admin_respuesta(q: str) -> str:
             "2. Analizaré los nombres de archivo y deduciré de inmediato el año, nivel, grado, período y área.<br>"
             "3. Las subiré a Cloudflare R2 y quedarán publicadas en la web oficial en segundos."
         )
+    elif any(w in q for w in ["analitica", "analítica", "grafica", "gráfica", "grafico", "gráfico", "estadistica", "estadística", "bi", "rendimiento", "riesgo", "reprobacion", "reprobación", "perdida", "pérdida", "ausentismo"]):
+        return (
+            "Para consultar estadísticas consolidadas y Business Intelligence escolar:<br>"
+            "Ingresa al nuevo <a class='athena-msg-link' href='/admin/analitica/'>Tablero de Analítica y BI Escolar</a>.<br>"
+            "Incluye el semáforo de riesgo académico (545 estudiantes en 16 cursos), asignaturas críticas, ausentismo y diagnósticos ejecutivos generados por mí para cada gráfico."
+        )
     elif any(w in q for w in ["masiv", "lote", "50", "todas las guias", "muchas guias", "subir muchas", "varias guias"]):
         return (
             "Para subir decenas de guías de golpe sin diligenciarlas una por una:<br>"
@@ -863,6 +869,7 @@ def athena_chat_api(request):
             "Cuando el usuario adjunta guías aquí, tú las procesas, extraes automáticamente año, nivel, grado, período y área a partir del nombre, y las publicas de inmediato en la plataforma y en Cloudflare R2 sin que deba rellenar ningún formulario. "
             "NUNCA digas que no puedes recibir archivos o que no tienes capacidad de subirlos por el chat. Si te preguntan cómo subirte guías por aquí, explica cómo usar el clip o arrastrar los PDF directamente a esta conversación.\n\n"
             "Módulos y Enlaces Directos del Panel de Administración:\n"
+            "- Business Intelligence y Analítica Escolar: /admin/analitica/. Tablero directivo con gráficos de rendimiento SERC (545 estudiantes evaluados en 16 cursos), semáforo de riesgo académico (alumnos en riesgo crítico con 3+ materias reprobadas y moderado), ranking de asignaturas críticas, ausentismo por grado y cobertura de las 1.443 guías en Cloudflare R2. Tienes plena capacidad de diagnosticar y explicar cada gráfica con datos consolidados en mano.\n"
             "- Carga Directa por Chat: El usuario puede adjuntar archivos PDF directamente a esta conversación mediante el botón de clip o arrastrándolos sobre la ventana de chat. Tú procesas y publicas las guías automáticamente en Cloudflare R2 y en la web oficial, deduciendo año, nivel, grado, período y área del nombre del archivo.\n"
             "- Carga Masiva Inteligente de Guías: /admin/core/documento/carga-masiva/. Permite arrastrar decenas de archivos PDF de guías a la vez (10, 50 o más). El sistema analiza el nombre de cada archivo y deduce automáticamente el año, nivel, grado, período y área del SERC sin digitación manual.\n"
             "- Guías Pedagógicas y Documentos: /admin/core/documento/ (Subir individual: /admin/core/documento/add/). Circulares oficiales, cronogramas, formatos de secretaría y manual escolar.\n"

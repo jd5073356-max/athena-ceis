@@ -11,6 +11,71 @@ class AthenaAdminSite(admin.AdminSite):
     site_title = "Athena"
     index_title = "Gestión del sitio del colegio"
 
+    def get_urls(self):
+        from django.urls import path
+        urls = super().get_urls()
+        custom_urls = [
+            path("analitica/", self.admin_view(self.analitica_view), name="analitica"),
+            path("api/analitica/explicar/", self.admin_view(self.analitica_explicar_api), name="analitica_explicar_api"),
+            path("api/analitica/datos/", self.admin_view(self.analitica_datos_api), name="analitica_datos_api"),
+        ]
+        return custom_urls + urls
+
+    def analitica_view(self, request):
+        from django.template.response import TemplateResponse
+        from core.analitica_service import obtener_metricas_analitica
+
+        try:
+            periodo = int(request.GET.get("periodo", 3))
+        except (ValueError, TypeError):
+            periodo = 3
+        if periodo not in (1, 2, 3, 4):
+            periodo = 3
+
+        forzar = request.GET.get("forzar") == "1"
+        metricas = obtener_metricas_analitica(periodo=periodo, forzar=forzar)
+
+        context = {
+            **self.each_context(request),
+            "title": "Business Intelligence & Analítica Escolar",
+            "subtitle": f"Período {periodo} · Diagnóstico Institucional SERC",
+            "metricas": metricas,
+            "periodo_seleccionado": periodo,
+        }
+        return TemplateResponse(request, "admin/analitica.html", context)
+
+    def analitica_explicar_api(self, request):
+        import json
+        from django.http import JsonResponse
+        from core.analitica_service import generar_diagnostico_ia, obtener_metricas_analitica
+
+        try:
+            data = json.loads(request.body.decode("utf-8")) if request.body else {}
+        except Exception:
+            data = {}
+
+        tipo = data.get("tipo", "general")
+        try:
+            periodo = int(data.get("periodo", 3))
+        except (ValueError, TypeError):
+            periodo = 3
+
+        diagnostico = generar_diagnostico_ia(tipo=tipo, periodo=periodo)
+        return JsonResponse({"diagnostico": diagnostico})
+
+    def analitica_datos_api(self, request):
+        from django.http import JsonResponse
+        from core.analitica_service import obtener_metricas_analitica
+
+        try:
+            periodo = int(request.GET.get("periodo", 3))
+        except (ValueError, TypeError):
+            periodo = 3
+
+        forzar = request.GET.get("forzar") == "1"
+        metricas = obtener_metricas_analitica(periodo=periodo, forzar=forzar)
+        return JsonResponse(metricas)
+
     # =======================================================================
     #  Inicio del panel: dashboard "Vista General" (diseño Stitch).
     #  Todos los números son REALES (de la base), no maquetas.
@@ -84,6 +149,8 @@ class AthenaAdminSite(admin.AdminSite):
 
         # --- Acciones rápidas (enlaces reales a los formularios) ---
         acciones = [
+            {"label": "Analítica y BI Escolar", "icon": "analytics", "tone": "primary",
+             "url": reverse("admin:analitica")},
             {"label": "Carga Masiva de Guías", "icon": "auto_awesome", "tone": "primary",
              "url": reverse("admin:core_documento_carga_masiva")},
             {"label": "Nuevo usuario", "icon": "person_add", "tone": "secondary",
@@ -133,7 +200,33 @@ class AthenaAdminSite(admin.AdminSite):
                 all_models[key] = model
 
         # Configuración de las secciones requeridas
+        analitica_url = reverse("admin:analitica")
         sections_config = [
+            {
+                'name': 'BUSINESS INTELLIGENCE & ANALÍTICA',
+                'app_label': 'inteligencia_analitica',
+                'app_url': analitica_url,
+                'has_module_perms': True,
+                'custom_models': [
+                    {
+                        'name': 'Tablero de Analítica y Diagnóstico IA',
+                        'object_name': 'Analitica',
+                        'admin_url': analitica_url,
+                        'view_only': True,
+                    }
+                ],
+                'models_keys': []
+            },
+            {
+                'name': 'SEGUIMIENTO ACADÉMICO SERC',
+                'app_label': 'seguimiento_academico',
+                'app_url': '#',
+                'has_module_perms': True,
+                'models_keys': [
+                    'core.Estudiante',
+                    'core.InformeValorativo',
+                ]
+            },
             {
                 'name': 'ADMINISTRACIÓN CENTRAL',
                 'app_label': 'admin_central',
@@ -169,7 +262,9 @@ class AthenaAdminSite(admin.AdminSite):
         new_app_list = []
         for sec in sections_config:
             section_models = []
-            for m_key in sec['models_keys']:
+            if 'custom_models' in sec:
+                section_models.extend(sec['custom_models'])
+            for m_key in sec.get('models_keys', []):
                 if m_key in all_models:
                     section_models.append(all_models[m_key])
             

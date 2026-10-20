@@ -345,6 +345,7 @@
     <div class="ath-chat-msg ath-chat-msg-bot">
       Saludos. Soy <strong>Athena</strong>, asesora institucional y copiloto de gestión del panel administrativo. Puedo orientarte en la operación del CMS o <strong>puedes adjuntarme tus archivos PDF de guías aquí mismo y yo me encargo de clasificarlas y publicarlas automáticamente</strong> en la web y en Cloudflare R2.
       <div class="ath-admin-pills">
+        <button class="ath-admin-pill" onclick="athenaAdminPregunta('analitica')">¿Cómo consultar las gráficas y Business Intelligence?</button>
         <button class="ath-admin-pill" onclick="athenaAdminPregunta('subir_guias_ia')">¿Cómo pedirte que subas mis guías?</button>
         <button class="ath-admin-pill" onclick="athenaAdminPregunta('guias')">¿Cómo funciona la Carga Masiva?</button>
         <button class="ath-admin-pill" onclick="athenaAdminPregunta('circulares')">¿Cómo cargar circulares o cronogramas?</button>
@@ -566,6 +567,8 @@
       return 'Para publicar noticias:<br>Ingresa a <a class="athena-msg-link" href="/admin/core/noticia/add/">Crear Noticia</a>, añade título, descripción e imagen destacada.';
     } else if (q.includes('color') || q.includes('apariencia') || q.includes('diseño') || q.includes('letra') || q.includes('fuente') || q.includes('tipografia') || q.includes('tamaño') || q.includes('logo') || q.includes('escudo') || q.includes('aviso') || q.includes('anuncio') || q.includes('contacto') || q.includes('whatsapp') || q.includes('redes')) {
       return 'Para personalizar identidad de marca, colores, tipografía, avisos y canales de contacto:<br>Accede a <a class="athena-msg-link" href="/admin/core/configuracionapariencia/">Configuración Institucional y Apariencia</a>.';
+    } else if (q.includes('analitica') || q.includes('gráfica') || q.includes('grafica') || q.includes('estadistica') || q.includes('bi') || q.includes('rendimiento') || q.includes('riesgo')) {
+      return 'Para consultar el análisis institucional y Business Intelligence:<br>Ingresa al <a class="athena-msg-link" href="/admin/analitica/">Tablero de Analítica y BI Escolar</a> donde encontrarás el semáforo de riesgo académico (545 estudiantes en 16 cursos), materias críticas, ausentismo y diagnósticos generados por mí.';
     } else if (q.includes('usuario') || q.includes('docente') || q.includes('profesor') || q.includes('permiso')) {
       return 'Para administrar cuentas y roles:<br>Gestiona los perfiles desde <a class="athena-msg-link" href="/admin/auth/user/">Usuarios del Sistema</a>.';
     }
@@ -574,6 +577,7 @@
 
   function athenaAdminPregunta(tipo) {
     const mapa = {
+      'analitica': '¿Cómo consultar las gráficas y estadísticas de analítica escolar?',
       'subir_guias_ia': '¿Cómo puedo subirte guías PDF por este chat para que las publiques?',
       'guias': '¿Cómo funciona la Carga Masiva de guías?',
       'circulares': '¿Cómo cargar una circular oficial o cronograma?',
