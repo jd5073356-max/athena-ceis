@@ -1,0 +1,12 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+  <li>
+    <a href="{% url 'admin:core_informevalorativo_importar_excel' %}" class="addlink" style="background: linear-gradient(135deg, #107c41 0%, #0c592e 100%) !important; color: #ffffff !important; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-radius: 6px; padding: 7px 16px; box-shadow: 0 2px 8px rgba(16, 124, 65, 0.4); text-decoration: none; border: 1px solid rgba(255, 255, 255, 0.25); letter-spacing: 0.02em; transition: all 0.2s ease;">
+      <span class="material-symbols-outlined" style="font-size: 19px; vertical-align: middle;">upload_file</span>
+      Subir Sábana Excel (Carga Masiva)
+    </a>
+  </li>
+  {{ block.super }}
+{% endblock %}

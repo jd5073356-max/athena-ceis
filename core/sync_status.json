@@ -1,8 +1,28 @@
 {
-  "ultimo_sync": "2026-10-19T07:56:21.071930",
+  "ultimo_sync": "2026-11-15T20:04:23.602423",
   "archivo": "/home/juan/Descargas/sabana_notas_ceis_2026.xlsx",
   "hash": "34479b5fc53af0b37e73229785eb7b7c",
   "estudiantes_procesados": 539,
+  "cursos_procesados": [
+    "1001",
+    "1002",
+    "1101",
+    "1102",
+    "601",
+    "602",
+    "603",
+    "701",
+    "702",
+    "703",
+    "801",
+    "802",
+    "803",
+    "901",
+    "902",
+    "903"
+  ],
+  "anio_lectivo": 2026,
+  "periodo_actual": 3,
   "estado": "exitoso",
-  "mensaje": "539 estudiantes y boletines sincronizados correctamente con PostgreSQL / Supabase."
+  "mensaje": "539 estudiantes y boletines sincronizados correctamente con PostgreSQL / Supabase (16 cursos)."
 }

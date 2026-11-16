@@ -65,12 +65,13 @@ def obtener_ruta_excel_activa():
 
 def leer_estado_sync():
     """Lee el último estado de sincronización guardado en disco."""
-    if os.path.exists(STATUS_FILE):
-        try:
-            with open(STATUS_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            pass
+    for ruta in [STATUS_FILE, "/tmp/sync_status.json"]:
+        if os.path.exists(ruta):
+            try:
+                with open(ruta, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
     return {
         "ultimo_sync": None,
         "archivo": None,
@@ -83,11 +84,13 @@ def leer_estado_sync():
 
 def guardar_estado_sync(data):
     """Persiste el estado de sincronización en disco."""
-    try:
-        with open(STATUS_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        print(f"Error guardando estado de sync: {e}")
+    for ruta in [STATUS_FILE, "/tmp/sync_status.json"]:
+        try:
+            with open(ruta, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            break
+        except Exception:
+            continue
 
 
 def generar_detalles_etapa(desempeno, seed_val):
@@ -135,7 +138,22 @@ def variante_desempeno(des_actual, rnd):
         return rnd.choice(["BÁSICO", "BAJO", "BAJO"])
 
 
-def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False):
+def obtener_curso_desde_sheetname(sheetname):
+    """Extrae y normaliza el identificador del curso desde el nombre de la hoja."""
+    import re
+    s = str(sheetname).strip()
+    if s in GRADOS:
+        return s
+    m = re.search(r'\b(60[1-3]|70[1-3]|80[1-3]|90[1-3]|100[1-2]|110[1-2])\b', s)
+    if m:
+        return m.group(1)
+    m2 = re.search(r'(60[1-3]|70[1-3]|80[1-3]|90[1-3]|100[1-2]|110[1-2])', s)
+    if m2:
+        return m2.group(1)
+    return None
+
+
+def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False, anio_lectivo=2026, periodo_actual=3):
     """Ejecuta la sincronización de la sábana de notas Excel con PostgreSQL / Supabase."""
     from core.models import Estudiante, InformeValorativo
 
@@ -166,10 +184,13 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False):
     wb = openpyxl.load_workbook(ruta_archivo, data_only=True)
     estudiantes_objs = []
     datos_por_doc = {}
+    cursos_procesados = []
 
     for sheetname in wb.sheetnames:
-        if sheetname not in GRADOS:
+        curso_clave = obtener_curso_desde_sheetname(sheetname)
+        if not curso_clave or curso_clave not in GRADOS:
             continue
+        cursos_procesados.append(curso_clave)
         ws = wb[sheetname]
         headers = [c for c in next(ws.iter_rows(min_row=1, max_row=1, values_only=True))]
 
@@ -182,7 +203,7 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False):
                 break
             materias_cols[h] = idx
 
-        es_media = sheetname in ["1001", "1002", "1101", "1102"]
+        es_media = curso_clave in ["1001", "1002", "1101", "1102"]
 
         for row in ws.iter_rows(min_row=2, values_only=True):
             if not row or row[col_doc] is None or row[col_nom] is None:
@@ -219,9 +240,9 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False):
                     tipo_documento="Tarjeta de Identidad",
                     nombres=nombres,
                     apellidos=apellidos,
-                    grado=GRADOS[sheetname],
-                    curso=sheetname,
-                    director_grupo=DIRECTORES.get(sheetname, "ROJAS GUTIERREZ LILIANA ASTRID"),
+                    grado=GRADOS[curso_clave],
+                    curso=curso_clave,
+                    director_grupo=DIRECTORES.get(curso_clave, "ROJAS GUTIERREZ LILIANA ASTRID"),
                     acudiente=f"Familia {apellidos}",
                     telefono_acudiente="310" + "".join([str(rnd.randint(0, 9)) for _ in range(7)]),
                     activo=True,
@@ -507,11 +528,16 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False):
         est = mapa_est.get(doc)
         if not est:
             continue
+        p_key = f"p{periodo_actual}"
+        tec_sena_val = "A"
+        if isinstance(d_acad, dict) and "tecnico_sena" in d_acad:
+            tec_sena_val = d_acad["tecnico_sena"].get(p_key, d_acad["tecnico_sena"].get("p3", "A"))
+
         informes_objs.append(
             InformeValorativo(
                 estudiante=est,
-                anio_lectivo=2026,
-                periodo_actual=3,
+                anio_lectivo=anio_lectivo,
+                periodo_actual=periodo_actual,
                 datos_academicos=d_acad,
                 datos_convivencia=d_conv,
                 observaciones_academicas=(
@@ -522,7 +548,7 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False):
                     "La institución agradece su colaboración en las campañas de mejora.\n"
                     "Felicitaciones por su aporte a la convivencia institucional."
                 ),
-                tecnico_sena=d_acad["tecnico_sena"]["p3"],
+                tecnico_sena=tec_sena_val,
             )
         )
 
@@ -534,14 +560,18 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False):
         update_fields=["periodo_actual", "datos_academicos", "datos_convivencia", "observaciones_academicas", "observaciones_convivenciales", "tecnico_sena"],
     )
 
+    cursos_unicos = sorted(list(set(cursos_procesados)))
     ahora_iso = datetime.datetime.now().isoformat()
     nuevo_estado = {
         "ultimo_sync": ahora_iso,
         "archivo": ruta_archivo,
         "hash": hash_actual,
         "estudiantes_procesados": len(estudiantes_objs),
+        "cursos_procesados": cursos_unicos,
+        "anio_lectivo": anio_lectivo,
+        "periodo_actual": periodo_actual,
         "estado": "exitoso",
-        "mensaje": f"{len(estudiantes_objs)} estudiantes y boletines sincronizados correctamente con PostgreSQL / Supabase.",
+        "mensaje": f"{len(estudiantes_objs)} estudiantes y boletines sincronizados correctamente con PostgreSQL / Supabase ({len(cursos_unicos)} cursos).",
     }
     guardar_estado_sync(nuevo_estado)
 
@@ -550,6 +580,9 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False):
         "sin_cambios": False,
         "archivo": ruta_archivo,
         "estudiantes_procesados": len(estudiantes_objs),
+        "cursos_procesados": cursos_unicos,
+        "anio_lectivo": anio_lectivo,
+        "periodo_actual": periodo_actual,
         "ultimo_sync": ahora_iso,
         "hash": hash_actual,
         "mensaje": nuevo_estado["mensaje"],

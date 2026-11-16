@@ -445,6 +445,18 @@ class EstudianteAdmin(admin.ModelAdmin):
     search_fields = ("documento", "apellidos", "nombres", "acudiente")
     ordering = ("curso", "apellidos", "nombres")
 
+    def get_urls(self):
+        urls = super().get_urls()
+        from django.shortcuts import redirect
+        custom_urls = [
+            path(
+                "importar-excel/",
+                self.admin_site.admin_view(lambda req: redirect("admin:core_informevalorativo_importar_excel")),
+                name="core_estudiante_importar_excel",
+            ),
+        ]
+        return custom_urls + urls
+
 
 @admin.register(InformeValorativo)
 class InformeValorativoAdmin(admin.ModelAdmin):
@@ -452,6 +464,90 @@ class InformeValorativoAdmin(admin.ModelAdmin):
     list_filter = ("anio_lectivo", "periodo_actual", "estudiante__curso")
     search_fields = ("estudiante__documento", "estudiante__apellidos", "estudiante__nombres", "estudiante__curso")
     autocomplete_fields = ("estudiante",)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "importar-excel/",
+                self.admin_site.admin_view(self.importar_excel_view),
+                name="core_informevalorativo_importar_excel",
+            ),
+        ]
+        return custom_urls + urls
+
+    def importar_excel_view(self, request):
+        import os
+        import tempfile
+        from django.shortcuts import render
+        from django.contrib import messages
+        from django.http import JsonResponse
+        from django.utils import timezone
+        from core.sync_service import ejecutar_sincronizacion_excel, leer_estado_sync
+
+        resultado = None
+        error_msg = None
+
+        if request.method == "POST":
+            anio_lectivo = int(request.POST.get("anio_lectivo", 2026))
+            periodo_actual = int(request.POST.get("periodo_actual", 3))
+            usar_institucional = request.POST.get("usar_institucional") == "1"
+            archivo = request.FILES.get("archivo_excel")
+
+            if not archivo and not usar_institucional:
+                error_msg = "Debe seleccionar un archivo Excel (.xlsx) o elegir la sincronización institucional."
+            else:
+                try:
+                    if archivo:
+                        nombre_seguro = f"sabana_upload_{request.user.id}_{int(timezone.now().timestamp())}.xlsx"
+                        ruta_tmp = os.path.join(tempfile.gettempdir(), nombre_seguro)
+                        with open(ruta_tmp, "wb") as f_out:
+                            for chunk in archivo.chunks():
+                                f_out.write(chunk)
+                        res = ejecutar_sincronizacion_excel(
+                            ruta_archivo=ruta_tmp,
+                            forzar=True,
+                            anio_lectivo=anio_lectivo,
+                            periodo_actual=periodo_actual,
+                        )
+                    else:
+                        res = ejecutar_sincronizacion_excel(
+                            forzar=True,
+                            anio_lectivo=anio_lectivo,
+                            periodo_actual=periodo_actual,
+                        )
+
+                    if res.get("exito"):
+                        resultado = res
+                        messages.success(
+                            request,
+                            f"¡Sincronización completada! Se cargaron/actualizaron {res['estudiantes_procesados']} estudiantes y sus informes valorativos SERC ({len(res.get('cursos_procesados', []))} cursos)."
+                        )
+                    else:
+                        error_msg = res.get("error", "Error procesando el archivo.")
+                        messages.error(request, error_msg)
+                except Exception as e:
+                    error_msg = f"Ocurrió un error al procesar el archivo: {str(e)}"
+                    messages.error(request, error_msg)
+
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                if error_msg:
+                    return JsonResponse({"status": "error", "message": error_msg}, status=400)
+                return JsonResponse({"status": "ok", "resultado": resultado})
+
+        sync_info = leer_estado_sync()
+        context = {
+            **self.admin_site.each_context(request),
+            "title": "Carga Masiva de Sábana Excel (SERC)",
+            "subtitle": "Importación general de estudiantes y calificaciones",
+            "total_estudiantes": Estudiante.objects.count(),
+            "total_informes": InformeValorativo.objects.count(),
+            "sync_info": sync_info,
+            "resultado": resultado,
+            "error_msg": error_msg,
+            "opts": self.model._meta,
+        }
+        return render(request, "admin/core/informevalorativo/importar_excel.html", context)
 
 
 @admin.register(DatasetAnalisis)
