@@ -693,6 +693,34 @@ class InformeValorativo(models.Model):
         return f"Informe {self.anio_lectivo} - {self.estudiante.nombre_completo} ({self.estudiante.curso})"
 
 
+class ConfiguracionSincronizacion(models.Model):
+    """Configuración de conexión en tiempo real con hojas de cálculo en la nube (API Key / Webhook)."""
+    PROVEEDORES = [
+        ("google_sheets", "Google Sheets API / Google Drive"),
+        ("excel_online", "Microsoft Excel Online (Graph API / OneDrive)"),
+        ("url_xlsx", "URL Directa / Webhook (.xlsx)"),
+    ]
+
+    proveedor = models.CharField("Proveedor en la nube", max_length=30, choices=PROVEEDORES, default="google_sheets")
+    url_hoja = models.CharField("URL o ID de la hoja maestra", max_length=500, blank=True,
+                                help_text="Enlace completo o ID de Google Sheets / Excel Online.")
+    api_key = models.CharField("API Key / Token de acceso", max_length=500, blank=True,
+                               help_text="Clave API o Bearer Token para lectura automática y validación de webhook.")
+    frecuencia_minutos = models.PositiveIntegerField("Frecuencia de refresco (min)", default=15)
+    activo = models.BooleanField("Sincronización automática activa", default=False)
+    ultimo_sync_nube = models.DateTimeField("Última sincronización en la nube", null=True, blank=True)
+    ultimo_estado_nube = models.CharField("Último estado en la nube", max_length=255, blank=True, default="Pendiente de configurar")
+    actualizado_en = models.DateTimeField("Actualizado en", auto_now=True)
+
+    class Meta:
+        db_table = "CONFIG_SINCRONIZACION"
+        verbose_name = "Configuración de Sincronización en la Nube"
+        verbose_name_plural = "Configuración de Sincronización en la Nube"
+
+    def __str__(self):
+        return f"Sync Nube ({self.get_proveedor_display()}) - {'Activo' if self.activo else 'Inactivo'}"
+
+
 class DatasetAnalisis(models.Model):
     """Conjunto de datos estructurados externo para análisis (ICFES, Evaluar para Avanzar, caracterización)."""
     CATEGORIAS = [

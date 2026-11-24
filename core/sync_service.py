@@ -1412,3 +1412,74 @@ def _ejecutar_sabana_multicurso(wb, ruta_archivo, hash_actual, anio_lectivo=2026
         "mensaje": nuevo_estado["mensaje"],
     }
 
+
+def sincronizar_desde_nube(config=None, forzar=True, anio_lectivo=2026, periodo_actual=None):
+    """Descarga la hoja de cálculo maestra desde Google Sheets / Excel Online / URL y la sincroniza en PostgreSQL."""
+    import re
+    import tempfile
+    import urllib.request
+    from django.utils import timezone
+    from core.models import ConfiguracionSincronizacion
+
+    if config is None:
+        config = ConfiguracionSincronizacion.objects.first()
+
+    if not config or not (config.url_hoja or "").strip():
+        return {
+            "exito": False,
+            "error": "No hay una URL o ID de hoja de cálculo configurado en la nube.",
+        }
+
+    url_raw = config.url_hoja.strip()
+    api_key = (config.api_key or "").strip()
+    download_url = url_raw
+
+    if config.proveedor == "google_sheets" or "docs.google.com/spreadsheets" in url_raw:
+        m = re.search(r'/spreadsheets/d/([a-zA-Z0-9-_]+)', url_raw)
+        sheet_id = m.group(1) if m else (url_raw if "/" not in url_raw else None)
+        if not sheet_id:
+            return {"exito": False, "error": "No se pudo extraer el ID de Google Sheets desde la URL ingresada."}
+        download_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=xlsx"
+
+    req = urllib.request.Request(download_url, headers={"User-Agent": "Athena-CEIS-Sync/1.0"})
+    if api_key and not api_key.startswith("AIza"):
+        req.add_header("Authorization", f"Bearer {api_key}")
+
+    ruta_tmp = os.path.join(tempfile.gettempdir(), f"athena_cloud_sync_{int(timezone.now().timestamp())}.xlsx")
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = resp.read()
+        if not data or len(data) < 500 or data[:2] != b"PK":
+            return {
+                "exito": False,
+                "error": "La URL no devolvió un archivo Excel (.xlsx) válido. Verifique permisos de lectura o el Token/API Key.",
+            }
+        with open(ruta_tmp, "wb") as f_out:
+            f_out.write(data)
+
+        res = ejecutar_sincronizacion_excel(
+            ruta_archivo=ruta_tmp,
+            forzar=forzar,
+            anio_lectivo=anio_lectivo,
+            periodo_actual=periodo_actual,
+        )
+        config.ultimo_sync_nube = timezone.now()
+        if res.get("exito"):
+            config.ultimo_estado_nube = res.get("mensaje", "Sincronizado correctamente")[:255]
+        else:
+            config.ultimo_estado_nube = f"Error: {res.get('error', 'desconocido')}"[:255]
+        config.save(update_fields=["ultimo_sync_nube", "ultimo_estado_nube", "actualizado_en"])
+        return res
+    except Exception as e:
+        msg = f"Error conectando con la nube: {str(e)}"
+        config.ultimo_estado_nube = msg[:255]
+        config.save(update_fields=["ultimo_estado_nube", "actualizado_en"])
+        return {"exito": False, "error": msg}
+    finally:
+        if os.path.exists(ruta_tmp):
+            try:
+                os.remove(ruta_tmp)
+            except Exception:
+                pass
+
+

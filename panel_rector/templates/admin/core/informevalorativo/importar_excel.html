@@ -487,6 +487,116 @@
     </form>
   </div>
 
+  <!-- Conexión en Tiempo Real con la Nube (API Key / Google Sheets / Excel Online) -->
+  <div class="ath-excel-card" id="athCloudSyncCard">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;border-bottom:1px solid var(--border-color, #2a2e36);padding-bottom:14px;">
+      <div>
+        <h2 style="margin:0 0 4px 0;font-size:1.2rem;font-weight:700;color:var(--body-loud-color, #ffffff);display:flex;align-items:center;gap:8px;">
+          <span class="material-symbols-outlined" style="color:#38bdf8;">api</span>
+          Conexión en Tiempo Real con la Nube (API Key)
+        </h2>
+        <p style="margin:0;font-size:0.86rem;color:var(--body-quiet-color, #94a3b8);">
+          Ajusta la URL de Google Sheets / Excel Online y la API Key para refrescar automáticamente las notas desde la nube hacia PostgreSQL.
+        </p>
+      </div>
+      <div>
+        {% if sync_config.activo %}
+          <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(16,185,129,0.15);color:#10b981;border:1px solid #10b981;padding:4px 12px;border-radius:999px;font-size:0.78rem;font-weight:700;">
+            <span class="material-symbols-outlined" style="font-size:15px;">bolt</span>
+            NUBE ACTIVA ({{ sync_config.frecuencia_minutos }} min)
+          </span>
+        {% else %}
+          <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(148,163,184,0.12);color:#94a3b8;border:1px solid #475569;padding:4px 12px;border-radius:999px;font-size:0.78rem;font-weight:700;">
+            EN ESPERA DE CREDENCIALES
+          </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <form method="post" id="athCloudForm" onsubmit="document.getElementById('athLoadingOverlay').classList.add('active');">
+      {% csrf_token %}
+
+      <div class="ath-excel-grid">
+        <div class="ath-excel-field">
+          <label for="id_proveedor">Proveedor en la Nube</label>
+          <select name="proveedor" id="id_proveedor">
+            <option value="google_sheets" {% if sync_config.proveedor == "google_sheets" %}selected{% endif %}>Google Sheets API / Google Drive</option>
+            <option value="excel_online" {% if sync_config.proveedor == "excel_online" %}selected{% endif %}>Microsoft Excel Online (Graph API / OneDrive)</option>
+            <option value="url_xlsx" {% if sync_config.proveedor == "url_xlsx" %}selected{% endif %}>URL Directa / Webhook (.xlsx)</option>
+          </select>
+        </div>
+
+        <div class="ath-excel-field">
+          <label for="id_frecuencia">Frecuencia de Refresco</label>
+          <select name="frecuencia_minutos" id="id_frecuencia">
+            <option value="5" {% if sync_config.frecuencia_minutos == 5 %}selected{% endif %}>Cada 5 minutos (Tiempo Real)</option>
+            <option value="15" {% if sync_config.frecuencia_minutos == 15 %}selected{% endif %}>Cada 15 minutos</option>
+            <option value="30" {% if sync_config.frecuencia_minutos == 30 %}selected{% endif %}>Cada 30 minutos</option>
+            <option value="60" {% if sync_config.frecuencia_minutos == 60 %}selected{% endif %}>Cada 1 hora</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="ath-excel-grid">
+        <div class="ath-excel-field">
+          <label for="id_url_hoja">URL o ID de la Hoja Maestra</label>
+          <input type="text" name="url_hoja" id="id_url_hoja"
+                 value="{{ sync_config.url_hoja }}"
+                 placeholder="https://docs.google.com/spreadsheets/d/...">
+        </div>
+
+        <div class="ath-excel-field">
+          <label for="id_api_key">
+            API Key / Bearer Token
+            {% if has_api_key %}
+              <span style="color:#10b981;font-weight:600;text-transform:none;">(Guardada: {{ api_key_masked }})</span>
+            {% endif %}
+          </label>
+          <div style="display:flex;gap:8px;">
+            <input type="password" name="api_key" id="id_api_key"
+                   placeholder="{% if has_api_key %}Dejar vacío para conservar la clave actual o pegar nueva...{% else %}Pegar API Key o Token de acceso...{% endif %}"
+                   autocomplete="new-password"
+                   style="width:100%;padding:10px 14px;background:var(--darkened-bg,#121519);border:1px solid var(--border-color,#2a2e36);border-radius:8px;color:var(--body-fg,#e1e4ea);font-size:0.92rem;">
+            <button type="button" onclick="var i=document.getElementById('id_api_key'); i.type=(i.type==='password'?'text':'password');"
+                    style="padding:0 12px;background:var(--darkened-bg,#121519);border:1px solid var(--border-color,#2a2e36);border-radius:8px;color:var(--body-fg,#e1e4ea);cursor:pointer;"
+                    title="Mostrar / Ocultar">
+              <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;">visibility</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:18px;padding:12px 16px;background:var(--darkened-bg,#121519);border:1px solid var(--border-color,#2a2e36);border-radius:10px;">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin:0;font-weight:600;color:var(--body-fg,#e1e4ea);font-size:0.9rem;">
+          <input type="checkbox" name="activo" value="1" {% if sync_config.activo %}checked{% endif %} style="width:18px;height:18px;accent-color:#10b981;">
+          Activar sincronización automática por API Key / Webhook
+        </label>
+        <div style="font-size:0.8rem;color:var(--body-quiet-color,#94a3b8);">
+          Endpoint Webhook: <code>{{ webhook_url }}</code>
+        </div>
+      </div>
+
+      {% if sync_config.ultimo_estado_nube %}
+      <div style="font-size:0.84rem;color:var(--body-quiet-color,#94a3b8);margin-bottom:16px;">
+        <strong>Estado nube:</strong> {{ sync_config.ultimo_estado_nube }}
+        {% if sync_config.ultimo_sync_nube %} · <span>{{ sync_config.ultimo_sync_nube|date:"d/m/Y H:i" }}</span>{% endif %}
+      </div>
+      {% endif %}
+
+      <div class="ath-excel-actions">
+        <button type="submit" name="accion" value="guardar_api" class="ath-btn-secondary" style="border-color:#38bdf8;color:#38bdf8;">
+          <span class="material-symbols-outlined">save</span>
+          Guardar Configuración API
+        </button>
+
+        <button type="submit" name="accion" value="sincronizar_nube" class="ath-btn-primary" style="background:linear-gradient(135deg,#0284c7 0%,#0369a1 100%);box-shadow:0 4px 14px rgba(2,132,199,0.35);">
+          <span class="material-symbols-outlined">cloud_sync</span>
+          Probar y Sincronizar Ahora desde la Nube
+        </button>
+      </div>
+    </form>
+  </div>
+
   <div class="ath-guide-card">
     <h4>
       <span class="material-symbols-outlined" style="color:#38bdf8;font-size:20px;">info</span>

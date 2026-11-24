@@ -1015,14 +1015,35 @@ def athena_chat_api(request):
 
 @csrf_exempt
 def sincronizar_sabana_api(request):
-    """Endpoint API para consultar el estado o forzar la sincronización continua de la sábana Excel."""
-    from core.sync_service import ejecutar_sincronizacion_excel, leer_estado_sync
+    """Endpoint API para consultar el estado o disparar la sincronización continua (local o nube via API Key)."""
+    from core.models import ConfiguracionSincronizacion
+    from core.sync_service import ejecutar_sincronizacion_excel, leer_estado_sync, sincronizar_desde_nube
+
+    config = ConfiguracionSincronizacion.objects.first()
 
     if request.method == "POST":
+        if config and config.activo and config.url_hoja:
+            expected_key = (config.api_key or "").strip()
+            if expected_key:
+                auth_header = request.headers.get("Authorization", "")
+                provided = (
+                    request.headers.get("X-Sync-Api-Key")
+                    or (auth_header[7:].strip() if auth_header.startswith("Bearer ") else "")
+                    or request.GET.get("key", "").strip()
+                )
+                if provided != expected_key:
+                    return JsonResponse({"exito": False, "error": "API Key inválida o ausente."}, status=401)
+            return JsonResponse(sincronizar_desde_nube(config=config, forzar=False))
+
         resultado = ejecutar_sincronizacion_excel(forzar=True)
         return JsonResponse(resultado)
 
     estado = leer_estado_sync()
+    if config:
+        estado["nube_activa"] = config.activo
+        estado["nube_proveedor"] = config.proveedor
+        estado["nube_ultimo_sync"] = config.ultimo_sync_nube.isoformat() if config.ultimo_sync_nube else None
+        estado["nube_estado"] = config.ultimo_estado_nube
     return JsonResponse(estado)
 
 

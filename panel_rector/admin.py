@@ -483,66 +483,101 @@ class InformeValorativoAdmin(admin.ModelAdmin):
         from django.contrib import messages
         from django.http import JsonResponse
         from django.utils import timezone
-        from core.sync_service import ejecutar_sincronizacion_excel, leer_estado_sync
+        from core.models import ConfiguracionSincronizacion
+        from core.sync_service import ejecutar_sincronizacion_excel, leer_estado_sync, sincronizar_desde_nube
 
         resultado = None
         error_msg = None
 
+        sync_config, _ = ConfiguracionSincronizacion.objects.get_or_create(id=1)
+
         if request.method == "POST":
-            anio_lectivo = int(request.POST.get("anio_lectivo", 2026))
-            periodo_raw = str(request.POST.get("periodo_actual", "auto")).strip().lower()
-            periodo_actual = None if periodo_raw in ("", "auto", "0") else int(periodo_raw)
-            usar_institucional = request.POST.get("usar_institucional") == "1"
-            archivo = request.FILES.get("archivo_excel")
+            accion = request.POST.get("accion", "excel").strip()
 
-            if not archivo and not usar_institucional:
-                error_msg = "Debe seleccionar un archivo Excel (.xlsx) o elegir la sincronización institucional."
-            else:
-                ruta_tmp = None
+            if accion in ("guardar_api", "sincronizar_nube"):
+                sync_config.proveedor = request.POST.get("proveedor", sync_config.proveedor).strip()
+                sync_config.url_hoja = request.POST.get("url_hoja", "").strip()
+                nueva_key = request.POST.get("api_key", "").strip()
+                if nueva_key and not nueva_key.startswith("••••"):
+                    sync_config.api_key = nueva_key
+                elif request.POST.get("limpiar_api_key") == "1":
+                    sync_config.api_key = ""
                 try:
-                    if archivo:
-                        nombre_seguro = f"sabana_upload_{request.user.id}_{int(timezone.now().timestamp())}.xlsx"
-                        ruta_tmp = os.path.join(tempfile.gettempdir(), nombre_seguro)
-                        with open(ruta_tmp, "wb") as f_out:
-                            for chunk in archivo.chunks():
-                                f_out.write(chunk)
-                        res = ejecutar_sincronizacion_excel(
-                            ruta_archivo=ruta_tmp,
-                            forzar=True,
-                            anio_lectivo=anio_lectivo,
-                            periodo_actual=periodo_actual,
-                        )
-                    else:
-                        res = ejecutar_sincronizacion_excel(
-                            forzar=True,
-                            anio_lectivo=anio_lectivo,
-                            periodo_actual=periodo_actual,
-                        )
+                    sync_config.frecuencia_minutos = max(1, int(request.POST.get("frecuencia_minutos", 15)))
+                except Exception:
+                    sync_config.frecuencia_minutos = 15
+                sync_config.activo = request.POST.get("activo") == "1"
+                sync_config.save()
 
+                if accion == "guardar_api":
+                    messages.success(request, "Configuración de API Key y sincronización en la nube guardada correctamente.")
+                else:
+                    res = sincronizar_desde_nube(config=sync_config, forzar=True)
                     if res.get("exito"):
                         resultado = res
-                        pers = ", ".join(map(str, res.get("periodos_detectados", [res.get("periodo_actual", 3)])))
-                        messages.success(
-                            request,
-                            f"¡Sincronización completada! Se cargaron/actualizaron {res['estudiantes_procesados']} estudiantes y sus informes valorativos SERC (Periodo {pers} · {len(res.get('cursos_procesados', []))} cursos)."
-                        )
+                        messages.success(request, f"¡Sincronización desde la nube exitosa! {res.get('mensaje', '')}")
                     else:
-                        error_msg = res.get("error", "Error procesando el archivo.")
+                        error_msg = res.get("error", "No se pudo sincronizar desde la nube.")
                         messages.error(request, error_msg)
-                except Exception as e:
-                    error_msg = f"Ocurrió un error al procesar el archivo: {str(e)}"
-                    messages.error(request, error_msg)
-                finally:
-                    if ruta_tmp and os.path.exists(ruta_tmp):
-                        try:
-                            os.remove(ruta_tmp)
-                        except Exception:
-                            pass
+            else:
+                anio_lectivo = int(request.POST.get("anio_lectivo", 2026))
+                periodo_raw = str(request.POST.get("periodo_actual", "auto")).strip().lower()
+                periodo_actual = None if periodo_raw in ("", "auto", "0") else int(periodo_raw)
+                usar_institucional = request.POST.get("usar_institucional") == "1"
+                archivo = request.FILES.get("archivo_excel")
+
+                if not archivo and not usar_institucional:
+                    error_msg = "Debe seleccionar un archivo Excel (.xlsx) o elegir la sincronización institucional."
+                else:
+                    ruta_tmp = None
+                    try:
+                        if archivo:
+                            nombre_seguro = f"sabana_upload_{request.user.id}_{int(timezone.now().timestamp())}.xlsx"
+                            ruta_tmp = os.path.join(tempfile.gettempdir(), nombre_seguro)
+                            with open(ruta_tmp, "wb") as f_out:
+                                for chunk in archivo.chunks():
+                                    f_out.write(chunk)
+                            res = ejecutar_sincronizacion_excel(
+                                ruta_archivo=ruta_tmp,
+                                forzar=True,
+                                anio_lectivo=anio_lectivo,
+                                periodo_actual=periodo_actual,
+                            )
+                        else:
+                            res = ejecutar_sincronizacion_excel(
+                                forzar=True,
+                                anio_lectivo=anio_lectivo,
+                                periodo_actual=periodo_actual,
+                            )
+
+                        if res.get("exito"):
+                            resultado = res
+                            pers = ", ".join(map(str, res.get("periodos_detectados", [res.get("periodo_actual", 3)])))
+                            messages.success(
+                                request,
+                                f"¡Sincronización completada! Se cargaron/actualizaron {res['estudiantes_procesados']} estudiantes y sus informes valorativos SERC (Periodo {pers} · {len(res.get('cursos_procesados', []))} cursos)."
+                            )
+                        else:
+                            error_msg = res.get("error", "Error procesando el archivo.")
+                            messages.error(request, error_msg)
+                    except Exception as e:
+                        error_msg = f"Ocurrió un error al procesar el archivo: {str(e)}"
+                        messages.error(request, error_msg)
+                    finally:
+                        if ruta_tmp and os.path.exists(ruta_tmp):
+                            try:
+                                os.remove(ruta_tmp)
+                            except Exception:
+                                pass
 
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 if error_msg:
                     return JsonResponse({"status": "error", "message": error_msg}, status=400)
                 return JsonResponse({"status": "ok", "resultado": resultado})
+
+        raw_key = (sync_config.api_key or "").strip()
+        api_key_masked = f"••••••••••••{raw_key[-4:]}" if len(raw_key) > 4 else ("••••••" if raw_key else "")
+        webhook_url = request.build_absolute_uri("/api/sincronizar-sabana/")
 
         sync_info = leer_estado_sync()
         context = {
@@ -552,6 +587,10 @@ class InformeValorativoAdmin(admin.ModelAdmin):
             "total_estudiantes": Estudiante.objects.count(),
             "total_informes": InformeValorativo.objects.count(),
             "sync_info": sync_info,
+            "sync_config": sync_config,
+            "api_key_masked": api_key_masked,
+            "has_api_key": bool(raw_key),
+            "webhook_url": webhook_url,
             "resultado": resultado,
             "error_msg": error_msg,
             "opts": self.model._meta,
