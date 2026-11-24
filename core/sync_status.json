@@ -1,31 +1,19 @@
 {
-  "ultimo_sync": "2026-11-24T07:35:17.775055",
-  "archivo": "/tmp/sabana_upload_1_1795523717.xlsx",
-  "hash": "850f79b306c4ee9b551e9f1548d8b5e7",
-  "estudiantes_procesados": 539,
+  "ultimo_sync": "2026-11-24T07:56:59.839501",
+  "archivo": "/tmp/sabana_upload_1_1795525015.xlsx",
+  "hash": "ab8aa357303864ef91eba13c4be6d946",
+  "formato": "oficial_ceis_boletines",
+  "estudiantes_procesados": 26,
   "cursos_procesados": [
-    "1001",
-    "1002",
-    "1101",
-    "1102",
-    "601",
-    "602",
-    "603",
-    "701",
-    "702",
-    "703",
-    "801",
-    "802",
-    "803",
-    "901",
-    "902",
-    "903"
+    "702"
   ],
   "anio_lectivo": 2026,
-  "periodo_actual": 3,
+  "periodo_actual": 4,
   "periodos_detectados": [
-    3
+    2,
+    3,
+    4
   ],
   "estado": "exitoso",
-  "mensaje": "539 estudiantes y boletines sincronizados correctamente (Periodo 3 · 16 cursos)."
+  "mensaje": "26 estudiantes y boletines oficiales SERC importados (Formato Oficial CEIS · Curso 702 · Periodo 2, 3, 4)."
 }

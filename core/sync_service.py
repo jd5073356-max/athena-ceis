@@ -202,11 +202,453 @@ def construir_periodos_asignatura(nota_val, periodo_fila, rnd, existing_asig=Non
     return res
 
 
+def _normalizar_texto(texto):
+    """Normaliza un nombre para comparaciones (mayúsculas, sin tildes ni espacios dobles)."""
+    import unicodedata
+    s = str(texto or "").strip().upper()
+    s = unicodedata.normalize("NFKD", s)
+    s = "".join(ch for ch in s if not unicodedata.combining(ch))
+    return " ".join(s.split())
+
+
+def _limpiar_nombre_oficial(raw_name):
+    """Separa el nombre limpio de notas administrativas como '- retirada ...' o '- Ed. Inclusiva'."""
+    import re
+    s = str(raw_name or "").strip()
+    activo = True
+    if "retirad" in s.lower():
+        activo = False
+    # Quitar sufijos administrativos comunes del colegio
+    limpio = re.split(r'\s*-\s*(?:retirad|ed\.?\s*inclusiva)|(?:\s+retirad\w*.*$)', s, flags=re.IGNORECASE)[0]
+    limpio = " ".join(limpio.strip().upper().split())
+    return limpio, activo
+
+
+def _fmt_nota_etapa(val):
+    if val is None or str(val).strip() == "":
+        return "-"
+    try:
+        f = float(val)
+        return int(round(f)) if abs(f - round(f)) < 1e-6 else round(f, 1)
+    except Exception:
+        return str(val).strip()
+
+
+def _fmt_total(val):
+    if val is None or str(val).strip() == "":
+        return 0
+    try:
+        f = float(val)
+        return int(round(f)) if abs(f - round(f)) < 1e-6 else round(f, 1)
+    except Exception:
+        return 0
+
+
+def _fmt_des(val):
+    if val is None:
+        return "-"
+    s = str(val).strip().upper()
+    if s in ("S", "SUPERIOR"):
+        return "S"
+    if s in ("A", "ALTO"):
+        return "A"
+    if s in ("BS", "BÁSICO", "BASICO"):
+        return "BS"
+    if s in ("BJ", "BAJO"):
+        return "BJ"
+    return "-"
+
+
+def _fmt_decimal_coma(val, decimales=1, default="0,0"):
+    if val is None or str(val).strip() == "":
+        return default
+    try:
+        f = float(val)
+        return f"{f:.{decimales}f}".replace(".", ",")
+    except Exception:
+        return str(val).strip()
+
+
+def _fmt_int_cero(val):
+    if val is None or str(val).strip() == "":
+        return 0
+    try:
+        return int(round(float(val)))
+    except Exception:
+        return 0
+
+
+def _es_formato_boletines_ceis(wb):
+    """Detecta si el libro corresponde al formato oficial del colegio (VALORACIONES + hojas B1..Bn)."""
+    import re
+    tiene_boletines = any(re.match(r'^B\d+$', s.strip(), flags=re.IGNORECASE) for s in wb.sheetnames)
+    return tiene_boletines or ("VALORACIONES" in [s.strip().upper() for s in wb.sheetnames])
+
+
+def _procesar_libro_boletines_oficial_ceis(wb, ruta_archivo, hash_actual, anio_lectivo=2026, periodo_actual=None):
+    """Parsea el Excel oficial del I.E.D. CEIS ('RESUMEN Y BOLETINES', hojas B1..Bn + VALORACIONES)."""
+    import re
+    from core.models import Estudiante, InformeValorativo
+
+    # Mapa de estudiantes ya registrados en BD por nombre normalizado para conservar su documento real si existe
+    mapa_doc_por_nombre = {}
+    for est in Estudiante.objects.all().only("documento", "apellidos", "nombres", "curso"):
+        clave = _normalizar_texto(f"{est.apellidos} {est.nombres}")
+        mapa_doc_por_nombre[(clave, str(est.curso).strip())] = est.documento
+        if clave not in mapa_doc_por_nombre:
+            mapa_doc_por_nombre[clave] = est.documento
+
+    hojas_boletin = []
+    for s in wb.sheetnames:
+        m = re.match(r'^B(\d+)$', s.strip(), flags=re.IGNORECASE)
+        if m:
+            hojas_boletin.append((int(m.group(1)), s))
+    hojas_boletin.sort(key=lambda x: x[0])
+
+    # Columnas base para los 4 periodos en cada hoja Bn del formato oficial CEIS
+    PERIOD_COLS = [(1, 4), (2, 18), (3, 32), (4, 46)]
+    FALLAS_COLS = [(1, 10), (2, 24), (3, 38), (4, 52)]
+
+    estudiantes_objs = []
+    datos_por_doc = {}
+    cursos_procesados = []
+    periodos_detectados = set()
+
+    for _, sname in hojas_boletin:
+        ws = wb[sname]
+        max_r = min(ws.max_row or 60, 80)
+        max_c = min(ws.max_column or 60, 70)
+
+        est_raw = None
+        grado_raw = None
+        curso_raw = None
+        anio_sheet = anio_lectivo
+        director_grupo = None
+
+        # 1. Leer cabecera del boletín (filas 1..13)
+        for r in range(1, min(14, max_r + 1)):
+            for c in range(1, max_c + 1):
+                v = ws.cell(r, c).value
+                if v is None:
+                    continue
+                sv = str(v).strip()
+                su = sv.upper()
+                if "INFORME VALORATIVO" in su:
+                    m_anio = re.search(r'(20\d{2})', su)
+                    if m_anio:
+                        anio_sheet = int(m_anio.group(1))
+                elif su.startswith("ESTUDIANTE"):
+                    for c2 in range(c + 1, min(c + 12, max_c + 1)):
+                        v2 = ws.cell(r, c2).value
+                        if v2 is not None and str(v2).strip():
+                            est_raw = str(v2).strip()
+                            break
+                elif su.startswith("GRADO"):
+                    for c2 in range(c + 1, min(c + 10, max_c + 1)):
+                        v2 = ws.cell(r, c2).value
+                        if v2 is not None and str(v2).strip():
+                            grado_raw = str(v2).strip().upper()
+                            break
+                elif su.startswith("CURSO"):
+                    for c2 in range(c + 1, min(c + 10, max_c + 1)):
+                        v2 = ws.cell(r, c2).value
+                        if v2 is not None and str(v2).strip():
+                            try:
+                                curso_raw = str(int(float(v2)))
+                            except Exception:
+                                curso_raw = str(v2).strip()
+                            break
+
+        if not est_raw:
+            continue
+
+        nombre_limpio, activo = _limpiar_nombre_oficial(est_raw)
+        if not nombre_limpio:
+            continue
+
+        curso_clave = obtener_curso_desde_sheetname(curso_raw) if curso_raw else None
+        if not curso_clave:
+            # Intentar extraer del nombre del archivo (ej. '702 RESUMEN Y BOLETINES 2026.xlsx')
+            curso_clave = obtener_curso_desde_sheetname(os.path.basename(ruta_archivo)) or (str(curso_raw or "702").strip())
+        cursos_procesados.append(curso_clave)
+        grado_final = grado_raw or GRADOS.get(curso_clave, "SECUNDARIA")
+
+        # 2. Leer Director de Grupo (filas 48..max_r)
+        for r in range(45, max_r + 1):
+            for c in range(1, max_c + 1):
+                v = ws.cell(r, c).value
+                if v and "DIRECTOR DE GRUPO" in str(v).strip().upper():
+                    # El nombre suele estar 1 o 2 filas arriba en columnas cercanas
+                    for r_up in (r - 2, r - 1):
+                        if r_up >= 1:
+                            for c_up in range(max(1, c - 12), min(max_c + 1, c + 12)):
+                                vn = ws.cell(r_up, c_up).value
+                                if vn and str(vn).strip() and "RECTOR" not in str(vn).upper() and "SECRETARIO" not in str(vn).upper():
+                                    director_grupo = str(vn).strip().upper()
+                                    break
+                        if director_grupo:
+                            break
+                if director_grupo:
+                    break
+            if director_grupo:
+                break
+        if not director_grupo:
+            director_grupo = DIRECTORES.get(curso_clave, "DIRECTOR DE GRUPO CEIS")
+
+        # 3. Separar apellidos y nombres + resolver documento
+        partes = nombre_limpio.split()
+        if len(partes) >= 3:
+            apellidos = f"{partes[0]} {partes[1]}"
+            nombres = " ".join(partes[2:])
+        elif len(partes) == 2:
+            apellidos = partes[0]
+            nombres = partes[1]
+        else:
+            apellidos = nombre_limpio
+            nombres = ""
+
+        clave_norm = _normalizar_texto(nombre_limpio)
+        documento = (
+            mapa_doc_por_nombre.get((clave_norm, curso_clave))
+            or mapa_doc_por_nombre.get(clave_norm)
+            or f"CEIS{curso_clave}{hashlib.md5(clave_norm.encode('utf-8')).hexdigest()[:6].upper()}"
+        )[:20]
+
+        if documento in datos_por_doc:
+            continue
+
+        # 4. Escanear áreas, asignaturas, observaciones y convivencia dinámicamente
+        areas = []
+        area_actual = None
+        obs_acad_lines = []
+        obs_conv_lines = []
+        conv_p = {f"p{p}": {"pa": "0,0", "vc": "-", "pc": "0,0", "des": "-"} for p in (1, 2, 3, 4)}
+        fam_p = {f"p{p}": "-" for p in (1, 2, 3, 4)}
+        fallas_p = {f"p{p}": {"f": 0, "r": 0, "e": 0, "u": 0} for p in (1, 2, 3, 4)}
+        prom_p = {f"p{p}": "0,00" for p in (1, 2, 3, 4)}
+        sena_p = {f"p{p}": "-" for p in (1, 2, 3, 4)}
+        max_periodo_con_nota = 1
+
+        seccion = "header"
+        r = 12
+        while r <= max_r:
+            c1 = ws.cell(r, 1).value
+            c2 = ws.cell(r, 2).value
+            s1 = str(c1).strip() if c1 is not None else ""
+            s2 = str(c2).strip() if c2 is not None else ""
+            u1, u2 = s1.upper(), s2.upper()
+
+            if "OBSERVACIONES ACADEMICAS" in u1 or "OBSERVACIONES ACADÉMICAS" in u1:
+                seccion = "obs_acad"
+                r += 1
+                continue
+            if "CONVIVENCIA ESCOLAR" in u1:
+                seccion = "convivencia"
+                r += 1
+                continue
+            if "OBSERVACIONES CONVIVENCIALES" in u1:
+                seccion = "obs_conv"
+                r += 1
+                continue
+            if seccion == "obs_conv" and (
+                "RECTOR" in u1 or "RECTOR" in u2 or "CONVENCIONES" in u1
+                or (director_grupo and director_grupo in str(ws.cell(r, 33).value or "").upper())
+            ):
+                seccion = "fin"
+                break
+
+            if u1 == "AREA" and u2 == "ASIGNATURA":
+                seccion = "areas"
+                r += 1
+                continue
+
+            if seccion == "areas":
+                if s1 and u1 != "AREA":
+                    area_actual = {"nombre": u1, "asignaturas": []}
+                    areas.append(area_actual)
+                if s2 and u2 != "ASIGNATURA":
+                    if area_actual is None:
+                        area_actual = {"nombre": "ÁREA ACADÉMICA", "asignaturas": []}
+                        areas.append(area_actual)
+                    asig_obj = {"nombre": u2}
+                    for p_num, base_c in PERIOD_COLS:
+                        des_val = _fmt_des(ws.cell(r, base_c + 6).value)
+                        total_val = _fmt_total(ws.cell(r, base_c + 5).value)
+                        if des_val in ("S", "A", "BS", "BJ") and total_val > 0:
+                            if p_num > max_periodo_con_nota:
+                                max_periodo_con_nota = p_num
+                        asig_obj[f"p{p_num}"] = {
+                            "p": _fmt_nota_etapa(ws.cell(r, base_c).value),
+                            "rd": _fmt_nota_etapa(ws.cell(r, base_c + 1).value),
+                            "r": _fmt_nota_etapa(ws.cell(r, base_c + 2).value),
+                            "a": _fmt_nota_etapa(ws.cell(r, base_c + 3).value),
+                            "pt": _fmt_nota_etapa(ws.cell(r, base_c + 4).value),
+                            "total": total_val,
+                            "des": des_val,
+                        }
+                    area_actual["asignaturas"].append(asig_obj)
+                    if "SENA" in u2 or "TECNICO" in u2 or "TÉCNICO" in u2:
+                        for p_num in (1, 2, 3, 4):
+                            sena_p[f"p{p_num}"] = asig_obj[f"p{p_num}"]["des"]
+
+            elif seccion == "obs_acad":
+                if s1:
+                    obs_acad_lines.append(s1)
+
+            elif seccion == "convivencia":
+                if u2 == "CONVIVENCIA":
+                    for p_num, base_c in PERIOD_COLS:
+                        pa_str = _fmt_decimal_coma(ws.cell(r, base_c).value, 1, "0,0")
+                        vc_raw = ws.cell(r, base_c + 2).value
+                        vc_str = str(_fmt_nota_etapa(vc_raw)) if vc_raw is not None else "-"
+                        pc_str = _fmt_decimal_coma(ws.cell(r, base_c + 5).value, 1, "0,0")
+                        des_c = _fmt_des(ws.cell(r, base_c + 6).value)
+                        conv_p[f"p{p_num}"] = {"pa": pa_str, "vc": vc_str, "pc": pc_str, "des": des_c}
+                        prom_p[f"p{p_num}"] = _fmt_decimal_coma(ws.cell(r, base_c).value, 2, "0,00")
+                elif "AMBITO FAMILIAR" in u2 or "ÁMBITO FAMILIAR" in u2:
+                    for p_num, base_c in PERIOD_COLS:
+                        fam_p[f"p{p_num}"] = _fmt_des(ws.cell(r, base_c + 6).value)
+                elif "ACUMULADO SEMESTRAL" in u2 and (r + 1) <= max_r:
+                    r_val_f = r + 1
+                    for p_num, base_fc in FALLAS_COLS:
+                        fallas_p[f"p{p_num}"] = {
+                            "f": _fmt_int_cero(ws.cell(r_val_f, base_fc).value),
+                            "r": _fmt_int_cero(ws.cell(r_val_f, base_fc + 2).value),
+                            "e": _fmt_int_cero(ws.cell(r_val_f, base_fc + 4).value),
+                            "u": _fmt_int_cero(ws.cell(r_val_f, base_fc + 6).value),
+                        }
+                    r += 1
+
+            elif seccion == "obs_conv":
+                if s1:
+                    obs_conv_lines.append(s1)
+
+            r += 1
+
+        # Filtrar áreas vacías
+        areas = [a for a in areas if a.get("asignaturas")]
+        per_final = parsear_periodo(periodo_actual, default=max_periodo_con_nota) if periodo_actual is not None else max_periodo_con_nota
+        periodos_detectados.add(per_final)
+
+        # Si no hay asignatura explícita SENA (básica secundaria 6-9), dejar '-' o valor según periodo
+        estudiantes_objs.append(
+            Estudiante(
+                documento=documento,
+                tipo_documento="Tarjeta de Identidad",
+                nombres=nombres,
+                apellidos=apellidos,
+                grado=grado_final,
+                curso=curso_clave,
+                director_grupo=director_grupo,
+                acudiente=f"Familia {apellidos}",
+                telefono_acudiente="",
+                activo=activo,
+            )
+        )
+
+        datos_academicos = {
+            "areas": areas,
+            "promedio_actitudinal": prom_p,
+            "tecnico_sena": sena_p,
+        }
+        convivencia_data = {
+            "convivencia": conv_p,
+            "ambito_familiar": fam_p,
+            "fallas_retardos": fallas_p,
+        }
+        obs_acad_txt = "\n".join(obs_acad_lines) if obs_acad_lines else ""
+        obs_conv_txt = "\n".join(obs_conv_lines) if obs_conv_lines else ""
+
+        datos_por_doc[documento] = (datos_academicos, convivencia_data, per_final, anio_sheet, obs_acad_txt, obs_conv_txt)
+
+    if not estudiantes_objs:
+        return {
+            "exito": False,
+            "error": "No se encontraron estudiantes válidos en las hojas de boletines (B1..B30) del archivo oficial.",
+            "fecha": datetime.datetime.now().isoformat(),
+        }
+
+    Estudiante.objects.bulk_create(
+        estudiantes_objs,
+        batch_size=50,
+        update_conflicts=True,
+        unique_fields=["documento"],
+        update_fields=["nombres", "apellidos", "grado", "curso", "director_grupo", "acudiente", "activo"],
+    )
+
+    mapa_est = {e.documento: e for e in Estudiante.objects.filter(documento__in=list(datos_por_doc.keys()))}
+    informes_objs = []
+    for doc, (d_acad, d_conv, per_fila, anio_fila, obs_a, obs_c) in datos_por_doc.items():
+        est = mapa_est.get(doc)
+        if not est:
+            continue
+        p_key = f"p{per_fila}"
+        tec_sena_val = d_acad.get("tecnico_sena", {}).get(p_key, "-")
+        if tec_sena_val not in ("S", "A", "BS", "BJ"):
+            tec_sena_val = "A"
+
+        informes_objs.append(
+            InformeValorativo(
+                estudiante=est,
+                anio_lectivo=anio_fila,
+                periodo_actual=per_fila,
+                datos_academicos=d_acad,
+                datos_convivencia=d_conv,
+                observaciones_academicas=obs_a,
+                observaciones_convivenciales=obs_c,
+                tecnico_sena=tec_sena_val,
+            )
+        )
+
+    InformeValorativo.objects.bulk_create(
+        informes_objs,
+        batch_size=50,
+        update_conflicts=True,
+        unique_fields=["estudiante", "anio_lectivo"],
+        update_fields=["periodo_actual", "datos_academicos", "datos_convivencia", "observaciones_academicas", "observaciones_convivenciales", "tecnico_sena"],
+    )
+
+    cursos_unicos = sorted(list(set(cursos_procesados)))
+    periodos_lista = sorted(list(periodos_detectados)) if periodos_detectados else [periodo_actual or 4]
+    periodo_resumen = max(periodos_lista)
+    ahora_iso = datetime.datetime.now().isoformat()
+    nuevo_estado = {
+        "ultimo_sync": ahora_iso,
+        "archivo": ruta_archivo,
+        "hash": hash_actual,
+        "formato": "oficial_ceis_boletines",
+        "estudiantes_procesados": len(estudiantes_objs),
+        "cursos_procesados": cursos_unicos,
+        "anio_lectivo": anio_lectivo,
+        "periodo_actual": periodo_resumen,
+        "periodos_detectados": periodos_lista,
+        "estado": "exitoso",
+        "mensaje": f"{len(estudiantes_objs)} estudiantes y boletines oficiales SERC importados (Formato Oficial CEIS · Curso {', '.join(cursos_unicos)} · Periodo {', '.join(map(str, periodos_lista))}).",
+    }
+    guardar_estado_sync(nuevo_estado)
+
+    return {
+        "exito": True,
+        "sin_cambios": False,
+        "formato": "oficial_ceis_boletines",
+        "archivo": ruta_archivo,
+        "estudiantes_procesados": len(estudiantes_objs),
+        "cursos_procesados": cursos_unicos,
+        "anio_lectivo": anio_lectivo,
+        "periodo_actual": periodo_resumen,
+        "periodos_detectados": periodos_lista,
+        "ultimo_sync": ahora_iso,
+        "hash": hash_actual,
+        "mensaje": nuevo_estado["mensaje"],
+    }
+
+
 def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False, anio_lectivo=2026, periodo_actual=None):
     """Ejecuta la sincronización de la sábana de notas Excel con PostgreSQL / Supabase.
 
-    Si `periodo_actual` es None, detecta automáticamente la columna 'Periodo Académico'
-    del Excel por fila (con respaldo a periodo 3 si el archivo no trae dicha columna).
+    Soporta automáticamente:
+    1. Formato Oficial CEIS ('RESUMEN Y BOLETINES', hojas VALORACIONES + B1..Bn) con notas reales de los 4 periodos.
+    2. Formato Sábana Multi-Curso (hojas 601..1102) con detección automática de columna 'Periodo Académico'.
     """
     from core.models import Estudiante, InformeValorativo
 
@@ -233,13 +675,23 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False, anio_lectivo=
             "mensaje": "El archivo no ha cambiado desde la última sincronización.",
         }
 
+    import openpyxl
+    wb = openpyxl.load_workbook(ruta_archivo, data_only=True)
+
+    if _es_formato_boletines_ceis(wb):
+        return _procesar_libro_boletines_oficial_ceis(
+            wb=wb,
+            ruta_archivo=ruta_archivo,
+            hash_actual=hash_actual,
+            anio_lectivo=anio_lectivo,
+            periodo_actual=periodo_actual,
+        )
+
     # Cargar informes existentes del mismo año para preservar periodos anteriores al subir uno nuevo
     informes_previos = {}
     for inf in InformeValorativo.objects.filter(anio_lectivo=anio_lectivo).select_related("estudiante"):
         informes_previos[inf.estudiante.documento] = inf
 
-    import openpyxl
-    wb = openpyxl.load_workbook(ruta_archivo, data_only=True)
     estudiantes_objs = []
     datos_por_doc = {}
     cursos_procesados = []

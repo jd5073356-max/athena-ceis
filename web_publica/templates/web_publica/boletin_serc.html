@@ -592,9 +592,11 @@
     <!-- Observaciones Académicas SERC -->
     <div class="titulo-obs">OBSERVACIONES &nbsp; ACADEMICAS SERC</div>
     <div class="caja-obs">
-      <p>Firma compromiso acádemico</p>
-      <p>El estudiante debe presentar el desarrollo completo de las guías no alcanzadas en el menor tiempo posible.</p>
-      <p>A la fecha, el aprendiz SENA ha cumplido con la entrega de las evidencias propuestas.</p>
+      {% if informe.observaciones_academicas %}
+        <p style="white-space: pre-line;">{{ informe.observaciones_academicas }}</p>
+      {% else %}
+        <p>El estudiante demuestra compromiso constante en el desarrollo de las guías SERC.</p>
+      {% endif %}
     </div>
 
     <!-- Convivencia Escolar -->
@@ -641,25 +643,25 @@
           <td class="conv-borde pc-verde">{{ informe.datos_convivencia.convivencia.p3.pc }}</td>
           <td colspan="4" class="conv-borde des-{{ informe.datos_convivencia.convivencia.p3.des }}">{{ informe.datos_convivencia.convivencia.p3.des }}</td>
           <!-- P4 -->
-          <td class="conv-borde">0,0</td>
-          <td class="conv-borde"></td>
-          <td class="conv-borde">0,0</td>
-          <td colspan="4" class="conv-borde"></td>
+          <td class="conv-borde">{{ informe.datos_convivencia.convivencia.p4.pa|default:"0,0" }}</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.convivencia.p4.vc|default:"" }}</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.convivencia.p4.pc|default:"0,0" }}</td>
+          <td colspan="4" class="conv-borde des-{{ informe.datos_convivencia.convivencia.p4.des|default:'' }}">{% if informe.datos_convivencia.convivencia.p4.des and informe.datos_convivencia.convivencia.p4.des != "-" %}{{ informe.datos_convivencia.convivencia.p4.des }}{% endif %}</td>
         </tr>
         <tr>
           <td class="conv-left-item">AMBITO FAMILIAR</td>
           <!-- P1 -->
           <td class="conv-borde"></td><td class="conv-borde"></td><td class="conv-borde"></td>
-          <td colspan="4" class="conv-borde des-S">{{ informe.datos_convivencia.ambito_familiar.p1|default:"S" }}</td>
+          <td colspan="4" class="conv-borde des-{{ informe.datos_convivencia.ambito_familiar.p1|default:'S' }}">{% if informe.datos_convivencia.ambito_familiar.p1 and informe.datos_convivencia.ambito_familiar.p1 != "-" %}{{ informe.datos_convivencia.ambito_familiar.p1 }}{% endif %}</td>
           <!-- P2 -->
           <td class="conv-borde"></td><td class="conv-borde"></td><td class="conv-borde"></td>
-          <td colspan="4" class="conv-borde des-S">{{ informe.datos_convivencia.ambito_familiar.p2|default:"S" }}</td>
+          <td colspan="4" class="conv-borde des-{{ informe.datos_convivencia.ambito_familiar.p2|default:'S' }}">{% if informe.datos_convivencia.ambito_familiar.p2 and informe.datos_convivencia.ambito_familiar.p2 != "-" %}{{ informe.datos_convivencia.ambito_familiar.p2 }}{% endif %}</td>
           <!-- P3 -->
           <td class="conv-borde"></td><td class="conv-borde"></td><td class="conv-borde"></td>
-          <td colspan="4" class="conv-borde"></td>
+          <td colspan="4" class="conv-borde des-{{ informe.datos_convivencia.ambito_familiar.p3|default:'' }}">{% if informe.datos_convivencia.ambito_familiar.p3 and informe.datos_convivencia.ambito_familiar.p3 != "-" %}{{ informe.datos_convivencia.ambito_familiar.p3 }}{% endif %}</td>
           <!-- P4 -->
           <td class="conv-borde"></td><td class="conv-borde"></td><td class="conv-borde"></td>
-          <td colspan="4" class="conv-borde"></td>
+          <td colspan="4" class="conv-borde des-{{ informe.datos_convivencia.ambito_familiar.p4|default:'' }}">{% if informe.datos_convivencia.ambito_familiar.p4 and informe.datos_convivencia.ambito_familiar.p4 != "-" %}{{ informe.datos_convivencia.ambito_familiar.p4 }}{% endif %}</td>
         </tr>
         <tr>
           <td rowspan="2" class="conv-left-item" style="line-height:1.25;">
@@ -701,9 +703,9 @@
           <!-- P4 -->
           <td colspan="3" style="border:none;"></td>
           <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p4.f|default:0 }}</td>
-          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p4.r|default:3 }}</td>
-          <td class="conv-borde">0</td>
-          <td class="conv-borde">0</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p4.r|default:0 }}</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p4.e|default:0 }}</td>
+          <td class="conv-borde">{{ informe.datos_convivencia.fallas_retardos.p4.u|default:0 }}</td>
         </tr>
       </tbody>
     </table>
@@ -711,8 +713,11 @@
     <!-- Observaciones Convivenciales -->
     <div class="titulo-obs">OBSERVACIONES CONVIVENCIALES</div>
     <div class="caja-obs">
-      <p>La institución agradece su colaboración en las campañas de mejora .</p>
-      <p>Felicitaciones por su aporte a la convivencia institucional.</p>
+      {% if informe.observaciones_convivenciales %}
+        <p style="white-space: pre-line;">{{ informe.observaciones_convivenciales }}</p>
+      {% else %}
+        <p>La institución agradece su colaboración en las campañas de mejora.</p>
+      {% endif %}
     </div>
 
     <!-- Firmas Oficiales con Rúbricas Reales -->

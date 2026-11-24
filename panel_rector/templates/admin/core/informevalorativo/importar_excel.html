@@ -490,13 +490,13 @@
   <div class="ath-guide-card">
     <h4>
       <span class="material-symbols-outlined" style="color:#38bdf8;font-size:20px;">info</span>
-      Estructura y Funcionamiento de la Carga Masiva
+      Formatos Soportados en la Carga Masiva
     </h4>
     <p style="margin:0 0 8px 0;">
-      • <strong>Múltiples hojas por curso:</strong> El archivo institucional contiene una hoja por cada curso (<code>601</code>, <code>602</code>, ..., <code>1102</code>). El sistema procesa todas las hojas automáticamente y asigna el grado y director de grupo correspondiente.
+      • <strong>Formato Oficial CEIS (Resumen y Boletines — hojas <code>VALORACIONES</code> y <code>B1..B30</code>):</strong> Importa directamente el libro oficial del colegio con las notas exactas de los 4 periodos (<code>P, R, D, R, A, Puntaje y Desempeño</code>), convivencia, ámbito familiar, fallas/retardos, director de grupo y observaciones reales de cada estudiante.
     </p>
     <p style="margin:0 0 8px 0;">
-      • <strong>Escala SERC:</strong> Las notas cualitativas (<code>SUPERIOR</code>, <code>ALTO</code>, <code>BÁSICO</code>, <code>BAJO</code>) se mapean automáticamente a la escala oficial SERC con sus 5 momentos pedagógicos (Punto de Partida, Recolección, Relación, Aplicación y Prueba Tipo Saber).
+      • <strong>Formato Sábana Multi-Curso (hojas <code>601</code> a <code>1102</code>):</strong> También compatible con libros de consolidado general que incluyan columna <code>Periodo Académico</code> y valoraciones cualitativas SERC (<code>SUPERIOR</code>, <code>ALTO</code>, <code>BÁSICO</code>, <code>BAJO</code>).
     </p>
     <p style="margin:0;">
       • <strong>Actualización segura (Upsert):</strong> Si el estudiante ya existe en la base de datos, sus datos y boletines se actualizan sin duplicar registros. Los estudiantes nuevos se crean automáticamente.
