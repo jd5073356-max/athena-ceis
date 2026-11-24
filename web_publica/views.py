@@ -398,18 +398,33 @@ def _construir_informe_dinamico(documento_str: str, curso_str: str = "1101"):
 
 def _resolver_estudiante_e_informe(query_str: str):
     """Busca por documento o nombre; si es cualquier Cédula/T.I. numérica nueva, genera su ficha SERC al instante."""
-    from django.db.models import Q
+    from django.db.models import Q, Value
+    from django.db.models.functions import Concat
 
     q = (query_str or "").strip()
     if not q:
         return None, None
 
-    estudiante = Estudiante.objects.filter(documento=q, activo=True).first()
+    estudiante = Estudiante.objects.filter(documento=q).first()
     if not estudiante:
-        estudiante = Estudiante.objects.filter(
-            Q(documento__icontains=q) | Q(apellidos__icontains=q) | Q(nombres__icontains=q),
+        qs_full = Estudiante.objects.annotate(
+            nombre_full=Concat("apellidos", Value(" "), "nombres")
+        )
+        estudiante = qs_full.filter(
+            Q(documento__icontains=q) | Q(apellidos__icontains=q) | Q(nombres__icontains=q) | Q(nombre_full__icontains=q),
             activo=True,
         ).first()
+        if not estudiante:
+            palabras = [p for p in q.split() if len(p) >= 2]
+            if palabras:
+                cond = Q()
+                for pal in palabras:
+                    cond &= (Q(apellidos__icontains=pal) | Q(nombres__icontains=pal))
+                estudiante = Estudiante.objects.filter(cond, activo=True).first() or Estudiante.objects.filter(cond).first()
+        if not estudiante:
+            estudiante = qs_full.filter(
+                Q(documento__icontains=q) | Q(apellidos__icontains=q) | Q(nombres__icontains=q) | Q(nombre_full__icontains=q)
+            ).first()
 
     solo_digitos = "".join(filter(str.isdigit, q))
     if not estudiante and len(solo_digitos) >= 5:
@@ -1072,6 +1087,10 @@ def sitemap_xml(request):
 
 
 # --- Portal de Calificaciones y Boletines SERC Oficiales -------------------
+from django.views.decorators.cache import never_cache
+
+
+@never_cache
 def consulta_notas(request):
     """Portal de consulta de calificaciones para padres y estudiantes en tiempo real."""
     query_doc = request.GET.get("doc", "").strip()
@@ -1097,6 +1116,7 @@ def consulta_notas(request):
     })
 
 
+@never_cache
 def boletin_imprimir(request, documento):
     """Vista de impresión directa y limpia del Informe Valorativo SERC oficial."""
     estudiante, informe = _resolver_estudiante_e_informe(documento)

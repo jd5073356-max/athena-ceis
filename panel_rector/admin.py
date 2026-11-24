@@ -498,6 +498,7 @@ class InformeValorativoAdmin(admin.ModelAdmin):
             if not archivo and not usar_institucional:
                 error_msg = "Debe seleccionar un archivo Excel (.xlsx) o elegir la sincronización institucional."
             else:
+                ruta_tmp = None
                 try:
                     if archivo:
                         nombre_seguro = f"sabana_upload_{request.user.id}_{int(timezone.now().timestamp())}.xlsx"
@@ -531,6 +532,12 @@ class InformeValorativoAdmin(admin.ModelAdmin):
                 except Exception as e:
                     error_msg = f"Ocurrió un error al procesar el archivo: {str(e)}"
                     messages.error(request, error_msg)
+                finally:
+                    if ruta_tmp and os.path.exists(ruta_tmp):
+                        try:
+                            os.remove(ruta_tmp)
+                        except Exception:
+                            pass
 
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 if error_msg:

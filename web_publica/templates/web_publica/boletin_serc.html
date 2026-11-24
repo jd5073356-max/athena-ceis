@@ -571,7 +571,7 @@
           <td colspan="7" class="val-pa">{{ informe.datos_academicos.promedio_actitudinal.p1|default:"8,15" }}</td>
           <td colspan="7" class="val-pa">{{ informe.datos_academicos.promedio_actitudinal.p2|default:"7,92" }}</td>
           <td colspan="7" class="val-pa">{{ informe.datos_academicos.promedio_actitudinal.p3|default:"8,76" }}</td>
-          <td colspan="7" class="val-pa">0</td>
+          <td colspan="7" class="val-pa">{{ informe.datos_academicos.promedio_actitudinal.p4|default:"0,00" }}</td>
         </tr>
 
         <!-- Técnico SENA -->
@@ -584,7 +584,7 @@
           <td colspan="6" class="vacio-sena"></td>
           <td class="celda-guia des-{{ informe.datos_academicos.tecnico_sena.p3|default:'A' }}">{{ informe.datos_academicos.tecnico_sena.p3|default:"A" }}</td>
           <td colspan="6" class="vacio-sena"></td>
-          <td class="vacio-sena"></td>
+          <td class="celda-guia {% if informe.datos_academicos.tecnico_sena.p4 and informe.datos_academicos.tecnico_sena.p4 != '-' %}des-{{ informe.datos_academicos.tecnico_sena.p4 }}{% else %}vacio-sena{% endif %}">{% if informe.datos_academicos.tecnico_sena.p4 and informe.datos_academicos.tecnico_sena.p4 != '-' %}{{ informe.datos_academicos.tecnico_sena.p4 }}{% endif %}</td>
         </tr>
       </tbody>
     </table>

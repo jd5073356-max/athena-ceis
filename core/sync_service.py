@@ -315,8 +315,11 @@ def _procesar_libro_boletines_oficial_ceis(wb, ruta_archivo, hash_actual, anio_l
 
     for _, sname in hojas_boletin:
         ws = wb[sname]
-        max_r = min(ws.max_row or 60, 80)
-        max_c = min(ws.max_column or 60, 70)
+        rows = list(ws.iter_rows(min_row=1, max_row=80, values_only=True))
+        if not rows:
+            continue
+        max_r = len(rows)
+        max_c = min(max((len(row) for row in rows), default=60), 70)
 
         est_raw = None
         grado_raw = None
@@ -327,7 +330,7 @@ def _procesar_libro_boletines_oficial_ceis(wb, ruta_archivo, hash_actual, anio_l
         # 1. Leer cabecera del boletín (filas 1..13)
         for r in range(1, min(14, max_r + 1)):
             for c in range(1, max_c + 1):
-                v = ws.cell(r, c).value
+                v = _cval(rows, r, c)
                 if v is None:
                     continue
                 sv = str(v).strip()
@@ -338,19 +341,19 @@ def _procesar_libro_boletines_oficial_ceis(wb, ruta_archivo, hash_actual, anio_l
                         anio_sheet = int(m_anio.group(1))
                 elif su.startswith("ESTUDIANTE"):
                     for c2 in range(c + 1, min(c + 12, max_c + 1)):
-                        v2 = ws.cell(r, c2).value
+                        v2 = _cval(rows, r, c2)
                         if v2 is not None and str(v2).strip():
                             est_raw = str(v2).strip()
                             break
                 elif su.startswith("GRADO"):
                     for c2 in range(c + 1, min(c + 10, max_c + 1)):
-                        v2 = ws.cell(r, c2).value
+                        v2 = _cval(rows, r, c2)
                         if v2 is not None and str(v2).strip():
                             grado_raw = str(v2).strip().upper()
                             break
                 elif su.startswith("CURSO"):
                     for c2 in range(c + 1, min(c + 10, max_c + 1)):
-                        v2 = ws.cell(r, c2).value
+                        v2 = _cval(rows, r, c2)
                         if v2 is not None and str(v2).strip():
                             try:
                                 curso_raw = str(int(float(v2)))
@@ -372,16 +375,15 @@ def _procesar_libro_boletines_oficial_ceis(wb, ruta_archivo, hash_actual, anio_l
         cursos_procesados.append(curso_clave)
         grado_final = grado_raw or GRADOS.get(curso_clave, "SECUNDARIA")
 
-        # 2. Leer Director de Grupo (filas 48..max_r)
+        # 2. Leer Director de Grupo (filas 45..max_r)
         for r in range(45, max_r + 1):
             for c in range(1, max_c + 1):
-                v = ws.cell(r, c).value
+                v = _cval(rows, r, c)
                 if v and "DIRECTOR DE GRUPO" in str(v).strip().upper():
-                    # El nombre suele estar 1 o 2 filas arriba en columnas cercanas
                     for r_up in (r - 2, r - 1):
                         if r_up >= 1:
                             for c_up in range(max(1, c - 12), min(max_c + 1, c + 12)):
-                                vn = ws.cell(r_up, c_up).value
+                                vn = _cval(rows, r_up, c_up)
                                 if vn and str(vn).strip() and "RECTOR" not in str(vn).upper() and "SECRETARIO" not in str(vn).upper():
                                     director_grupo = str(vn).strip().upper()
                                     break
@@ -431,8 +433,8 @@ def _procesar_libro_boletines_oficial_ceis(wb, ruta_archivo, hash_actual, anio_l
         seccion = "header"
         r = 12
         while r <= max_r:
-            c1 = ws.cell(r, 1).value
-            c2 = ws.cell(r, 2).value
+            c1 = _cval(rows, r, 1)
+            c2 = _cval(rows, r, 2)
             s1 = str(c1).strip() if c1 is not None else ""
             s2 = str(c2).strip() if c2 is not None else ""
             u1, u2 = s1.upper(), s2.upper()
@@ -451,7 +453,7 @@ def _procesar_libro_boletines_oficial_ceis(wb, ruta_archivo, hash_actual, anio_l
                 continue
             if seccion == "obs_conv" and (
                 "RECTOR" in u1 or "RECTOR" in u2 or "CONVENCIONES" in u1
-                or (director_grupo and director_grupo in str(ws.cell(r, 33).value or "").upper())
+                or (director_grupo and director_grupo in str(_cval(rows, r, 33) or "").upper())
             ):
                 seccion = "fin"
                 break
@@ -471,17 +473,17 @@ def _procesar_libro_boletines_oficial_ceis(wb, ruta_archivo, hash_actual, anio_l
                         areas.append(area_actual)
                     asig_obj = {"nombre": u2}
                     for p_num, base_c in PERIOD_COLS:
-                        des_val = _fmt_des(ws.cell(r, base_c + 6).value)
-                        total_val = _fmt_total(ws.cell(r, base_c + 5).value)
+                        des_val = _fmt_des(_cval(rows, r, base_c + 6))
+                        total_val = _fmt_total(_cval(rows, r, base_c + 5))
                         if des_val in ("S", "A", "BS", "BJ") and total_val > 0:
                             if p_num > max_periodo_con_nota:
                                 max_periodo_con_nota = p_num
                         asig_obj[f"p{p_num}"] = {
-                            "p": _fmt_nota_etapa(ws.cell(r, base_c).value),
-                            "rd": _fmt_nota_etapa(ws.cell(r, base_c + 1).value),
-                            "r": _fmt_nota_etapa(ws.cell(r, base_c + 2).value),
-                            "a": _fmt_nota_etapa(ws.cell(r, base_c + 3).value),
-                            "pt": _fmt_nota_etapa(ws.cell(r, base_c + 4).value),
+                            "p": _fmt_nota_etapa(_cval(rows, r, base_c)),
+                            "rd": _fmt_nota_etapa(_cval(rows, r, base_c + 1)),
+                            "r": _fmt_nota_etapa(_cval(rows, r, base_c + 2)),
+                            "a": _fmt_nota_etapa(_cval(rows, r, base_c + 3)),
+                            "pt": _fmt_nota_etapa(_cval(rows, r, base_c + 4)),
                             "total": total_val,
                             "des": des_val,
                         }
@@ -497,24 +499,24 @@ def _procesar_libro_boletines_oficial_ceis(wb, ruta_archivo, hash_actual, anio_l
             elif seccion == "convivencia":
                 if u2 == "CONVIVENCIA":
                     for p_num, base_c in PERIOD_COLS:
-                        pa_str = _fmt_decimal_coma(ws.cell(r, base_c).value, 1, "0,0")
-                        vc_raw = ws.cell(r, base_c + 2).value
+                        pa_str = _fmt_decimal_coma(_cval(rows, r, base_c), 1, "0,0")
+                        vc_raw = _cval(rows, r, base_c + 2)
                         vc_str = str(_fmt_nota_etapa(vc_raw)) if vc_raw is not None else "-"
-                        pc_str = _fmt_decimal_coma(ws.cell(r, base_c + 5).value, 1, "0,0")
-                        des_c = _fmt_des(ws.cell(r, base_c + 6).value)
+                        pc_str = _fmt_decimal_coma(_cval(rows, r, base_c + 5), 1, "0,0")
+                        des_c = _fmt_des(_cval(rows, r, base_c + 6))
                         conv_p[f"p{p_num}"] = {"pa": pa_str, "vc": vc_str, "pc": pc_str, "des": des_c}
-                        prom_p[f"p{p_num}"] = _fmt_decimal_coma(ws.cell(r, base_c).value, 2, "0,00")
+                        prom_p[f"p{p_num}"] = _fmt_decimal_coma(_cval(rows, r, base_c), 2, "0,00")
                 elif "AMBITO FAMILIAR" in u2 or "ÁMBITO FAMILIAR" in u2:
                     for p_num, base_c in PERIOD_COLS:
-                        fam_p[f"p{p_num}"] = _fmt_des(ws.cell(r, base_c + 6).value)
+                        fam_p[f"p{p_num}"] = _fmt_des(_cval(rows, r, base_c + 6))
                 elif "ACUMULADO SEMESTRAL" in u2 and (r + 1) <= max_r:
                     r_val_f = r + 1
                     for p_num, base_fc in FALLAS_COLS:
                         fallas_p[f"p{p_num}"] = {
-                            "f": _fmt_int_cero(ws.cell(r_val_f, base_fc).value),
-                            "r": _fmt_int_cero(ws.cell(r_val_f, base_fc + 2).value),
-                            "e": _fmt_int_cero(ws.cell(r_val_f, base_fc + 4).value),
-                            "u": _fmt_int_cero(ws.cell(r_val_f, base_fc + 6).value),
+                            "f": _fmt_int_cero(_cval(rows, r_val_f, base_fc)),
+                            "r": _fmt_int_cero(_cval(rows, r_val_f, base_fc + 2)),
+                            "e": _fmt_int_cero(_cval(rows, r_val_f, base_fc + 4)),
+                            "u": _fmt_int_cero(_cval(rows, r_val_f, base_fc + 6)),
                         }
                     r += 1
 
@@ -529,7 +531,6 @@ def _procesar_libro_boletines_oficial_ceis(wb, ruta_archivo, hash_actual, anio_l
         per_final = parsear_periodo(periodo_actual, default=max_periodo_con_nota) if periodo_actual is not None else max_periodo_con_nota
         periodos_detectados.add(per_final)
 
-        # Si no hay asignatura explícita SENA (básica secundaria 6-9), dejar '-' o valor según periodo
         estudiantes_objs.append(
             Estudiante(
                 documento=documento,
@@ -569,7 +570,7 @@ def _procesar_libro_boletines_oficial_ceis(wb, ruta_archivo, hash_actual, anio_l
 
     Estudiante.objects.bulk_create(
         estudiantes_objs,
-        batch_size=50,
+        batch_size=250,
         update_conflicts=True,
         unique_fields=["documento"],
         update_fields=["nombres", "apellidos", "grado", "curso", "director_grupo", "acudiente", "activo"],
@@ -601,7 +602,7 @@ def _procesar_libro_boletines_oficial_ceis(wb, ruta_archivo, hash_actual, anio_l
 
     InformeValorativo.objects.bulk_create(
         informes_objs,
-        batch_size=50,
+        batch_size=250,
         update_conflicts=True,
         unique_fields=["estudiante", "anio_lectivo"],
         update_fields=["periodo_actual", "datos_academicos", "datos_convivencia", "observaciones_academicas", "observaciones_convivenciales", "tecnico_sena"],
@@ -642,11 +643,22 @@ def _procesar_libro_boletines_oficial_ceis(wb, ruta_archivo, hash_actual, anio_l
     }
 
 
+def _cval(rows, r, c):
+    """Lee de forma segura una celda 1-indexada desde una matriz `rows` obtenida por iter_rows."""
+    if r < 1 or c < 1 or r > len(rows):
+        return None
+    row = rows[r - 1]
+    if c > len(row):
+        return None
+    return row[c - 1]
+
+
 def _es_hoja_valoraciones_ceis(ws):
     """Retorna True si la hoja tiene el encabezado oficial CEIS (P, R, D, R, A, PRO, G1 en fila 15)."""
-    if (ws.max_row or 0) < 16 or (ws.max_column or 0) < 10:
+    rows15 = list(ws.iter_rows(min_row=15, max_row=15, min_col=1, max_col=20, values_only=True))
+    if not rows15:
         return False
-    fila15 = [str(ws.cell(15, c).value or "").strip().upper() for c in range(1, min(20, (ws.max_column or 20) + 1))]
+    fila15 = [str(v or "").strip().upper() for v in rows15[0]]
     for i in range(len(fila15) - 6):
         if fila15[i:i + 7] == ["P", "R", "D", "R", "A", "PRO", "G1"]:
             return True
@@ -679,11 +691,15 @@ def _procesar_libro_valoraciones_ceis(wb, ruta_archivo, hash_actual, anio_lectiv
 
     for sname in wb.sheetnames:
         ws = wb[sname]
-        if not _es_hoja_valoraciones_ceis(ws):
+        rows = list(ws.iter_rows(min_row=1, max_row=65, values_only=True))
+        if len(rows) < 16:
+            continue
+        fila15 = [str(v or "").strip().upper() for v in rows[14][:20]]
+        if not any(fila15[i:i + 7] == ["P", "R", "D", "R", "A", "PRO", "G1"] for i in range(max(0, len(fila15) - 6))):
             continue
 
-        max_r = ws.max_row or 60
-        max_c = ws.max_column or 330
+        max_r = len(rows)
+        max_c = max((len(r) for r in rows[:16]), default=0)
 
         # Detectar curso, grado y director desde cabecera (filas 1..11) o nombre de hoja
         curso_clave = obtener_curso_desde_sheetname(sname)
@@ -691,25 +707,25 @@ def _procesar_libro_valoraciones_ceis(wb, ruta_archivo, hash_actual, anio_lectiv
         director_grupo = None
         for r in range(1, 12):
             for c in range(1, min(60, max_c + 1)):
-                v = ws.cell(r, c).value
+                v = _cval(rows, r, c)
                 if v is None:
                     continue
                 su = str(v).strip().upper()
                 if su.startswith("GRADO"):
                     for c2 in range(c + 1, min(c + 20, max_c + 1)):
-                        v2 = ws.cell(r, c2).value
+                        v2 = _cval(rows, r, c2)
                         if v2 and str(v2).strip() and "DIRECTOR" not in str(v2).upper():
                             grado_raw = str(v2).strip().upper()
                             break
                 elif su.startswith("DIRECTOR DE GRUPO"):
                     for c2 in range(c + 1, min(c + 20, max_c + 1)):
-                        v2 = ws.cell(r, c2).value
+                        v2 = _cval(rows, r, c2)
                         if v2 and str(v2).strip():
                             director_grupo = str(v2).strip().upper()
                             break
                 elif su.startswith("CURSO") and not curso_clave:
                     for c2 in range(c + 1, min(c + 20, max_c + 1)):
-                        v2 = ws.cell(r, c2).value
+                        v2 = _cval(rows, r, c2)
                         if v2 is not None and str(v2).strip():
                             try:
                                 curso_clave = obtener_curso_desde_sheetname(str(int(float(v2))))
@@ -728,9 +744,9 @@ def _procesar_libro_valoraciones_ceis(wb, ruta_archivo, hash_actual, anio_lectiv
         col_doc = None
         col_est = 2
         for c in range(1, 6):
-            h13 = str(ws.cell(13, c).value or "").strip().upper()
-            h14 = str(ws.cell(14, c).value or "").strip().upper()
-            h15 = str(ws.cell(15, c).value or "").strip().upper()
+            h13 = str(_cval(rows, 13, c) or "").strip().upper()
+            h14 = str(_cval(rows, 14, c) or "").strip().upper()
+            h15 = str(_cval(rows, 15, c) or "").strip().upper()
             h_all = f"{h13} {h14} {h15}"
             if "DOC" in h_all:
                 col_doc = c
@@ -744,13 +760,13 @@ def _procesar_libro_valoraciones_ceis(wb, ruta_archivo, hash_actual, anio_lectiv
         area_actual = "ÁREA ACADÉMICA"
         c = 1
         while c <= max_c:
-            a13 = str(ws.cell(13, c).value or "").strip().upper()
+            a13 = str(_cval(rows, 13, c) or "").strip().upper()
             if a13 and a13 not in ("ESTUDIANTE", "DOCUMENTO", "NO.", "BJ", "PROMEDIO") and "PERIODO" not in a13 and not any(m in a13 for m in ("FEBRERO", "ABRIL", "JULIO", "SEPTIEMBRE")):
                 area_actual = a13
 
-            f15 = [str(ws.cell(15, c + k).value or "").strip().upper() for k in range(7) if (c + k) <= max_c]
+            f15 = [str(_cval(rows, 15, c + k) or "").strip().upper() for k in range(7) if (c + k) <= max_c]
             if len(f15) == 7 and f15 == ["P", "R", "D", "R", "A", "PRO", "G1"]:
-                asig_name = str(ws.cell(14, c).value or "").strip().upper() or area_actual
+                asig_name = str(_cval(rows, 14, c) or "").strip().upper() or area_actual
                 bloques_asig.append((area_actual, asig_name, c))
                 c += 28
                 continue
@@ -763,7 +779,7 @@ def _procesar_libro_valoraciones_ceis(wb, ruta_archivo, hash_actual, anio_lectiv
 
         # Recorrer filas de estudiantes (desde fila 16)
         for r in range(16, max_r + 1):
-            est_raw = ws.cell(r, col_est).value
+            est_raw = _cval(rows, r, col_est)
             if est_raw is None or not str(est_raw).strip():
                 continue
 
@@ -785,7 +801,7 @@ def _procesar_libro_valoraciones_ceis(wb, ruta_archivo, hash_actual, anio_lectiv
             # Resolver documento: columna explícita > BD por nombre > código determinístico
             documento = None
             if col_doc is not None:
-                doc_val = ws.cell(r, col_doc).value
+                doc_val = _cval(rows, r, col_doc)
                 if doc_val is not None and str(doc_val).strip():
                     try:
                         documento = str(int(float(str(doc_val).strip())))[:20]
@@ -818,9 +834,9 @@ def _procesar_libro_valoraciones_ceis(wb, ruta_archivo, hash_actual, anio_lectiv
                 for p_idx in range(4):
                     p_num = p_idx + 1
                     pc = base_c + (p_idx * 7)
-                    des_val = _fmt_des(ws.cell(r, pc + 6).value)
-                    tot_val = _fmt_total(ws.cell(r, pc + 5).value)
-                    act_raw = ws.cell(r, pc + 4).value
+                    des_val = _fmt_des(_cval(rows, r, pc + 6))
+                    tot_val = _fmt_total(_cval(rows, r, pc + 5))
+                    act_raw = _cval(rows, r, pc + 4)
                     if act_raw is not None:
                         try:
                             act_sum[p_num].append(float(act_raw))
@@ -830,10 +846,10 @@ def _procesar_libro_valoraciones_ceis(wb, ruta_archivo, hash_actual, anio_lectiv
                         max_p_nota = p_num
 
                     asig_obj[f"p{p_num}"] = {
-                        "p": _fmt_nota_etapa(ws.cell(r, pc).value),
-                        "rd": _fmt_nota_etapa(ws.cell(r, pc + 1).value),
-                        "r": _fmt_nota_etapa(ws.cell(r, pc + 2).value),
-                        "a": _fmt_nota_etapa(ws.cell(r, pc + 3).value),
+                        "p": _fmt_nota_etapa(_cval(rows, r, pc)),
+                        "rd": _fmt_nota_etapa(_cval(rows, r, pc + 1)),
+                        "r": _fmt_nota_etapa(_cval(rows, r, pc + 2)),
+                        "a": _fmt_nota_etapa(_cval(rows, r, pc + 3)),
                         "pt": _fmt_nota_etapa(act_raw),
                         "total": tot_val,
                         "des": des_val,
@@ -852,10 +868,10 @@ def _procesar_libro_valoraciones_ceis(wb, ruta_archivo, hash_actual, anio_lectiv
             for idx_f, fc in enumerate(bloques_fallas[:4]):
                 p_num = idx_f + 1
                 fallas_p[f"p{p_num}"] = {
-                    "f": _fmt_int_cero(ws.cell(r, fc).value),
-                    "r": _fmt_int_cero(ws.cell(r, fc + 1).value),
-                    "e": _fmt_int_cero(ws.cell(r, fc + 2).value),
-                    "u": _fmt_int_cero(ws.cell(r, fc + 3).value),
+                    "f": _fmt_int_cero(_cval(rows, r, fc)),
+                    "r": _fmt_int_cero(_cval(rows, r, fc + 1)),
+                    "e": _fmt_int_cero(_cval(rows, r, fc + 2)),
+                    "u": _fmt_int_cero(_cval(rows, r, fc + 3)),
                 }
 
             # Convivencia y promedio actitudinal calculado desde las notas reales de A
@@ -916,7 +932,7 @@ def _procesar_libro_valoraciones_ceis(wb, ruta_archivo, hash_actual, anio_lectiv
 
     Estudiante.objects.bulk_create(
         estudiantes_objs,
-        batch_size=50,
+        batch_size=250,
         update_conflicts=True,
         unique_fields=["documento"],
         update_fields=["nombres", "apellidos", "grado", "curso", "director_grupo", "acudiente", "activo"],
@@ -953,7 +969,7 @@ def _procesar_libro_valoraciones_ceis(wb, ruta_archivo, hash_actual, anio_lectiv
 
     InformeValorativo.objects.bulk_create(
         informes_objs,
-        batch_size=50,
+        batch_size=250,
         update_conflicts=True,
         unique_fields=["estudiante", "anio_lectivo"],
         update_fields=["periodo_actual", "datos_academicos", "datos_convivencia", "observaciones_academicas", "observaciones_convivenciales", "tecnico_sena"],
@@ -1028,25 +1044,42 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False, anio_lectivo=
         }
 
     import openpyxl
-    wb = openpyxl.load_workbook(ruta_archivo, data_only=True)
+    wb = openpyxl.load_workbook(ruta_archivo, data_only=True, read_only=True)
+    try:
+        if _es_formato_boletines_ceis(wb):
+            return _procesar_libro_boletines_oficial_ceis(
+                wb=wb,
+                ruta_archivo=ruta_archivo,
+                hash_actual=hash_actual,
+                anio_lectivo=anio_lectivo,
+                periodo_actual=periodo_actual,
+            )
 
-    if _es_formato_boletines_ceis(wb):
-        return _procesar_libro_boletines_oficial_ceis(
+        if _es_formato_valoraciones_ceis(wb):
+            return _procesar_libro_valoraciones_ceis(
+                wb=wb,
+                ruta_archivo=ruta_archivo,
+                hash_actual=hash_actual,
+                anio_lectivo=anio_lectivo,
+                periodo_actual=periodo_actual,
+            )
+
+        return _ejecutar_sabana_multicurso(
             wb=wb,
             ruta_archivo=ruta_archivo,
             hash_actual=hash_actual,
             anio_lectivo=anio_lectivo,
             periodo_actual=periodo_actual,
         )
+    finally:
+        try:
+            wb.close()
+        except Exception:
+            pass
 
-    if _es_formato_valoraciones_ceis(wb):
-        return _procesar_libro_valoraciones_ceis(
-            wb=wb,
-            ruta_archivo=ruta_archivo,
-            hash_actual=hash_actual,
-            anio_lectivo=anio_lectivo,
-            periodo_actual=periodo_actual,
-        )
+
+def _ejecutar_sabana_multicurso(wb, ruta_archivo, hash_actual, anio_lectivo=2026, periodo_actual=None):
+    from core.models import Estudiante, InformeValorativo
 
     # Cargar informes existentes del mismo año para preservar periodos anteriores al subir uno nuevo
     informes_previos = {}
