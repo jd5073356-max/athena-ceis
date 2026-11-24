@@ -1,11 +1,26 @@
 {
-  "ultimo_sync": "2026-11-24T07:56:59.839501",
-  "archivo": "/tmp/sabana_upload_1_1795525015.xlsx",
-  "hash": "ab8aa357303864ef91eba13c4be6d946",
-  "formato": "oficial_ceis_boletines",
-  "estudiantes_procesados": 26,
+  "ultimo_sync": "2026-11-24T08:04:17.353287",
+  "archivo": "/home/juan/Descargas/cargue_masivo_oficial_ceis_2026.xlsx",
+  "hash": "8eba7dc0a25150728b52b9544d07156a",
+  "formato": "oficial_ceis_valoraciones",
+  "estudiantes_procesados": 530,
   "cursos_procesados": [
-    "702"
+    "1001",
+    "1002",
+    "1101",
+    "1102",
+    "601",
+    "602",
+    "603",
+    "701",
+    "702",
+    "703",
+    "801",
+    "802",
+    "803",
+    "901",
+    "902",
+    "903"
   ],
   "anio_lectivo": 2026,
   "periodo_actual": 4,
@@ -15,5 +30,5 @@
     4
   ],
   "estado": "exitoso",
-  "mensaje": "26 estudiantes y boletines oficiales SERC importados (Formato Oficial CEIS · Curso 702 · Periodo 2, 3, 4)."
+  "mensaje": "530 estudiantes y boletines importados (Formato Oficial CEIS VALORACIONES · 16 cursos · Periodo 2, 3, 4)."
 }
