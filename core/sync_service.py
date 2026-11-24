@@ -153,8 +153,61 @@ def obtener_curso_desde_sheetname(sheetname):
     return None
 
 
-def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False, anio_lectivo=2026, periodo_actual=3):
-    """Ejecuta la sincronización de la sábana de notas Excel con PostgreSQL / Supabase."""
+def parsear_periodo(val, default=3):
+    """Convierte un valor de periodo (1-4, 'I'-'IV', 'Periodo 3', etc.) en entero 1..4."""
+    if val is None:
+        return default
+    s = str(val).strip().upper()
+    if not s:
+        return default
+    mapa_romano = {"I": 1, "II": 2, "III": 3, "IV": 4}
+    if s in mapa_romano:
+        return mapa_romano[s]
+    try:
+        n = int(float(s))
+        if 1 <= n <= 4:
+            return n
+    except Exception:
+        pass
+    import re
+    m = re.search(r'\b([1-4])\b', s)
+    if m:
+        return int(m.group(1))
+    for rom, num in (("IV", 4), ("III", 3), ("II", 2), ("I", 1)):
+        if re.search(rf'\b{rom}\b', s):
+            return num
+    return default
+
+
+def construir_periodos_asignatura(nota_val, periodo_fila, rnd, existing_asig=None):
+    """Construye p1..p4 para una asignatura respetando el periodo del Excel y preservando periodos previos."""
+    vacio = {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
+    res = {}
+    for p in (1, 2, 3, 4):
+        pk = f"p{p}"
+        if p == periodo_fila:
+            res[pk] = generar_detalles_etapa(nota_val, rnd.randint(1, 10000))
+        elif p < periodo_fila:
+            prev = existing_asig.get(pk) if isinstance(existing_asig, dict) else None
+            if isinstance(prev, dict) and prev.get("des") not in (None, "", "-"):
+                res[pk] = prev
+            else:
+                res[pk] = generar_detalles_etapa(variante_desempeno(nota_val, rnd), rnd.randint(1, 10000))
+        else:
+            prev = existing_asig.get(pk) if isinstance(existing_asig, dict) else None
+            if isinstance(prev, dict) and prev.get("des") not in (None, "", "-"):
+                res[pk] = prev
+            else:
+                res[pk] = dict(vacio)
+    return res
+
+
+def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False, anio_lectivo=2026, periodo_actual=None):
+    """Ejecuta la sincronización de la sábana de notas Excel con PostgreSQL / Supabase.
+
+    Si `periodo_actual` es None, detecta automáticamente la columna 'Periodo Académico'
+    del Excel por fila (con respaldo a periodo 3 si el archivo no trae dicha columna).
+    """
     from core.models import Estudiante, InformeValorativo
 
     if not ruta_archivo:
@@ -180,11 +233,17 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False, anio_lectivo=
             "mensaje": "El archivo no ha cambiado desde la última sincronización.",
         }
 
+    # Cargar informes existentes del mismo año para preservar periodos anteriores al subir uno nuevo
+    informes_previos = {}
+    for inf in InformeValorativo.objects.filter(anio_lectivo=anio_lectivo).select_related("estudiante"):
+        informes_previos[inf.estudiante.documento] = inf
+
     import openpyxl
     wb = openpyxl.load_workbook(ruta_archivo, data_only=True)
     estudiantes_objs = []
     datos_por_doc = {}
     cursos_procesados = []
+    periodos_detectados = set()
 
     for sheetname in wb.sheetnames:
         curso_clave = obtener_curso_desde_sheetname(sheetname)
@@ -196,12 +255,21 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False, anio_lectivo=
 
         col_doc = 1
         col_nom = 2
+        col_periodo = None
         materias_cols = {}
-        for idx in range(3, len(headers)):
-            h = headers[idx]
-            if h in ("Desempeño General", "Estado Académico"):
-                break
-            materias_cols[h] = idx
+        for idx, h in enumerate(headers):
+            if h is None:
+                continue
+            h_str = str(h).strip()
+            h_low = h_str.lower()
+            if "periodo" in h_low:
+                col_periodo = idx
+                continue
+            if idx >= 3 and h_str not in ("Desempeño General", "Estado Académico"):
+                # Detener captura de materias si ya pasamos las columnas de resumen
+                if "desempeño general" in h_low or "estado académico" in h_low or "estado academico" in h_low:
+                    continue
+                materias_cols[h_str] = idx
 
         es_media = curso_clave in ["1001", "1002", "1101", "1102"]
 
@@ -213,12 +281,30 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False, anio_lectivo=
             if not doc_raw:
                 continue
             try:
-                documento = str(int(float(doc_raw)))
+                documento = str(int(float(doc_raw)))[:20]
             except Exception:
-                documento = doc_raw
+                documento = doc_raw[:20]
 
             if documento in datos_por_doc:
                 continue
+
+            # Determinar el periodo: si periodo_actual fue forzado explícitamente, usarlo; si es None, leer del Excel
+            if periodo_actual is not None:
+                periodo_fila = parsear_periodo(periodo_actual, default=3)
+            elif col_periodo is not None and col_periodo < len(row) and row[col_periodo] is not None:
+                periodo_fila = parsear_periodo(row[col_periodo], default=3)
+            else:
+                periodo_fila = 3
+            periodos_detectados.add(periodo_fila)
+
+            # Mapa de asignaturas existentes del estudiante para preservar periodos anteriores
+            prev_inf = informes_previos.get(documento)
+            prev_asigs = {}
+            if prev_inf and isinstance(prev_inf.datos_academicos, dict):
+                for area_prev in prev_inf.datos_academicos.get("areas", []):
+                    for asig_prev in area_prev.get("asignaturas", []):
+                        if isinstance(asig_prev, dict) and asig_prev.get("nombre"):
+                            prev_asigs[asig_prev["nombre"].upper()] = asig_prev
 
             nombre_completo = str(row[col_nom]).strip().upper()
             partes = nombre_completo.split()
@@ -249,269 +335,157 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False, anio_lectivo=
                 )
             )
 
+            def _asig_dict(nombre_upper, nota_val):
+                periodos_data = construir_periodos_asignatura(
+                    nota_val, periodo_fila, rnd, existing_asig=prev_asigs.get(nombre_upper)
+                )
+                return {"nombre": nombre_upper, **periodos_data}
+
             areas = []
             if es_media:
                 asigs_cientifico = []
                 for mat_nombre in ["Química", "Física"]:
                     if mat_nombre in materias_cols:
                         nota_val = row[materias_cols[mat_nombre]] or "BÁSICO"
-                        asigs_cientifico.append({
-                            "nombre": mat_nombre.upper(),
-                            "p1": generar_detalles_etapa(variante_desempeno(nota_val, rnd), rnd.randint(1, 10000)),
-                            "p2": generar_detalles_etapa(variante_desempeno(nota_val, rnd), rnd.randint(1, 10000)),
-                            "p3": generar_detalles_etapa(nota_val, rnd.randint(1, 10000)),
-                            "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                        })
-                asigs_cientifico.append({
-                    "nombre": "BIOLOGÍA",
-                    "p1": generar_detalles_etapa("ALTO", rnd.randint(1, 10000)),
-                    "p2": generar_detalles_etapa("BÁSICO", rnd.randint(1, 10000)),
-                    "p3": generar_detalles_etapa("ALTO", rnd.randint(1, 10000)),
-                    "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                })
+                        asigs_cientifico.append(_asig_dict(mat_nombre.upper(), nota_val))
+                asigs_cientifico.append(_asig_dict("BIOLOGÍA", "ALTO"))
                 areas.append({"nombre": "PENSAMIENTO CIENTÍFICO", "asignaturas": asigs_cientifico})
 
                 nota_mat = row[materias_cols.get("Matemáticas", 3)] or "ALTO"
                 areas.append({
                     "nombre": "PENSAMIENTO MATEMÁTICO",
-                    "asignaturas": [{
-                        "nombre": "MATEMÁTICAS",
-                        "p1": generar_detalles_etapa(variante_desempeno(nota_mat, rnd), rnd.randint(1, 10000)),
-                        "p2": generar_detalles_etapa(variante_desempeno(nota_mat, rnd), rnd.randint(1, 10000)),
-                        "p3": generar_detalles_etapa(nota_mat, rnd.randint(1, 10000)),
-                        "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                    }]
+                    "asignaturas": [_asig_dict("MATEMÁTICAS", nota_mat)]
                 })
 
                 asigs_com = []
                 for mat_nombre in ["Lengua Castellana", "Inglés"]:
                     if mat_nombre in materias_cols:
                         n = row[materias_cols[mat_nombre]] or "ALTO"
-                        asigs_com.append({
-                            "nombre": mat_nombre.upper(),
-                            "p1": generar_detalles_etapa(variante_desempeno(n, rnd), rnd.randint(1, 10000)),
-                            "p2": generar_detalles_etapa(variante_desempeno(n, rnd), rnd.randint(1, 10000)),
-                            "p3": generar_detalles_etapa(n, rnd.randint(1, 10000)),
-                            "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                        })
+                        asigs_com.append(_asig_dict(mat_nombre.upper(), n))
                 areas.append({"nombre": "COMUNICACIONES (HUMANIDADES)", "asignaturas": asigs_com})
 
                 n_pol = row[materias_cols.get("Política y Economía", 7)] or "ALTO"
                 areas.append({
                     "nombre": "PENSAMIENTO SOCIAL",
                     "asignaturas": [
-                        {
-                            "nombre": "P. POLITICO Y ECONOMICO",
-                            "p1": generar_detalles_etapa(variante_desempeno(n_pol, rnd), rnd.randint(1, 10000)),
-                            "p2": generar_detalles_etapa(variante_desempeno(n_pol, rnd), rnd.randint(1, 10000)),
-                            "p3": generar_detalles_etapa(n_pol, rnd.randint(1, 10000)),
-                            "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                        },
-                        {
-                            "nombre": "PENSAMIENTO SOCIAL",
-                            "p1": generar_detalles_etapa("BÁSICO", rnd.randint(1, 10000)),
-                            "p2": generar_detalles_etapa("ALTO", rnd.randint(1, 10000)),
-                            "p3": generar_detalles_etapa("BÁSICO", rnd.randint(1, 10000)),
-                            "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                        }
+                        _asig_dict("P. POLITICO Y ECONOMICO", n_pol),
+                        _asig_dict("PENSAMIENTO SOCIAL", "BÁSICO"),
                     ]
                 })
 
                 n_fil = row[materias_cols.get("Filosofía", 8)] or "ALTO"
                 areas.append({
                     "nombre": "PENSAMIENTO FILOSOFICO",
-                    "asignaturas": [{
-                        "nombre": "FILOSOFIA",
-                        "p1": generar_detalles_etapa(variante_desempeno(n_fil, rnd), rnd.randint(1, 10000)),
-                        "p2": generar_detalles_etapa(variante_desempeno(n_fil, rnd), rnd.randint(1, 10000)),
-                        "p3": generar_detalles_etapa(n_fil, rnd.randint(1, 10000)),
-                        "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                    }]
+                    "asignaturas": [_asig_dict("FILOSOFIA", n_fil)]
                 })
 
                 n_ef = row[materias_cols.get("Educación Física", 10)] or "SUPERIOR"
                 areas.append({
                     "nombre": "CULTURA FÍSICA Y DEPORTIVA",
-                    "asignaturas": [{
-                        "nombre": "EDUCACIÓN FÍSICA",
-                        "p1": generar_detalles_etapa(variante_desempeno(n_ef, rnd), rnd.randint(1, 10000)),
-                        "p2": generar_detalles_etapa(variante_desempeno(n_ef, rnd), rnd.randint(1, 10000)),
-                        "p3": generar_detalles_etapa(n_ef, rnd.randint(1, 10000)),
-                        "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                    }]
+                    "asignaturas": [_asig_dict("EDUCACIÓN FÍSICA", n_ef)]
                 })
 
                 n_art = row[materias_cols.get("Educación Artística", 11)] or "ALTO"
                 areas.append({
                     "nombre": "PENSAMIENTO ARTÍSTICO",
-                    "asignaturas": [{
-                        "nombre": "EDUCACIÓN ARTÍSTICA",
-                        "p1": generar_detalles_etapa(variante_desempeno(n_art, rnd), rnd.randint(1, 10000)),
-                        "p2": generar_detalles_etapa(variante_desempeno(n_art, rnd), rnd.randint(1, 10000)),
-                        "p3": generar_detalles_etapa(n_art, rnd.randint(1, 10000)),
-                        "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                    }]
+                    "asignaturas": [_asig_dict("EDUCACIÓN ARTÍSTICA", n_art)]
                 })
 
                 n_et = row[materias_cols.get("Ética y Valores", 12)] or "ALTO"
                 areas.append({
                     "nombre": "PENSAMIENTO ÉTICO Y CIUDADANO",
-                    "asignaturas": [{
-                        "nombre": "EDUCACIÓN ÉTICA Y VALORES",
-                        "p1": generar_detalles_etapa(variante_desempeno(n_et, rnd), rnd.randint(1, 10000)),
-                        "p2": generar_detalles_etapa(variante_desempeno(n_et, rnd), rnd.randint(1, 10000)),
-                        "p3": generar_detalles_etapa(n_et, rnd.randint(1, 10000)),
-                        "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                    }]
+                    "asignaturas": [_asig_dict("EDUCACIÓN ÉTICA Y VALORES", n_et)]
                 })
 
                 n_tec = row[materias_cols.get("Tecnología e Informática", 9)] or "ALTO"
                 areas.append({
                     "nombre": "PENSAMIENTO TECNOLÓGICO",
-                    "asignaturas": [{
-                        "nombre": "TECNOLOGÍA E INFORMÁTICA",
-                        "p1": generar_detalles_etapa(variante_desempeno(n_tec, rnd), rnd.randint(1, 10000)),
-                        "p2": generar_detalles_etapa(variante_desempeno(n_tec, rnd), rnd.randint(1, 10000)),
-                        "p3": generar_detalles_etapa(n_tec, rnd.randint(1, 10000)),
-                        "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                    }]
+                    "asignaturas": [_asig_dict("TECNOLOGÍA E INFORMÁTICA", n_tec)]
                 })
             else:
                 n_nat = row[materias_cols.get("Ciencias Naturales", 5)] or "ALTO"
                 areas.append({
                     "nombre": "PENSAMIENTO CIENTÍFICO",
-                    "asignaturas": [{
-                        "nombre": "BIOLOGÍA / CIENCIAS NATURALES",
-                        "p1": generar_detalles_etapa(variante_desempeno(n_nat, rnd), rnd.randint(1, 10000)),
-                        "p2": generar_detalles_etapa(variante_desempeno(n_nat, rnd), rnd.randint(1, 10000)),
-                        "p3": generar_detalles_etapa(n_nat, rnd.randint(1, 10000)),
-                        "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                    }]
+                    "asignaturas": [_asig_dict("BIOLOGÍA / CIENCIAS NATURALES", n_nat)]
                 })
 
                 n_mat = row[materias_cols.get("Matemáticas", 3)] or "ALTO"
                 areas.append({
                     "nombre": "PENSAMIENTO MATEMÁTICO",
-                    "asignaturas": [{
-                        "nombre": "MATEMÁTICAS",
-                        "p1": generar_detalles_etapa(variante_desempeno(n_mat, rnd), rnd.randint(1, 10000)),
-                        "p2": generar_detalles_etapa(variante_desempeno(n_mat, rnd), rnd.randint(1, 10000)),
-                        "p3": generar_detalles_etapa(n_mat, rnd.randint(1, 10000)),
-                        "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                    }]
+                    "asignaturas": [_asig_dict("MATEMÁTICAS", n_mat)]
                 })
 
                 asigs_com = []
                 for mat_nombre in ["Lengua Castellana", "Inglés"]:
                     if mat_nombre in materias_cols:
                         n = row[materias_cols[mat_nombre]] or "ALTO"
-                        asigs_com.append({
-                            "nombre": mat_nombre.upper(),
-                            "p1": generar_detalles_etapa(variante_desempeno(n, rnd), rnd.randint(1, 10000)),
-                            "p2": generar_detalles_etapa(variante_desempeno(n, rnd), rnd.randint(1, 10000)),
-                            "p3": generar_detalles_etapa(n, rnd.randint(1, 10000)),
-                            "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                        })
+                        asigs_com.append(_asig_dict(mat_nombre.upper(), n))
                 areas.append({"nombre": "COMUNICACIONES (HUMANIDADES)", "asignaturas": asigs_com})
 
                 n_soc = row[materias_cols.get("Ciencias Sociales", 6)] or "ALTO"
                 areas.append({
                     "nombre": "PENSAMIENTO SOCIAL",
-                    "asignaturas": [{
-                        "nombre": "CIENCIAS SOCIALES",
-                        "p1": generar_detalles_etapa(variante_desempeno(n_soc, rnd), rnd.randint(1, 10000)),
-                        "p2": generar_detalles_etapa(variante_desempeno(n_soc, rnd), rnd.randint(1, 10000)),
-                        "p3": generar_detalles_etapa(n_soc, rnd.randint(1, 10000)),
-                        "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                    }]
+                    "asignaturas": [_asig_dict("CIENCIAS SOCIALES", n_soc)]
                 })
 
                 n_ef = row[materias_cols.get("Educación Física", 10)] or "SUPERIOR"
                 areas.append({
                     "nombre": "CULTURA FÍSICA Y DEPORTIVA",
-                    "asignaturas": [{
-                        "nombre": "EDUCACIÓN FÍSICA",
-                        "p1": generar_detalles_etapa(variante_desempeno(n_ef, rnd), rnd.randint(1, 10000)),
-                        "p2": generar_detalles_etapa(variante_desempeno(n_ef, rnd), rnd.randint(1, 10000)),
-                        "p3": generar_detalles_etapa(n_ef, rnd.randint(1, 10000)),
-                        "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                    }]
+                    "asignaturas": [_asig_dict("EDUCACIÓN FÍSICA", n_ef)]
                 })
 
                 n_art = row[materias_cols.get("Educación Artística", 11)] or "ALTO"
                 areas.append({
                     "nombre": "PENSAMIENTO ARTÍSTICO",
-                    "asignaturas": [{
-                        "nombre": "EDUCACIÓN ARTÍSTICA",
-                        "p1": generar_detalles_etapa(variante_desempeno(n_art, rnd), rnd.randint(1, 10000)),
-                        "p2": generar_detalles_etapa(variante_desempeno(n_art, rnd), rnd.randint(1, 10000)),
-                        "p3": generar_detalles_etapa(n_art, rnd.randint(1, 10000)),
-                        "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                    }]
+                    "asignaturas": [_asig_dict("EDUCACIÓN ARTÍSTICA", n_art)]
                 })
 
                 n_et = row[materias_cols.get("Ética y Valores", 12)] or "ALTO"
                 areas.append({
                     "nombre": "PENSAMIENTO ÉTICO Y CIUDADANO",
-                    "asignaturas": [{
-                        "nombre": "EDUCACIÓN ÉTICA Y VALORES",
-                        "p1": generar_detalles_etapa(variante_desempeno(n_et, rnd), rnd.randint(1, 10000)),
-                        "p2": generar_detalles_etapa(variante_desempeno(n_et, rnd), rnd.randint(1, 10000)),
-                        "p3": generar_detalles_etapa(n_et, rnd.randint(1, 10000)),
-                        "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                    }]
+                    "asignaturas": [_asig_dict("EDUCACIÓN ÉTICA Y VALORES", n_et)]
                 })
 
                 n_tec = row[materias_cols.get("Tecnología e Informática", 9)] or "ALTO"
                 areas.append({
                     "nombre": "PENSAMIENTO TECNOLÓGICO",
-                    "asignaturas": [{
-                        "nombre": "TECNOLOGÍA E INFORMÁTICA",
-                        "p1": generar_detalles_etapa(variante_desempeno(n_tec, rnd), rnd.randint(1, 10000)),
-                        "p2": generar_detalles_etapa(variante_desempeno(n_tec, rnd), rnd.randint(1, 10000)),
-                        "p3": generar_detalles_etapa(n_tec, rnd.randint(1, 10000)),
-                        "p4": {"p": "-", "rd": "-", "r": "-", "a": "-", "pt": "-", "total": 0, "des": "-"}
-                    }]
+                    "asignaturas": [_asig_dict("TECNOLOGÍA E INFORMÁTICA", n_tec)]
                 })
 
+            conv_p, fam_p, fallas_p, prom_p, sena_p = {}, {}, {}, {}, {}
+            for p in (1, 2, 3, 4):
+                pk = f"p{p}"
+                if p <= periodo_fila:
+                    conv_p[pk] = {
+                        "pa": f"{rnd.randint(80, 96)/10:.1f}".replace(".", ","),
+                        "vc": str(rnd.randint(8, 10)),
+                        "pc": f"{rnd.randint(80, 96):.1f}".replace(".", ","),
+                        "des": rnd.choice(["S", "A", "A", "S"] if p >= 3 else ["S", "A", "A", "BS"]),
+                    }
+                    fam_p[pk] = rnd.choice(["S", "S", "A"])
+                    fallas_p[pk] = {"f": rnd.randint(0, 2), "r": rnd.randint(0, 2), "e": 0, "u": 0}
+                    prom_p[pk] = f"{rnd.randint(78, 96)/10:.2f}".replace(".", ",")
+                    sena_p[pk] = rnd.choice(["A", "A", "S"] if p >= 3 else ["A", "A", "BS"])
+                else:
+                    conv_p[pk] = {"pa": "0,0", "vc": "-", "pc": "0,0", "des": "-"}
+                    fam_p[pk] = "-"
+                    fallas_p[pk] = {"f": 0, "r": 0, "e": 0, "u": 0}
+                    prom_p[pk] = "0,00"
+                    sena_p[pk] = "-"
+
             convivencia_data = {
-                "convivencia": {
-                    "p1": {"pa": f"{rnd.randint(80, 95)/10:.1f}".replace(".", ","), "vc": str(rnd.randint(8, 10)), "pc": f"{rnd.randint(80, 95):.1f}".replace(".", ","), "des": rnd.choice(["S", "A", "A", "BS"])},
-                    "p2": {"pa": f"{rnd.randint(80, 95)/10:.1f}".replace(".", ","), "vc": str(rnd.randint(8, 10)), "pc": f"{rnd.randint(80, 95):.1f}".replace(".", ","), "des": rnd.choice(["S", "A", "A", "BS"])},
-                    "p3": {"pa": f"{rnd.randint(82, 98)/10:.1f}".replace(".", ","), "vc": str(rnd.randint(8, 10)), "pc": f"{rnd.randint(82, 98):.1f}".replace(".", ","), "des": rnd.choice(["S", "A", "S"])},
-                    "p4": {"pa": "0,0", "vc": "-", "pc": "0,0", "des": "-"}
-                },
-                "ambito_familiar": {
-                    "p1": rnd.choice(["S", "S", "A"]),
-                    "p2": rnd.choice(["S", "S", "A"]),
-                    "p3": rnd.choice(["S", "S", "S"]),
-                    "p4": "-"
-                },
-                "fallas_retardos": {
-                    "p1": {"f": rnd.randint(0, 3), "r": rnd.randint(0, 2), "e": 0, "u": 0},
-                    "p2": {"f": rnd.randint(0, 2), "r": rnd.randint(0, 3), "e": 0, "u": 0},
-                    "p3": {"f": rnd.randint(0, 1), "r": rnd.randint(0, 1), "e": 0, "u": 0},
-                    "p4": {"f": 0, "r": 0, "e": 0, "u": 0}
-                }
+                "convivencia": conv_p,
+                "ambito_familiar": fam_p,
+                "fallas_retardos": fallas_p,
             }
 
             datos_academicos = {
                 "areas": areas,
-                "promedio_actitudinal": {
-                    "p1": f"{rnd.randint(78, 95)/10:.2f}".replace(".", ","),
-                    "p2": f"{rnd.randint(78, 95)/10:.2f}".replace(".", ","),
-                    "p3": f"{rnd.randint(80, 96)/10:.2f}".replace(".", ","),
-                    "p4": "0,00"
-                },
-                "tecnico_sena": {
-                    "p1": rnd.choice(["A", "A", "BS"]),
-                    "p2": rnd.choice(["A", "BS"]),
-                    "p3": rnd.choice(["A", "A", "S"]),
-                    "p4": "-"
-                }
+                "promedio_actitudinal": prom_p,
+                "tecnico_sena": sena_p,
             }
 
-            datos_por_doc[documento] = (datos_academicos, convivencia_data)
+            datos_por_doc[documento] = (datos_academicos, convivencia_data, periodo_fila)
 
     # Actualizar Estudiantes en lotes de 50 para estabilidad en Supabase Pooler
     Estudiante.objects.bulk_create(
@@ -524,11 +498,11 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False, anio_lectivo=
 
     mapa_est = {e.documento: e for e in Estudiante.objects.filter(documento__in=list(datos_por_doc.keys()))}
     informes_objs = []
-    for doc, (d_acad, d_conv) in datos_por_doc.items():
+    for doc, (d_acad, d_conv, per_fila) in datos_por_doc.items():
         est = mapa_est.get(doc)
         if not est:
             continue
-        p_key = f"p{periodo_actual}"
+        p_key = f"p{per_fila}"
         tec_sena_val = "A"
         if isinstance(d_acad, dict) and "tecnico_sena" in d_acad:
             tec_sena_val = d_acad["tecnico_sena"].get(p_key, d_acad["tecnico_sena"].get("p3", "A"))
@@ -537,7 +511,7 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False, anio_lectivo=
             InformeValorativo(
                 estudiante=est,
                 anio_lectivo=anio_lectivo,
-                periodo_actual=periodo_actual,
+                periodo_actual=per_fila,
                 datos_academicos=d_acad,
                 datos_convivencia=d_conv,
                 observaciones_academicas=(
@@ -561,6 +535,8 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False, anio_lectivo=
     )
 
     cursos_unicos = sorted(list(set(cursos_procesados)))
+    periodos_lista = sorted(list(periodos_detectados)) if periodos_detectados else [periodo_actual or 3]
+    periodo_resumen = max(periodos_lista)
     ahora_iso = datetime.datetime.now().isoformat()
     nuevo_estado = {
         "ultimo_sync": ahora_iso,
@@ -569,9 +545,10 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False, anio_lectivo=
         "estudiantes_procesados": len(estudiantes_objs),
         "cursos_procesados": cursos_unicos,
         "anio_lectivo": anio_lectivo,
-        "periodo_actual": periodo_actual,
+        "periodo_actual": periodo_resumen,
+        "periodos_detectados": periodos_lista,
         "estado": "exitoso",
-        "mensaje": f"{len(estudiantes_objs)} estudiantes y boletines sincronizados correctamente con PostgreSQL / Supabase ({len(cursos_unicos)} cursos).",
+        "mensaje": f"{len(estudiantes_objs)} estudiantes y boletines sincronizados correctamente (Periodo {', '.join(map(str, periodos_lista))} · {len(cursos_unicos)} cursos).",
     }
     guardar_estado_sync(nuevo_estado)
 
@@ -582,8 +559,10 @@ def ejecutar_sincronizacion_excel(ruta_archivo=None, forzar=False, anio_lectivo=
         "estudiantes_procesados": len(estudiantes_objs),
         "cursos_procesados": cursos_unicos,
         "anio_lectivo": anio_lectivo,
-        "periodo_actual": periodo_actual,
+        "periodo_actual": periodo_resumen,
+        "periodos_detectados": periodos_lista,
         "ultimo_sync": ahora_iso,
         "hash": hash_actual,
         "mensaje": nuevo_estado["mensaje"],
     }
+

@@ -397,7 +397,7 @@
       ¡Sincronización Masiva Exitosa!
     </div>
     <p class="ath-excel-res-p">
-      Se procesaron y actualizaron correctamente <strong>{{ resultado.estudiantes_procesados }} estudiantes</strong> y sus respectivos informes valorativos SERC en PostgreSQL / Supabase.
+      Se procesaron y actualizaron correctamente <strong>{{ resultado.estudiantes_procesados }} estudiantes</strong> y sus respectivos informes valorativos SERC en PostgreSQL / Supabase{% if resultado.periodos_detectados %} — <strong>Periodo Académico {{ resultado.periodos_detectados|join:", " }}</strong>{% endif %}.
     </p>
     {% if resultado.cursos_procesados %}
     <div style="font-size:0.82rem;font-weight:700;color:#10b981;margin-bottom:6px;text-transform:uppercase;">
@@ -440,12 +440,13 @@
           </select>
         </div>
         <div class="ath-excel-field">
-          <label for="id_periodo_actual">Periodo Activo a Actualizar</label>
+          <label for="id_periodo_actual">Periodo Académico</label>
           <select name="periodo_actual" id="id_periodo_actual">
-            <option value="1">Periodo I</option>
-            <option value="2">Periodo II</option>
-            <option value="3" selected>Periodo III (Periodo Actual)</option>
-            <option value="4">Periodo IV</option>
+            <option value="auto" selected>Detectar automáticamente del Excel (Columna Periodo Académico)</option>
+            <option value="1">Forzar Periodo I</option>
+            <option value="2">Forzar Periodo II</option>
+            <option value="3">Forzar Periodo III</option>
+            <option value="4">Forzar Periodo IV</option>
           </select>
         </div>
       </div>

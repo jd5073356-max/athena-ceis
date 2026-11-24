@@ -490,7 +490,8 @@ class InformeValorativoAdmin(admin.ModelAdmin):
 
         if request.method == "POST":
             anio_lectivo = int(request.POST.get("anio_lectivo", 2026))
-            periodo_actual = int(request.POST.get("periodo_actual", 3))
+            periodo_raw = str(request.POST.get("periodo_actual", "auto")).strip().lower()
+            periodo_actual = None if periodo_raw in ("", "auto", "0") else int(periodo_raw)
             usar_institucional = request.POST.get("usar_institucional") == "1"
             archivo = request.FILES.get("archivo_excel")
 
@@ -519,9 +520,10 @@ class InformeValorativoAdmin(admin.ModelAdmin):
 
                     if res.get("exito"):
                         resultado = res
+                        pers = ", ".join(map(str, res.get("periodos_detectados", [res.get("periodo_actual", 3)])))
                         messages.success(
                             request,
-                            f"¡Sincronización completada! Se cargaron/actualizaron {res['estudiantes_procesados']} estudiantes y sus informes valorativos SERC ({len(res.get('cursos_procesados', []))} cursos)."
+                            f"¡Sincronización completada! Se cargaron/actualizaron {res['estudiantes_procesados']} estudiantes y sus informes valorativos SERC (Periodo {pers} · {len(res.get('cursos_procesados', []))} cursos)."
                         )
                     else:
                         error_msg = res.get("error", "Error procesando el archivo.")
