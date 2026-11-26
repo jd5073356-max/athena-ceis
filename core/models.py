@@ -712,6 +712,14 @@ class ConfiguracionSincronizacion(models.Model):
     ultimo_estado_nube = models.CharField("Último estado en la nube", max_length=255, blank=True, default="Pendiente de configurar")
     actualizado_en = models.DateTimeField("Actualizado en", auto_now=True)
 
+    # Firmas Oficiales del Boletín SERC
+    rector_nombre = models.CharField("Nombre del Rector(a)", max_length=150, default="Lic. Juan Carlos Aguirre Nieto")
+    rector_cargo = models.CharField("Cargo Rector(a)", max_length=100, default="Rector")
+    firma_rector = models.ImageField("Imagen Firma Rector(a)", upload_to="boletin/firmas/", blank=True, null=True)
+    secretario_nombre = models.CharField("Nombre del Secretario(a) Académico", max_length=150, default="Elder Uriel Páez Córdoba")
+    secretario_cargo = models.CharField("Cargo Secretario(a)", max_length=100, default="Secretario Académico")
+    firma_secretario = models.ImageField("Imagen Firma Secretario(a)", upload_to="boletin/firmas/", blank=True, null=True)
+
     class Meta:
         db_table = "CONFIG_SINCRONIZACION"
         verbose_name = "Configuración de Sincronización en la Nube"

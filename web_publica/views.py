@@ -1140,13 +1140,17 @@ def consulta_notas(request):
 @never_cache
 def boletin_imprimir(request, documento):
     """Vista de impresión directa y limpia del Informe Valorativo SERC oficial."""
+    from core.models import ConfiguracionSincronizacion
+
     estudiante, informe = _resolver_estudiante_e_informe(documento)
     if not estudiante or not informe:
         raise Http404("Informe valorativo no encontrado.")
 
+    firmas_config = ConfiguracionSincronizacion.objects.first()
     return render(request, "web_publica/boletin_serc.html", {
         "estudiante": estudiante,
         "informe": informe,
+        "firmas_config": firmas_config,
     })
 
 

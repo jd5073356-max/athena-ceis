@@ -278,6 +278,104 @@ def _fmt_int_cero(val):
         return 0
 
 
+def generar_observaciones_serc(d_acad, d_conv, per_fila, curso=""):
+    """Genera observaciones académicas y convivenciales dinámicas según el desarrollo real del periodo."""
+    pk = f"p{per_fila}"
+    totales = []
+    materias_bj = []
+    materias_bs = []
+    count_s = 0
+    total_asig = 0
+
+    for area in (d_acad or {}).get("areas", []):
+        for asig in area.get("asignaturas", []):
+            p_data = asig.get(pk) or {}
+            des = str(p_data.get("des") or "").strip().upper()
+            tot = p_data.get("total")
+            if des in ("S", "A", "BS", "BJ"):
+                total_asig += 1
+                if isinstance(tot, (int, float)) and tot > 0:
+                    totales.append(float(tot))
+                if des == "S":
+                    count_s += 1
+                elif des == "BS":
+                    materias_bs.append(asig.get("nombre", "").title())
+                elif des == "BJ":
+                    materias_bj.append(asig.get("nombre", "").title())
+
+    prom = round(sum(totales) / len(totales), 1) if totales else 0.0
+    n_bj = len(materias_bj)
+
+    # Observación académica según rendimiento
+    if n_bj == 0:
+        if total_asig > 0 and (count_s >= max(1, total_asig // 2) or prom >= 90.0):
+            obs_acad = (
+                f"¡FELICITACIONES! Hizo un desempeño excelente en el Periodo {per_fila} (promedio {prom}), "
+                "alcanzando el 100% de las guías SERC.\n"
+                "Se destaca por su autonomía, responsabilidad y compromiso académico."
+            )
+        elif prom >= 82.0:
+            obs_acad = (
+                f"¡Excelente trabajo! Cumplió satisfactoriamente con todas las asignaturas en el Periodo {per_fila} (promedio {prom}).\n"
+                "Se anima a mantener este ritmo y seguir fortaleciendo sus competencias hacia el nivel Superior."
+            )
+        else:
+            obs_acad = (
+                f"Alcanzó todas las asignaturas del Periodo {per_fila} (promedio {prom}).\n"
+                "Se recomienda continuar fortaleciendo la fase de Relación y profundización para elevar su desempeño."
+            )
+    elif n_bj == 1:
+        obs_acad = (
+            f"Debe adelantarse y presentar las guías pendientes en: {materias_bj[0]} (promedio del periodo: {prom}).\n"
+            "Es necesario comunicarse con el docente correspondiente para ser orientado en el proceso de superación."
+        )
+    elif n_bj == 2:
+        obs_acad = (
+            f"Debe adelantarse y ponerse al día en {n_bj} asignaturas: {', '.join(materias_bj)} (promedio: {prom}).\n"
+            "Debe presentar el desarrollo completo de las guías no alcanzadas en el menor tiempo posible."
+        )
+    else:
+        lista_m = ", ".join(materias_bj[:5]) + ("..." if n_bj > 5 else "")
+        obs_acad = (
+            f"ATENCIÓN PRIORITARIA: Registra {n_bj} asignaturas pendientes en desempeño Bajo ({lista_m}; promedio: {prom}).\n"
+            "Requiere acompañamiento inmediato del acudiente, compromiso académico y entrega de guías para nivelación."
+        )
+
+    # Nota SENA si es Media Técnica (1001..1102)
+    if str(curso) in ("1001", "1002", "1101", "1102"):
+        sena_des = (d_acad or {}).get("tecnico_sena", {}).get(pk, "-")
+        if sena_des in ("S", "A"):
+            obs_acad += "\nA la fecha, el aprendiz SENA ha cumplido satisfactoriamente con las evidencias de su formación técnica."
+        elif sena_des in ("BS", "BJ"):
+            obs_acad += "\nEl aprendiz SENA debe adelantarse con la entrega de evidencias pendientes de su formación técnica."
+
+    # Observación convivencial según convivencia y fallas/retardos del periodo
+    conv_p = ((d_conv or {}).get("convivencia") or {}).get(pk, {})
+    des_conv = str(conv_p.get("des") or "").strip().upper()
+    fallas_p = ((d_conv or {}).get("fallas_retardos") or {}).get(pk, {})
+    f_cnt = int(fallas_p.get("f") or 0)
+    r_cnt = int(fallas_p.get("r") or 0)
+
+    partes_conv = []
+    if des_conv == "S":
+        partes_conv.append("Excelente comportamiento, respeto y liderazgo positivo en la convivencia escolar.")
+    elif des_conv == "A":
+        partes_conv.append("Buen comportamiento y disposición en el aula. La institución agradece su aporte a la convivencia.")
+    elif des_conv == "BS":
+        partes_conv.append("Debe fortalecer el cumplimiento del manual de convivencia y los acuerdos de aula.")
+    elif des_conv == "BJ":
+        partes_conv.append("Requiere seguimiento convivencial urgente y compromiso formal junto con su acudiente.")
+    else:
+        partes_conv.append("La institución agradece su colaboración en las campañas de mejora institucional.")
+
+    if r_cnt >= 5 or f_cnt >= 4:
+        partes_conv.append(f"Se recomienda mejorar la puntualidad y asistencia (registra {f_cnt} fallas y {r_cnt} retardos en el periodo).")
+    elif f_cnt == 0 and r_cnt == 0:
+        partes_conv.append("Felicitaciones por su excelente puntualidad y asistencia durante el periodo.")
+
+    return obs_acad, "\n".join(partes_conv)
+
+
 def _es_formato_boletines_ceis(wb):
     """Detecta si el libro corresponde al formato oficial con hojas de boletines individuales B1..Bn."""
     import re
@@ -586,6 +684,11 @@ def _procesar_libro_boletines_oficial_ceis(wb, ruta_archivo, hash_actual, anio_l
         tec_sena_val = d_acad.get("tecnico_sena", {}).get(p_key, "-")
         if tec_sena_val not in ("S", "A", "BS", "BJ"):
             tec_sena_val = "A"
+
+        if not obs_a or not obs_c:
+            gen_a, gen_c = generar_observaciones_serc(d_acad, d_conv, per_fila, curso=est.curso)
+            obs_a = obs_a or gen_a
+            obs_c = obs_c or gen_c
 
         informes_objs.append(
             InformeValorativo(
@@ -948,6 +1051,7 @@ def _procesar_libro_valoraciones_ceis(wb, ruta_archivo, hash_actual, anio_lectiv
         tec_sena_val = d_acad.get("tecnico_sena", {}).get(p_key, "-")
         if tec_sena_val not in ("S", "A", "BS", "BJ"):
             tec_sena_val = "A"
+        obs_a, obs_c = generar_observaciones_serc(d_acad, d_conv, per_fila, curso=est.curso)
         informes_objs.append(
             InformeValorativo(
                 estudiante=est,
@@ -955,14 +1059,8 @@ def _procesar_libro_valoraciones_ceis(wb, ruta_archivo, hash_actual, anio_lectiv
                 periodo_actual=per_fila,
                 datos_academicos=d_acad,
                 datos_convivencia=d_conv,
-                observaciones_academicas=(
-                    "El estudiante demuestra compromiso constante en el desarrollo de las guías SERC.\n"
-                    "Se sugiere continuar fortaleciendo la fase de Relación y entrega puntual de evidencias."
-                ),
-                observaciones_convivenciales=(
-                    "La institución agradece su colaboración en las campañas de mejora.\n"
-                    "Felicitaciones por su aporte a la convivencia institucional."
-                ),
+                observaciones_academicas=obs_a,
+                observaciones_convivenciales=obs_c,
                 tecnico_sena=tec_sena_val,
             )
         )
@@ -1353,6 +1451,7 @@ def _ejecutar_sabana_multicurso(wb, ruta_archivo, hash_actual, anio_lectivo=2026
         if isinstance(d_acad, dict) and "tecnico_sena" in d_acad:
             tec_sena_val = d_acad["tecnico_sena"].get(p_key, d_acad["tecnico_sena"].get("p3", "A"))
 
+        obs_a, obs_c = generar_observaciones_serc(d_acad, d_conv, per_fila, curso=est.curso)
         informes_objs.append(
             InformeValorativo(
                 estudiante=est,
@@ -1360,14 +1459,8 @@ def _ejecutar_sabana_multicurso(wb, ruta_archivo, hash_actual, anio_lectivo=2026
                 periodo_actual=per_fila,
                 datos_academicos=d_acad,
                 datos_convivencia=d_conv,
-                observaciones_academicas=(
-                    "El estudiante demuestra compromiso constante en el desarrollo de las guías SERC.\n"
-                    "Se sugiere continuar fortaleciendo la fase de Relación y entrega puntual de evidencias."
-                ),
-                observaciones_convivenciales=(
-                    "La institución agradece su colaboración en las campañas de mejora.\n"
-                    "Felicitaciones por su aporte a la convivencia institucional."
-                ),
+                observaciones_academicas=obs_a,
+                observaciones_convivenciales=obs_c,
                 tecnico_sena=tec_sena_val,
             )
         )

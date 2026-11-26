@@ -494,7 +494,22 @@ class InformeValorativoAdmin(admin.ModelAdmin):
         if request.method == "POST":
             accion = request.POST.get("accion", "excel").strip()
 
-            if accion in ("guardar_api", "sincronizar_nube"):
+            if accion == "guardar_firmas":
+                sync_config.rector_nombre = request.POST.get("rector_nombre", "").strip() or "Lic. Juan Carlos Aguirre Nieto"
+                sync_config.rector_cargo = request.POST.get("rector_cargo", "").strip() or "Rector"
+                sync_config.secretario_nombre = request.POST.get("secretario_nombre", "").strip() or "Elder Uriel Páez Córdoba"
+                sync_config.secretario_cargo = request.POST.get("secretario_cargo", "").strip() or "Secretario Académico"
+                if request.POST.get("restaurar_firma_rector") == "1":
+                    sync_config.firma_rector = None
+                elif request.FILES.get("firma_rector"):
+                    sync_config.firma_rector = request.FILES["firma_rector"]
+                if request.POST.get("restaurar_firma_secretario") == "1":
+                    sync_config.firma_secretario = None
+                elif request.FILES.get("firma_secretario"):
+                    sync_config.firma_secretario = request.FILES["firma_secretario"]
+                sync_config.save()
+                messages.success(request, "Firmas y cargos oficiales del Boletín SERC actualizados correctamente.")
+            elif accion in ("guardar_api", "sincronizar_nube"):
                 sync_config.proveedor = request.POST.get("proveedor", sync_config.proveedor).strip()
                 sync_config.url_hoja = request.POST.get("url_hoja", "").strip()
                 nueva_key = request.POST.get("api_key", "").strip()

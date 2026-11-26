@@ -597,6 +597,82 @@
     </form>
   </div>
 
+  <!-- Firmas Oficiales del Boletín SERC -->
+  <div class="ath-excel-card" id="athFirmasCard">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;border-bottom:1px solid var(--border-color, #2a2e36);padding-bottom:14px;">
+      <div>
+        <h2 style="margin:0 0 4px 0;font-size:1.2rem;font-weight:700;color:var(--body-loud-color, #ffffff);display:flex;align-items:center;gap:8px;">
+          <span class="material-symbols-outlined" style="color:#c5a880;">draw</span>
+          Firmas Oficiales del Boletín SERC
+        </h2>
+        <p style="margin:0;font-size:0.86rem;color:var(--body-quiet-color, #94a3b8);">
+          Personaliza los nombres, cargos e imágenes de rúbrica que aparecen al pie del Boletín Oficial (la firma del Director de Grupo se toma automáticamente de cada curso).
+        </p>
+      </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="ath-excel-grid">
+        <div style="background:var(--darkened-bg,#121519);border:1px solid var(--border-color,#2a2e36);border-radius:10px;padding:16px;">
+          <div style="font-size:0.8rem;font-weight:700;color:#c5a880;text-transform:uppercase;margin-bottom:10px;">Firma 1 · Rectoría</div>
+          <div class="ath-excel-field" style="margin-bottom:12px;">
+            <label for="id_rector_nombre">Nombre Completo</label>
+            <input type="text" name="rector_nombre" id="id_rector_nombre" value="{{ sync_config.rector_nombre }}">
+          </div>
+          <div class="ath-excel-field" style="margin-bottom:12px;">
+            <label for="id_rector_cargo">Cargo</label>
+            <input type="text" name="rector_cargo" id="id_rector_cargo" value="{{ sync_config.rector_cargo }}">
+          </div>
+          <div class="ath-excel-field">
+            <label for="id_firma_rector">Imagen de Firma (PNG transparente recomendado)</label>
+            <input type="file" name="firma_rector" id="id_firma_rector" accept="image/*" style="padding:8px;font-size:0.84rem;">
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:10px;">
+            <img src="{% if sync_config.firma_rector %}{{ sync_config.firma_rector.url }}{% else %}{% static 'boletin/firma_rector.png' %}{% endif %}" alt="Firma Rector" style="max-height:44px;background:#ffffff;padding:4px 8px;border-radius:6px;">
+            {% if sync_config.firma_rector %}
+            <label style="font-size:0.78rem;color:#94a3b8;display:flex;align-items:center;gap:5px;cursor:pointer;">
+              <input type="checkbox" name="restaurar_firma_rector" value="1"> Restaurar original
+            </label>
+            {% endif %}
+          </div>
+        </div>
+
+        <div style="background:var(--darkened-bg,#121519);border:1px solid var(--border-color,#2a2e36);border-radius:10px;padding:16px;">
+          <div style="font-size:0.8rem;font-weight:700;color:#c5a880;text-transform:uppercase;margin-bottom:10px;">Firma 2 · Secretaría Académica</div>
+          <div class="ath-excel-field" style="margin-bottom:12px;">
+            <label for="id_secretario_nombre">Nombre Completo</label>
+            <input type="text" name="secretario_nombre" id="id_secretario_nombre" value="{{ sync_config.secretario_nombre }}">
+          </div>
+          <div class="ath-excel-field" style="margin-bottom:12px;">
+            <label for="id_secretario_cargo">Cargo</label>
+            <input type="text" name="secretario_cargo" id="id_secretario_cargo" value="{{ sync_config.secretario_cargo }}">
+          </div>
+          <div class="ath-excel-field">
+            <label for="id_firma_secretario">Imagen de Firma (PNG transparente recomendado)</label>
+            <input type="file" name="firma_secretario" id="id_firma_secretario" accept="image/*" style="padding:8px;font-size:0.84rem;">
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:10px;">
+            <img src="{% if sync_config.firma_secretario %}{{ sync_config.firma_secretario.url }}{% else %}{% static 'boletin/firma_secretario.png' %}{% endif %}" alt="Firma Secretario" style="max-height:44px;background:#ffffff;padding:4px 8px;border-radius:6px;">
+            {% if sync_config.firma_secretario %}
+            <label style="font-size:0.78rem;color:#94a3b8;display:flex;align-items:center;gap:5px;cursor:pointer;">
+              <input type="checkbox" name="restaurar_firma_secretario" value="1"> Restaurar original
+            </label>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="ath-excel-actions">
+        <button type="submit" name="accion" value="guardar_firmas" class="ath-btn-primary" style="background:linear-gradient(135deg,#b45309 0%,#92400e 100%);box-shadow:0 4px 14px rgba(180,83,9,0.35);">
+          <span class="material-symbols-outlined">verified</span>
+          Guardar Firmas del Boletín
+        </button>
+      </div>
+    </form>
+  </div>
+
   <div class="ath-guide-card">
     <h4>
       <span class="material-symbols-outlined" style="color:#38bdf8;font-size:20px;">info</span>

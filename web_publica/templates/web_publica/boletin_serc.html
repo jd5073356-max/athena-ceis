@@ -723,14 +723,14 @@
     <!-- Firmas Oficiales con Rúbricas Reales -->
     <div class="bloque-firmas">
       <div class="firma-col">
-        <img src="{% static 'boletin/firma_rector.png' %}" alt="Firma Rector" class="firma-img-rector">
-        <span class="firma-nombre">Lic. Juan Carlos Aguirre Nieto</span>
-        <span class="firma-cargo">Rector</span>
+        <img src="{% if firmas_config and firmas_config.firma_rector %}{{ firmas_config.firma_rector.url }}{% else %}{% static 'boletin/firma_rector.png' %}{% endif %}" alt="Firma Rector" class="firma-img-rector">
+        <span class="firma-nombre">{{ firmas_config.rector_nombre|default:"Lic. Juan Carlos Aguirre Nieto" }}</span>
+        <span class="firma-cargo">{{ firmas_config.rector_cargo|default:"Rector" }}</span>
       </div>
       <div class="firma-col">
-        <img src="{% static 'boletin/firma_secretario.png' %}" alt="Firma Secretario Académico" class="firma-img-sec">
-        <span class="firma-nombre">Elder Uriel Páez Córdoba</span>
-        <span class="firma-cargo">Secretario Académico</span>
+        <img src="{% if firmas_config and firmas_config.firma_secretario %}{{ firmas_config.firma_secretario.url }}{% else %}{% static 'boletin/firma_secretario.png' %}{% endif %}" alt="Firma Secretario Académico" class="firma-img-sec">
+        <span class="firma-nombre">{{ firmas_config.secretario_nombre|default:"Elder Uriel Páez Córdoba" }}</span>
+        <span class="firma-cargo">{{ firmas_config.secretario_cargo|default:"Secretario Académico" }}</span>
       </div>
       <div class="firma-col" style="padding-bottom: 2px;">
         <span class="firma-nombre-dir">{{ estudiante.director_grupo|default:"ROJAS GUTIERREZ LILIANA ASTRID" }}</span>
